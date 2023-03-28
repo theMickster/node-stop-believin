@@ -1,6 +1,6 @@
 import express from 'express';
-import { defaultRoute } from './defaultRoute';
+import router from './home';
 
 export const routes = express.Router();
 
-routes.use(defaultRoute);
+routes.use(router);
