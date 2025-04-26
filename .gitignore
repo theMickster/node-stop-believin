@@ -349,5 +349,6 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-*.env.local
+*.env
 books/express-api/dist
+books/express-api/.env
