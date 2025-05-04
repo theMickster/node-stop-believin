@@ -11,3 +11,4 @@ export function mapToAuthor(document: any): Author {
     lastName: document.lastName
   };
 }
+

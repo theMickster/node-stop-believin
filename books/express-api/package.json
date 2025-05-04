@@ -11,7 +11,12 @@
   },
   "dependencies": {
     "@azure/cosmos": "^4.3.0",
-    "@azure/identity": "^4.9.1"
+    "@azure/identity": "^4.9.1",
+    "body-parser": "^2.2.0",
+    "inversify": "^7.5.1",
+    "joi": "^17.13.3",
+    "reflect-metadata": "^0.2.2",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",

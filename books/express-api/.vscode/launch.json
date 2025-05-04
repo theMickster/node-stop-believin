@@ -1,0 +1,13 @@
+{    
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch CosmicBooks",
+            "type": "node",
+            "request": "launch",
+            "skipFiles": ["<node_internals>/**"],
+            "program": "${workspaceFolder}/src/server.ts",
+            "preLaunchTask": "npm: build"
+        }
+    ]    
+}

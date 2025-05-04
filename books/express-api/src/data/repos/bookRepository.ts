@@ -1,5 +1,5 @@
 import { Container, ItemResponse } from '@azure/cosmos';
-import { Book, mapToBook } from '../models/book';
+import { Book, mapToBook } from '../entities/book';
 
 export class BookRepository {
   private readonly container: Container;
@@ -30,5 +30,13 @@ export class BookRepository {
         };
         throw err;
     }
+  }
+
+  async create(book: Book): Promise<Book> {  
+    const { resource: createdItem } = await this.container.items.create(book);
+    if (!createdItem) {
+      throw new Error('Book Repository :: Failed to create book');
+    }
+    return mapToBook(createdItem);
   }
 }
