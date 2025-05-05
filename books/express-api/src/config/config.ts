@@ -6,7 +6,8 @@ interface Config {
     tenantId: string;
     endpoint: string | undefined;
     databaseId: string;
-    containerId: string;
+    authorContainerId: string;
+    bookContainerId: string;
     nodeEnv: string;
     port: number
 }
@@ -15,7 +16,8 @@ const config: Config = {
     tenantId: process.env.ShawskyTenantId ?? '',
     endpoint: process.env.CosmicReadsEndpoint ?? '',
     databaseId: process.env.CosmicReadsDatabase ?? '',
-    containerId: process.env.CosmicReadsBookContainer ?? '',
+    authorContainerId: process.env.CosmicReadsAuthorContainer ?? '',
+    bookContainerId: process.env.CosmicReadsBookContainer ?? '',
     port: Number(process.env.PORT) || 3898,
     nodeEnv: process.env.NODE_ENV ?? 'development'
 };
