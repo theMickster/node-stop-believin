@@ -4,6 +4,10 @@ const TYPES = {
     ReadBookHandler: Symbol.for("ReadBookHandler"),
     CreateBookCommandHandler: Symbol.for("CreateBookCommandHandler"),
     BookController: Symbol.for("BookController"),
+    CosmosClient: Symbol.for('CosmosClient'),
+    BookContainer: Symbol.for('BookContainer'),
+    AuthorContainer: Symbol.for('AuthorContainer'),
+    AppConfig: Symbol.for('AppConfig'),
 };
 
 export default TYPES;

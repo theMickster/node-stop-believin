@@ -1,13 +1,10 @@
 import express from 'express';
 import { bookRoutes } from './routes/book.route';
 import { errorHandler } from './middleware/errorHandler';
-import initializeCosmosClient from './config/cosmos.client';
 import bodyParser from 'body-parser';
 
 const app = express();
-let container: any;
 
-container = initializeCosmosClient();
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,6 +12,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 

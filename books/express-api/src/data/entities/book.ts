@@ -1,21 +1,9 @@
-import { Author, mapToAuthor } from "./author";
+import { Author } from './author';
 
 export interface Book {
-    id: string;
-    bookId: string;
-    entityType: 'Book';
-    name: string;
-    authors: Author[];
-  }
-
-  export function mapToBook(document: any): Book {
-    return {
-      id: document.id,
-      bookId: document.bookId,
-      entityType: document.entityType,
-      name: document.name,
-      authors: Array.isArray(document.authors)
-      ? document.authors.map(mapToAuthor)
-      : []
-    };
-  }
+  id: string;
+  bookId: string;
+  entityType: string;
+  name: string;
+  authors: Author[];
+}

@@ -1,10 +1,11 @@
 import { injectable, inject } from "inversify";
 import { v4 } from "uuid";
-import { Book, mapToBook } from "../../../data/entities/book";
+import { Book } from "../../../data/entities/book";
 import { BookRepository } from "../../../data/repos/bookRepository";
 import { ICommandHandler } from "../../../libs/cqrs/commandHandler";
 import TYPES from "../../../libs/ioc.types";
 import { CreateBookCommand } from "./createBookCommand";
+import { mapCreateDtoToBook } from "../../../data/mapping/bookMappers";
 
 @injectable()
 export class CreateBookCommandHandler implements ICommandHandler<CreateBookCommand, Book> {
@@ -18,12 +19,7 @@ export class CreateBookCommandHandler implements ICommandHandler<CreateBookComma
     }
 
     const newId = v4();
-    const bookToCreate = mapToBook({
-      ...validatedDto,
-      id: newId,
-      BookId: newId,
-      Type: 'Book',
-    });
+    const bookToCreate = mapCreateDtoToBook( newId, validatedDto);
     return this.bookRepository.create(bookToCreate);
   }
 }

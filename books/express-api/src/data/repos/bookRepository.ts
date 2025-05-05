@@ -1,10 +1,14 @@
-import { Container, ItemResponse } from '@azure/cosmos';
-import { Book, mapToBook } from '../entities/book';
+import { Container as CosmosContainer, ItemResponse } from '@azure/cosmos';
+import { Book } from '../entities/book';
+import { inject, injectable } from 'inversify';
+import TYPES from '../../libs/ioc.types';
+import { mapCosmosDocumentToBook } from '../mapping/bookMappers';
 
+@injectable()
 export class BookRepository {
-  private readonly container: Container;
+  private readonly container: CosmosContainer;
 
-  constructor(container: Container) {
+  constructor( @inject(TYPES.BookContainer) container: CosmosContainer) {
     this.container = container;
   }
 
@@ -17,13 +21,13 @@ export class BookRepository {
     };
 
     const { resources: documents } = await this.container.items.query<Book>(querySpec).fetchAll();    
-    return documents.map(m => mapToBook(m));
+    return documents.map(m => mapCosmosDocumentToBook(m));
   }
 
   async getById(id: string): Promise<Book | null> {
     try {
       const response: ItemResponse<Book> = await this.container.item(id, [id, 'Book']).read<Book>();
-      return response.resource ? mapToBook(response.resource) : null;
+      return response.resource ? mapCosmosDocumentToBook(response.resource) : null;
     } catch (err: any) {
       if (err.code === 404) {
         return null;
@@ -37,6 +41,6 @@ export class BookRepository {
     if (!createdItem) {
       throw new Error('Book Repository :: Failed to create book');
     }
-    return mapToBook(createdItem);
+    return mapCosmosDocumentToBook(createdItem);
   }
 }
