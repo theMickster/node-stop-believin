@@ -1,9 +1,12 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} */
+/** @type {import('jest').Config} */
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
   moduleFileExtensions: ['ts', 'js', 'json'],
+  moduleNameMapper: {
+    '^@fixtures/(.*)$': '<rootDir>/src/_test_/fixtures/$1',
+  },  
   testMatch: ['**/*.test.ts'],
   collectCoverage: true,
   collectCoverageFrom: [

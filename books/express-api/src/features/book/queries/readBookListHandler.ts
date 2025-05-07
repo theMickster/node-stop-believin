@@ -10,6 +10,13 @@ export class ReadBookListHandler implements IQueryHandler<ReadBookListQuery, Boo
   constructor(@inject(TYPES.BookRepository) private readonly bookRepository: BookRepository) {}
 
   async handle(query: ReadBookListQuery): Promise<Book[]> {
-    return this.bookRepository.getAll();
+    const result = await this.bookRepository.getAll();
+    
+    if (result.success && result.data) {
+      return result.data;
+    }
+
+    throw new Error(result.error ?? 'Failed to retrieve books');
+
   }
 }

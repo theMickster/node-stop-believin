@@ -1,0 +1,11 @@
+{
+    "workbench.iconTheme": "material-icon-theme",
+    "material-icon-theme.folders.associations": {
+        "entities": "database",
+        "data": "Core",
+        "_test_": "Test",
+        "fixtures": "Snippet",
+    },
+    "explorer.autoReveal": true,
+    "explorer.compactFolders": false
+}
