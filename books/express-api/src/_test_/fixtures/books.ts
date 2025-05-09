@@ -74,4 +74,11 @@ export const fakeBooks: Book[] = [
     entityType: 'Book',
     authors: [{ authorId: '5aa2872a-202c-4d19-9a04-74b4f638275e', firstName: 'Pete', lastName: 'the Cat' }],
   },
+  {
+    id: 'd551376d-d645-4311-880b-accad096112b',
+    bookId: 'd551376d-d645-4311-880b-accad096112b',
+    name: 'Complete Guide to Azure AI for ML Engineers',
+    entityType: 'Book',
+    authors: [{ authorId: 'ade3fa10-1269-4501-a25e-d88fc2bcf728', firstName: 'Jerry', lastName: 'the Giraffe' }],
+  },
 ];

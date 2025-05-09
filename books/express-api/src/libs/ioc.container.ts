@@ -2,8 +2,8 @@ import { Container } from 'inversify';
 import TYPES from './ioc.types';
 import { BookController } from '../controllers/bookController';
 import { BookRepository } from '../data/repos/bookRepository';
-import { ReadBookListHandler } from '../features/book/queries/readBookListHandler';
-import { ReadBookHandler } from '../features/book/queries/readBookQueryHander';
+import { ReadBookListQueryHandler } from '../features/book/queries/readBookListQueryHandler';
+import { ReadBookQueryHandler } from '../features/book/queries/readBookQueryHandler';
 import { CreateBookCommandHandler } from '../features/book/commands/createBookCommandHandler';
 import { default as config } from '../config/config';
 import { CosmosClient, Container as CosmosContainer } from '@azure/cosmos';
@@ -51,8 +51,8 @@ container
 container.bind<BookRepository>(TYPES.BookRepository).to(BookRepository);
 
 // Bind Query Handlers
-container.bind<ReadBookListHandler>(TYPES.ReadBookListHandler).to(ReadBookListHandler);
-container.bind<ReadBookHandler>(TYPES.ReadBookHandler).to(ReadBookHandler);
+container.bind<ReadBookListQueryHandler>(TYPES.ReadBookListHandler).to(ReadBookListQueryHandler);
+container.bind<ReadBookQueryHandler>(TYPES.ReadBookHandler).to(ReadBookQueryHandler);
 
 // Bind Command Handlers
 container.bind<CreateBookCommandHandler>(TYPES.CreateBookCommandHandler).to(CreateBookCommandHandler);

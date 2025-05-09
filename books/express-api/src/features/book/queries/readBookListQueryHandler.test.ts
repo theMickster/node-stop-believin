@@ -1,18 +1,18 @@
-import { ReadBookListHandler } from './readBookListHandler';
+import { ReadBookListQueryHandler } from './readBookListQueryHandler';
 import { BookRepository } from '../../../data/repos/bookRepository';
 import { fakeBooks } from '@fixtures/books';
 
 jest.mock('../../../data/repos/bookRepository');
 
-describe('ReadBookListHandler', () => {
+describe('ReadBookListQueryHandler', () => {
   let mockBookRepository: jest.Mocked<BookRepository>;
-  let handler: ReadBookListHandler;
+  let sut: ReadBookListQueryHandler;
   beforeEach(() => {
     mockBookRepository = {
       getAll: jest.fn(),
     } as unknown as jest.Mocked<BookRepository>;
 
-    handler = new ReadBookListHandler(mockBookRepository);
+    sut = new ReadBookListQueryHandler(mockBookRepository);
   });
 
   it('should return books when repository result is successful', async () => {
@@ -21,7 +21,7 @@ describe('ReadBookListHandler', () => {
       data: fakeBooks,
     });
 
-    const result = await handler.handle({});
+    const result = await sut.handle({});
 
     expect(result).toEqual(fakeBooks);
     expect(mockBookRepository.getAll).toHaveBeenCalledTimes(1);
@@ -33,7 +33,7 @@ describe('ReadBookListHandler', () => {
       data: [],
     });
 
-    const result = await handler.handle({});
+    const result = await sut.handle({});
 
     expect(result).toEqual([]);
     expect(mockBookRepository.getAll).toHaveBeenCalledTimes(1);
@@ -45,7 +45,7 @@ describe('ReadBookListHandler', () => {
       error: 'Database failure',
     });
 
-    await expect(handler.handle({})).rejects.toThrow('Database failure');
+    await expect(sut.handle({})).rejects.toThrow('Database failure');
     expect(mockBookRepository.getAll).toHaveBeenCalledTimes(1);
   });
 
@@ -54,6 +54,6 @@ describe('ReadBookListHandler', () => {
       success: false,
     });
 
-    await expect(handler.handle({})).rejects.toThrow('Failed to retrieve books');
+    await expect(sut.handle({})).rejects.toThrow('Failed to retrieve books');
   });
 });

@@ -6,10 +6,16 @@ import TYPES from '../../../libs/ioc.types';
 import { ReadBookQuery } from './readBookQuery';
 
 @injectable()
-export class ReadBookHandler implements IQueryHandler<ReadBookQuery, Book | null> {
+export class ReadBookQueryHandler implements IQueryHandler<ReadBookQuery, Book | null> {
   constructor(@inject(TYPES.BookRepository) private readonly bookRepository: BookRepository) {}
 
   async handle(query: ReadBookQuery): Promise<Book | null> {
-    return this.bookRepository.getById(query.id);
+    const result = await this.bookRepository.getById(query.id);
+
+    if (result.success && result.data) {
+      return result.data;
+    }
+
+    throw new Error(result.error ?? 'Failed to retrieve books');
   }
 }

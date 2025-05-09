@@ -59,9 +59,9 @@ describe('BookRepository', () => {
         (mockContainer.item as jest.Mock).mockReturnValue({ read: readMock });
 
         const result = await sut.getById('00000000-0000-0000-0000-000000000007');
-
+        expect(result.success).toBe(true);
         expect(mockContainer.item).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000007', ['00000000-0000-0000-0000-000000000007', 'Book']);
-        expect(result).toEqual(mapCosmosDocumentToBook(book));
+        expect(result.data).toEqual(mapCosmosDocumentToBook(book));
     });
 
   });
@@ -75,16 +75,31 @@ describe('BookRepository', () => {
         entityType: 'Book',
         authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname' }],
       };
+      
       (mockContainer.items.create as jest.Mock).mockResolvedValue({ resource: inputBook });
 
       const result = await sut.create(inputBook);
 
-      expect(result).toEqual(mapCosmosDocumentToBook(inputBook));
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(mapCosmosDocumentToBook(inputBook));
     });
+
     it('should throw an error if book creation fails', async () => {
+      const inputBook: Book = {
+        id: '10000000-0000-0000-0000-000000000001',
+        bookId: '10000000-0000-0000-0000-000000000001',
+        name: 'Book 1',
+        entityType: 'Book',
+        authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname' }],
+      };
+
       (mockContainer.items.create as jest.Mock).mockResolvedValue({ resource: null });
 
-      await expect(sut.create({} as Book)).rejects.toThrow('Book Repository :: Failed to create book');
+      const result = await sut.create(inputBook);
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to create book');
+      expect(mockContainer.items.create).toHaveBeenCalledWith(inputBook);
     });
   });
 });

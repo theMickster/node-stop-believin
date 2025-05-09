@@ -28,23 +28,30 @@ export class BookRepository {
     }
   }
 
-  async getById(id: string): Promise<Book | null> {
+  async getById(id: string): Promise<RepoResult<Book>> {
     try {
       const response: ItemResponse<Book> = await this.container.item(id, [id, 'Book']).read<Book>();
-      return response.resource ? mapCosmosDocumentToBook(response.resource) : null;
+      if (!response.resource) {
+        return repoFail('Book not found');
+      }
+      return repoOk(mapCosmosDocumentToBook(response.resource));      
     } catch (err: any) {
       if (err.code === 404) {
-        return null;
+        return repoFail('Book not found');
       }
-      throw err;
+      return repoFail('Failed to retrieve book');
     }
   }
 
-  async create(book: Book): Promise<Book> {
-    const { resource: createdItem } = await this.container.items.create(book);
-    if (!createdItem) {
-      throw new Error('Book Repository :: Failed to create book');
+  async create(book: Book): Promise<RepoResult<Book>> {
+    try {
+      const { resource: createdItem } = await this.container.items.create(book);
+      if (!createdItem) {
+        return repoFail('Failed to create book');
+      }
+      return repoOk(mapCosmosDocumentToBook(createdItem));
+    } catch {
+      return repoFail('Failed to create book');
     }
-    return mapCosmosDocumentToBook(createdItem);
   }
 }

@@ -6,7 +6,7 @@ import TYPES from '../../../libs/ioc.types';
 import { ReadBookListQuery } from './readBookListQuery';
 
 @injectable()
-export class ReadBookListHandler implements IQueryHandler<ReadBookListQuery, Book[]> {
+export class ReadBookListQueryHandler implements IQueryHandler<ReadBookListQuery, Book[]> {
   constructor(@inject(TYPES.BookRepository) private readonly bookRepository: BookRepository) {}
 
   async handle(query: ReadBookListQuery): Promise<Book[]> {
