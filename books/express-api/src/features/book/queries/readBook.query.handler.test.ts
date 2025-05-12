@@ -1,4 +1,4 @@
-import { ReadBookQueryHandler } from './readBookQueryHandler';
+import { ReadBookQueryHandler } from './readBook.query.handler';
 import { BookRepository } from '../../../data/repos/bookRepository';
 import { fakeBooks } from '@fixtures/books';
 import { Book } from 'data/entities/book';

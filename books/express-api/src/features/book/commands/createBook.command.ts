@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { CreateBookDto } from '../models/createBookDto';
-import { CreateBookValidator } from '../validators/createBookValidator';
+import { CreateBookValidator } from '../validators/createBook.validator';
 
 export class CreateBookCommand {
   constructor(public readonly createBookDto: CreateBookDto) {}

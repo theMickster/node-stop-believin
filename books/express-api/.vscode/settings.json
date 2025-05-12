@@ -5,6 +5,15 @@
         "data": "Core",
         "_test_": "Test",
         "fixtures": "Snippet",
+        "queries": "Quasar",
+        "features": "Home"
+    },
+    "material-icon-theme.files.associations": {
+        "*.query.ts": "Sequelize",
+        "*.query.handler.ts": "Roadmap",
+        "*.validator.ts": "Arduino",
+        "*.command.ts": "Cabal",
+        "*.command.handler.ts": "Roadmap",
     },
     "explorer.autoReveal": true,
     "explorer.compactFolders": false

@@ -4,7 +4,7 @@ import { Book } from "../../../data/entities/book";
 import { BookRepository } from "../../../data/repos/bookRepository";
 import { ICommandHandler } from "../../../libs/cqrs/commandHandler";
 import TYPES from "../../../libs/ioc.types";
-import { CreateBookCommand } from "./createBookCommand";
+import { CreateBookCommand } from "./createBook.command";
 import { mapCreateDtoToBook } from "../../../data/mapping/bookMappers";
 
 @injectable()
