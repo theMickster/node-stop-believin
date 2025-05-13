@@ -352,3 +352,4 @@ MigrationBackup/
 *.env
 books/express-api/dist
 books/express-api/.env
+books/express-api/coverage

@@ -15,11 +15,17 @@ export class CreateBookCommandHandler implements ICommandHandler<CreateBookComma
     const { error, value: validatedDto } = command.validate();
 
     if (error) {
-      throw error;
+      throw new Error(`Validation failed: ${error.message}`);
     }
 
     const newId = v4();
     const bookToCreate = mapCreateDtoToBook( newId, validatedDto);
-    return this.bookRepository.create(bookToCreate);
+    
+    const result = await this.bookRepository.create(bookToCreate);
+    if (!result.success || !result.data) {      
+      throw new Error(result.error ?? "Unknown error creating book");
+    }
+    
+    return result.data; 
   }
 }
