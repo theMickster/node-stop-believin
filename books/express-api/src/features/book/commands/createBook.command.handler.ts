@@ -4,7 +4,7 @@ import { Book } from "../../../data/entities/book";
 import { BookRepository } from "../../../data/repos/bookRepository";
 import { ICommandHandler } from "../../../libs/cqrs/commandHandler";
 import TYPES from "../../../libs/ioc.types";
-import { CreateBookCommand } from "./createBookCommand";
+import { CreateBookCommand } from "./createBook.command";
 import { mapCreateDtoToBook } from "../../../data/mapping/bookMappers";
 
 @injectable()
@@ -15,11 +15,17 @@ export class CreateBookCommandHandler implements ICommandHandler<CreateBookComma
     const { error, value: validatedDto } = command.validate();
 
     if (error) {
-      throw error;
+      throw new Error(`Validation failed: ${error.message}`);
     }
 
     const newId = v4();
     const bookToCreate = mapCreateDtoToBook( newId, validatedDto);
-    return this.bookRepository.create(bookToCreate);
+    
+    const result = await this.bookRepository.create(bookToCreate);
+    if (!result.success || !result.data) {      
+      throw new Error(result.error ?? "Unknown error creating book");
+    }
+    
+    return result.data; 
   }
 }
