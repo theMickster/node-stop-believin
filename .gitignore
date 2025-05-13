@@ -350,6 +350,6 @@ MigrationBackup/
 .ionide/
 
 *.env
-books/express-api/dist
-books/express-api/.env
-books/express-api/coverage
+books/dist
+books/.env
+books/coverage
