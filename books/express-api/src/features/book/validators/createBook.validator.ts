@@ -25,6 +25,8 @@ export const CreateBookValidator = Joi.object({
     .required()
     .messages({
       'array.min': 'At least one author is required',
+      'array.includesRequiredUnknowns': 'At least one author is required',
       'any.required': 'Authors are required',
-    }),
+      'array.base': 'Authors must be an array',
+    }), 
 });
