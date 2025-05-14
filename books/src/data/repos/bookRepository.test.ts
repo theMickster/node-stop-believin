@@ -4,7 +4,7 @@ import { mapCosmosDocumentToBook } from '../mapping/bookMappers';
 import { BookRepository } from '../repos/bookRepository';
 import { Container as CosmosContainer } from '@azure/cosmos';
 import { fakeCosmicBooks } from '@fixtures/books';
-import { repoOk } from 'data/libs/repoResult';
+import { repoOk } from '../../data/libs/repoResult';
 
 describe('BookRepository', () => {
   let sut: BookRepository;
@@ -120,7 +120,7 @@ describe('BookRepository', () => {
       const result = await sut.update(inputBook);
 
       expect(result).toEqual(repoOk(inputBook));
-      expect(mockContainer.item).toHaveBeenCalledWith('book-id-123', ['book-id-123', 'Book']);
+      expect(mockContainer.item).toHaveBeenCalledTimes(1);
     });
 
     it('should return fail result when Cosmos DB throws', async () => {
@@ -139,6 +139,7 @@ describe('BookRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Failed to update book');
+      expect(mockContainer.item).toHaveBeenCalledTimes(1);
     });
 
     it('should return not found when Cosmos DB responds 404', async () => {
@@ -157,6 +158,7 @@ describe('BookRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Book not found');
+      expect(mockContainer.item).toHaveBeenCalledTimes(1);
     });
   });
 

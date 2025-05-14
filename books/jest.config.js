@@ -7,6 +7,9 @@ module.exports = {
   moduleNameMapper: {
     '^@fixtures/(.*)$': '<rootDir>/src/_test_/fixtures/$1',
   },  
+  transform: {
+    '^.+\\.ts$': 'ts-jest',
+  },
   testMatch: ['**/*.test.ts'],
   collectCoverage: true,
   collectCoverageFrom: [
@@ -22,11 +25,6 @@ module.exports = {
       branches: 80,
       functions: 80,
       statements: 80
-    }
-  },
-  globals: {
-    'ts-jest': {
-      isolatedModules: true
     }
   }
 };

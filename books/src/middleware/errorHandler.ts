@@ -24,7 +24,7 @@ export const errorHandler = (
 
   // Optionally include the error stack if in development mode
   if (process.env.NODE_ENV === 'development') {
-    errorResponse.stack = err.stack;
+    errorResponse.stack = err.stack ?? '';
   }
 
   // Send the error response
