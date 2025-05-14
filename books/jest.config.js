@@ -3,9 +3,15 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
+  moduleDirectories : ['node_modules', 'src'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@controllers/(.*)$': '<rootDir>/src/controllers/$1',
+    '^@features/(.*)$': '<rootDir>/src/features/$1',
     '^@fixtures/(.*)$': '<rootDir>/src/_test_/fixtures/$1',
+    '^@data/(.*)$': '<rootDir>/src/data/$1',
+    '^@libs/(.*)$': '<rootDir>/src/libs/$1'
   },  
   transform: {
     '^.+\\.ts$': 'ts-jest',
@@ -15,7 +21,14 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.{ts,js}',
     '!src/**/*.test.{ts,js}',
-    '!**/node_modules/**'
+    '!src/**/*.spec.{ts,js}',
+    '!**/node_modules/**',
+    '!src/app.ts',
+    '!src/server.ts',
+    '!src/_test_/**',
+    '!src/config/config.ts',
+    '!src/libs/ioc.container.ts',
+    '!src/libs/ioc.types.ts',
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
