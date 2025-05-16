@@ -1,10 +1,10 @@
+import { BookRepository } from '@data/repos/bookRepository';
+import { ICommandHandler } from '@libs/cqrs/commandHandler';
+import { CommandResult, commandFail, commandOk } from '@libs/cqrs/commandResult';
+import TYPES from '@libs/ioc.types';
 import { inject, injectable } from 'inversify';
-import TYPES from '../../../libs/ioc.types';
-import { DeleteBookCommand } from './deleteBook.command';
-import { BookRepository } from '../../../data/repos/bookRepository';
 import { DeleteBookValidator } from '../validators/deleteBook.validator';
-import { ICommandHandler } from '../../../libs/cqrs/commandHandler';
-import { commandFail, commandOk, CommandResult } from '../../../libs/cqrs/commandResult';
+import { DeleteBookCommand } from './deleteBook.command';
 
 @injectable()
 export class DeleteBookCommandHandler implements ICommandHandler<DeleteBookCommand, CommandResult<void>>  {

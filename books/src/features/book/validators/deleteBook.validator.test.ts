@@ -1,6 +1,6 @@
-import { DeleteBookValidator } from './deleteBook.validator';
-import { BookRepository } from '../../../data/repos/bookRepository';
-import { repoOk, repoFail } from '../../../data/libs/repoResult';
+import { repoOk, repoFail } from "@data/libs/repoResult";
+import { BookRepository } from "@data/repos/bookRepository";
+import { DeleteBookValidator } from "./deleteBook.validator";
 
 describe('DeleteBookValidator', () => {
   let sut: DeleteBookValidator;

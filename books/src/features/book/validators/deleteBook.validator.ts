@@ -1,7 +1,8 @@
 import { inject, injectable } from 'inversify';
-import { BookRepository } from '../../../data/repos/bookRepository';
-import TYPES from '../../../libs/ioc.types';
+
 import Joi from 'joi';
+import { BookRepository } from '@data/repos/bookRepository';
+import TYPES from '@libs/ioc.types';
 
 @injectable()
 export class DeleteBookValidator {

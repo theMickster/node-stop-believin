@@ -1,10 +1,10 @@
-import { describe } from 'node:test';
-import { Book } from '../entities/book';
-import { mapCosmosDocumentToBook } from '../mapping/bookMappers';
-import { BookRepository } from '../repos/bookRepository';
 import { Container as CosmosContainer } from '@azure/cosmos';
+import { Book } from '@data/entities/book';
+import { repoOk } from '@data/libs/repoResult';
+import { mapCosmosDocumentToBook } from '@data/mapping/bookMappers';
 import { fakeCosmicBooks } from '@fixtures/books';
-import { repoOk } from '../../data/libs/repoResult';
+import { BookRepository } from './bookRepository';
+
 
 describe('BookRepository', () => {
   let sut: BookRepository;

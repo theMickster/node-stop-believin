@@ -1,11 +1,11 @@
+import { Book } from "@data/entities/book";
+import { mapCreateDtoToBook } from "@data/mapping/bookMappers";
+import { BookRepository } from "@data/repos/bookRepository";
+import { ICommandHandler } from "@libs/cqrs/commandHandler";
+import TYPES from "@libs/ioc.types";
 import { injectable, inject } from "inversify";
 import { v4 } from "uuid";
-import { Book } from "../../../data/entities/book";
-import { BookRepository } from "../../../data/repos/bookRepository";
-import { ICommandHandler } from "../../../libs/cqrs/commandHandler";
-import TYPES from "../../../libs/ioc.types";
 import { CreateBookCommand } from "./createBook.command";
-import { mapCreateDtoToBook } from "../../../data/mapping/bookMappers";
 
 @injectable()
 export class CreateBookCommandHandler implements ICommandHandler<CreateBookCommand, Book> {

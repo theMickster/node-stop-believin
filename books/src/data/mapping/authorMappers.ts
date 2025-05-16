@@ -1,4 +1,4 @@
-import { Author } from "../entities/author";
+import { Author } from "@data/entities/author";
 
 export function mapToAuthor(document: any): Author {
   return {

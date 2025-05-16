@@ -1,8 +1,8 @@
-import { BookRepository } from '../../../data/repos/bookRepository';
-import { DeleteBookCommandHandler } from './deleteBook.command.handler';
-import { DeleteBookValidator } from '../validators/deleteBook.validator';
-import { DeleteBookCommand } from './deleteBook.command';
-import { CommandResult } from '../../../libs/cqrs/commandResult';
+import { BookRepository } from "@data/repos/bookRepository";
+import { CommandResult } from "@libs/cqrs/commandResult";
+import { DeleteBookValidator } from "../validators/deleteBook.validator";
+import { DeleteBookCommand } from "./deleteBook.command";
+import { DeleteBookCommandHandler } from "./deleteBook.command.handler";
 
 describe('DeleteBookCommandHandler', () => {
   let handler: DeleteBookCommandHandler;

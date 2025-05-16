@@ -11,12 +11,22 @@
     "unit-test": "jest --config jest.config.js",
     "unit-test-cover": "jest --coverage"
   },
+  "_moduleAliases": {
+    "@features": "dist/features",
+    "@data": "dist/data",
+    "@libs": "dist/libs",
+    "@controllers": "dist/controllers",
+    "@routes": "dist/routes",
+    "@fixtures": "dist/_test_/fixtures",
+    "@middleware": "dist/middleware"
+  },
   "dependencies": {
     "@azure/cosmos": "^4.3.0",
     "@azure/identity": "^4.9.1",
     "body-parser": "^2.2.0",
     "inversify": "^7.5.1",
     "joi": "^17.13.3",
+    "module-alias": "^2.2.3",
     "reflect-metadata": "^0.2.2",
     "uuid": "^11.1.0"
   },

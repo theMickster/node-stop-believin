@@ -1,6 +1,6 @@
-import { CreateBookDto } from '../../features/book/models/createBookDto';
-import { Book } from '../entities/book';
-import { mapToAuthor } from './authorMappers';
+import { Book } from "@data/entities/book";
+import { CreateBookDto } from "@features/book/models/createBookDto";
+import { mapToAuthor } from "./authorMappers";
 
 const BOOK_ENTITY_TYPE = 'Book';
 

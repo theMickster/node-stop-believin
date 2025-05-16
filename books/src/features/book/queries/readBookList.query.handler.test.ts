@@ -1,8 +1,8 @@
+import { BookRepository } from '@data/repos/bookRepository';
 import { ReadBookListQueryHandler } from './readBookList.query.handler';
-import { BookRepository } from '../../../data/repos/bookRepository';
 import { fakeBooks } from '@fixtures/books';
 
-jest.mock('../../../data/repos/bookRepository');
+jest.mock('@data/repos/bookRepository');
 
 describe('ReadBookListQueryHandler', () => {
   let mockBookRepository: jest.Mocked<BookRepository>;

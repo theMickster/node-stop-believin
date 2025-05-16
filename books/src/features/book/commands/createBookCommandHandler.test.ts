@@ -1,9 +1,10 @@
-import { BookRepository } from 'data/repos/bookRepository';
-import { CreateBookCommandHandler } from './createBook.command.handler';
-import { CreateBookCommand } from './createBook.command';
-import { Book } from '../../../data/entities/book';
-import { repoOk, repoFail } from '../../../data/libs/repoResult';
+
+import { Book } from '@data/entities/book';
+import { repoOk, repoFail } from '@data/libs/repoResult';
+import { BookRepository } from '@data/repos/bookRepository';
 import { ValidationError } from 'joi';
+import { CreateBookCommand } from './createBook.command';
+import { CreateBookCommandHandler } from './createBook.command.handler';
 
 describe('CreateBookCommandHandler', () => {
   let mockRepo: jest.Mocked<BookRepository>;

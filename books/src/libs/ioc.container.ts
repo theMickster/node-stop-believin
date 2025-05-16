@@ -1,15 +1,15 @@
 import { Container } from 'inversify';
 import TYPES from './ioc.types';
-import { BookController } from '../controllers/book.controller';
-import { BookRepository } from '../data/repos/bookRepository';
-import { ReadBookListQueryHandler } from '../features/book/queries/readBookList.query.handler';
-import { ReadBookQueryHandler } from '../features/book/queries/readBook.query.handler';
-import { CreateBookCommandHandler } from '../features/book/commands/createBook.command.handler';
 import { default as config } from '../config/config';
 import { CosmosClient, Container as CosmosContainer } from '@azure/cosmos';
 import { DefaultAzureCredential } from '@azure/identity';
-import { DeleteBookValidator } from 'features/book/validators/deleteBook.validator';
-import { DeleteBookCommandHandler } from 'features/book/commands/deleteBook.command.handler';
+import { BookController } from '@controllers/book.controller';
+import { BookRepository } from '@data/repos/bookRepository';
+import { CreateBookCommandHandler } from '@features/book/commands/createBook.command.handler';
+import { DeleteBookCommandHandler } from '@features/book/commands/deleteBook.command.handler';
+import { ReadBookQueryHandler } from '@features/book/queries/readBook.query.handler';
+import { ReadBookListQueryHandler } from '@features/book/queries/readBookList.query.handler';
+import { DeleteBookValidator } from '@features/book/validators/deleteBook.validator';
 
 const container = new Container();
 

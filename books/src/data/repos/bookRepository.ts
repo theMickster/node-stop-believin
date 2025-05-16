@@ -1,9 +1,9 @@
 import { Container as CosmosContainer, ItemResponse } from '@azure/cosmos';
-import { Book } from '../entities/book';
+import { Book } from '@data/entities/book';
+import { RepoResult, repoOk, repoFail } from '@data/libs/repoResult';
+import { mapCosmosDocumentToBook } from '@data/mapping/bookMappers';
+import TYPES from '@libs/ioc.types';
 import { inject, injectable } from 'inversify';
-import TYPES from '../../libs/ioc.types';
-import { mapCosmosDocumentToBook } from '../mapping/bookMappers';
-import { repoFail, repoOk, RepoResult } from '../libs/repoResult';
 
 @injectable()
 export class BookRepository {
