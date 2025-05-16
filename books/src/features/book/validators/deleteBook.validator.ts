@@ -1,11 +1,11 @@
 import { inject, injectable } from 'inversify';
-
 import Joi from 'joi';
 import { BookRepository } from '@data/repos/bookRepository';
 import TYPES from '@libs/ioc.types';
+import { AbstractBookValidator } from './abstractBook.validator';
 
 @injectable()
-export class DeleteBookValidator {
+export class DeleteBookValidator extends AbstractBookValidator<string> {
   private readonly schema = Joi.object({
     bookId: Joi.string().uuid({ version: 'uuidv4' }).required()
       .messages({
@@ -16,8 +16,8 @@ export class DeleteBookValidator {
   });
 
   constructor(
-    @inject(TYPES.BookRepository) private readonly bookRepository: BookRepository
-  ) {}
+    @inject(TYPES.BookRepository) protected readonly bookRepository: BookRepository
+  ) { super(bookRepository);}
 
   async validate(bookId: string): Promise<{ valid: true } | { valid: false; error: Error }> {
     const { error } = this.schema.validate({ bookId });
@@ -26,12 +26,6 @@ export class DeleteBookValidator {
       return { valid: false, error: new Error(`Validation error: ${error.message}`) };
     }
 
-    const result = await this.bookRepository.getById(bookId);
-
-    if (!result.success || !result.data) {
-      return { valid: false, error: new Error('Book not found') };
-    }
-
-    return { valid: true };
+    return await this.validateBookExists(bookId);
   }
 }
