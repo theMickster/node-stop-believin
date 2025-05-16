@@ -11,7 +11,8 @@ module.exports = {
     '^@features/(.*)$': '<rootDir>/src/features/$1',
     '^@fixtures/(.*)$': '<rootDir>/src/_test_/fixtures/$1',
     '^@data/(.*)$': '<rootDir>/src/data/$1',
-    '^@libs/(.*)$': '<rootDir>/src/libs/$1'
+    '^@libs/(.*)$': '<rootDir>/src/libs/$1',
+    '^@routes/(.*)$': '<rootDir>/src/routes/$1',
   },  
   transform: {
     '^.+\\.ts$': 'ts-jest',

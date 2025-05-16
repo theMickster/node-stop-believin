@@ -41,8 +41,8 @@ export class BookController {
       }
       res.json(book);
     } catch (err: any) {
-      console.error(`Error fetching book ${id}:`, err);
-      res.status(500).json({ error: 'Failed to fetch book' });
+      console.error(`Error retrieving book ${id}:`, err);
+      res.status(500).json({ error: 'Failed to retrieve book' });
     }
   }
 
@@ -59,7 +59,6 @@ export class BookController {
 
   async deleteBook(req: Request, res: Response): Promise<void> {
     const id = req.params.id;
-
     try {
       const command = new DeleteBookCommand(id);
       await this.deleteBookCommandHandler.handle(command);
