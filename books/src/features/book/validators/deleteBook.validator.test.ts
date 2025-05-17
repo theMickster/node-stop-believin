@@ -14,7 +14,7 @@ describe('DeleteBookValidator', () => {
     sut = new DeleteBookValidator(mockRepo);
   });
 
-  it('should return true if book exists', async () => {
+  it('should return true when model is valid', async () => {
     mockRepo.getById.mockResolvedValue(
       repoOk({
         id: 'b9223c19-5a6d-4406-bf96-aefbae10746a',

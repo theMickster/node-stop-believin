@@ -10,6 +10,8 @@ import { DeleteBookCommandHandler } from '@features/book/commands/deleteBook.com
 import { ReadBookQueryHandler } from '@features/book/queries/readBook.query.handler';
 import { ReadBookListQueryHandler } from '@features/book/queries/readBookList.query.handler';
 import { DeleteBookValidator } from '@features/book/validators/deleteBook.validator';
+import { UpdateBookValidator } from '@features/book/validators/updateBook.validator';
+import { UpdateBookCommandHandler } from '@features/book/commands/updateBook.command.handler';
 
 const container = new Container();
 
@@ -59,8 +61,11 @@ container.bind<ReadBookQueryHandler>(TYPES.ReadBookHandler).to(ReadBookQueryHand
 // Bind Command Handlers
 container.bind<CreateBookCommandHandler>(TYPES.CreateBookCommandHandler).to(CreateBookCommandHandler);
 container.bind<DeleteBookCommandHandler>(TYPES.DeleteBookCommandHandler).to(DeleteBookCommandHandler);
+container.bind<UpdateBookCommandHandler>(TYPES.UpdateBookCommandHandler).to(UpdateBookCommandHandler);
+
 // Bind Validators
 container.bind<DeleteBookValidator>(TYPES.DeleteBookValidator).to(DeleteBookValidator);
+container.bind<UpdateBookValidator>(TYPES.UpdateBookValidator).to(UpdateBookValidator);
 
 // Bind Controllers
 container.bind<BookController>(BookController).to(BookController);

@@ -1,10 +1,8 @@
-
-import { Book } from '@data/entities/book';
-import { repoOk, repoFail } from '@data/libs/repoResult';
-import { BookRepository } from '@data/repos/bookRepository';
-import { ValidationError } from 'joi';
-import { CreateBookCommand } from './createBook.command';
+import { BookRepository } from 'data/repos/bookRepository';
 import { CreateBookCommandHandler } from './createBook.command.handler';
+import { CreateBookCommand } from './createBook.command';
+import { Book } from '../../../data/entities/book';
+import { repoOk, repoFail } from '../../../data/libs/repoResult';
 
 describe('CreateBookCommandHandler', () => {
   let mockRepo: jest.Mocked<BookRepository>;
@@ -21,17 +19,16 @@ describe('CreateBookCommandHandler', () => {
     jest.clearAllMocks();
   });
 
-  it('should successfully create a new book', async () => {
+ it('should successfully create a new book', async () => {
     const dto = {
       name: 'A Great Book',
       authors: [
-        { authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Jane', lastName: 'Doe' },
-        { authorId: '00000000-0000-0000-0000-000000000002', firstName: 'John', lastName: 'Doe' },
+        { authorId: 'd5f5bc1c-d2c7-408b-b757-60ef713b47e9', firstName: 'Jane', lastName: 'Doe' },
+        { authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'John', lastName: 'Doe' },
       ],
     };
     const cmd = new CreateBookCommand(dto);
-    jest.spyOn(cmd, 'validate').mockReturnValue({ error: undefined, value: dto });
-
+    
     const fakeBook: Book = { id: '1', bookId: '1', entityType: 'Book', name: 'A Great Book', authors: dto.authors };
     mockRepo.create.mockResolvedValue(repoOk(fakeBook));
 
@@ -43,25 +40,14 @@ describe('CreateBookCommandHandler', () => {
 
   it('should throw correct error when validation fails', async () => {
     const dto = {
-      name: 'A Great Book Vol 2',
+      name: '',
       authors: [
-        { authorId: '00000000-0000-0000-0000-000000000007', firstName: 'Jane', lastName: 'Doe' },
+        { authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'Jane', lastName: 'Doe' },
       ],
     };
-    const cmd = new CreateBookCommand(dto);
+    const cmd = new CreateBookCommand(dto);  
 
-    const validatorError: ValidationError = {
-      name: 'ValidationError',
-          isJoi: true,
-          message: 'invalid DTO',
-          details: [],
-          _original: dto,
-          annotate: () => 'annotated',
-    };
-
-    jest.spyOn(cmd, 'validate').mockReturnValue({ error: validatorError, value: null });
-
-    await expect(sut.handle(cmd)).rejects.toThrow('Validation failed: invalid DTO');
+    await expect(sut.handle(cmd)).rejects.toThrow('Validation failed: Book name is required');
     expect(mockRepo.create).not.toHaveBeenCalled();
   });
 
@@ -69,12 +55,10 @@ describe('CreateBookCommandHandler', () => {
     const dto = {
       name: 'A Great Book Vol 3',
       authors: [
-        { authorId: '00000000-0000-0000-0000-000000000007', firstName: 'Peter', lastName: 'Doe' },
+        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe' },
       ],
     };
     const cmd = new CreateBookCommand(dto);
-    jest.spyOn(cmd, 'validate').mockReturnValue({ error: undefined, value: dto });
-
     mockRepo.create.mockResolvedValue(repoFail('Cosmos DB is down'));
 
     await expect(sut.handle(cmd)).rejects.toThrow('Cosmos DB is down');
@@ -85,12 +69,10 @@ describe('CreateBookCommandHandler', () => {
     const dto = {
       name: 'A Great Book Vol 4',
       authors: [
-        { authorId: '00000000-0000-0000-0000-000000000007', firstName: 'Peter', lastName: 'Doe' },
+        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe' },
       ],
     };
     const cmd = new CreateBookCommand(dto);
-    jest.spyOn(cmd, 'validate').mockReturnValue({ error: undefined, value: dto });
-
     mockRepo.create.mockResolvedValue({ success: false });
 
     await expect(sut.handle(cmd)).rejects.toThrow('Unknown error creating book');
