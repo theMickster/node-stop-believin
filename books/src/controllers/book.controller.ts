@@ -1,6 +1,7 @@
 import { Book } from '@data/entities/book';
 import { CreateBookCommand } from '@features/book/commands/createBook.command';
 import { DeleteBookCommand } from '@features/book/commands/deleteBook.command';
+import { UpdateBookCommand } from '@features/book/commands/updateBook.command';
 import { CreateBookDto } from '@features/book/models/createBookDto';
 import { ReadBookQuery } from '@features/book/queries/readBook.query';
 import { ReadBookListQuery } from '@features/book/queries/readBookList.query';
@@ -16,7 +17,8 @@ export class BookController {
     @inject(TYPES.ReadBookListHandler) private readonly readBookListHandler: IQueryHandler<ReadBookListQuery, Book[]>,
     @inject(TYPES.ReadBookHandler) private readonly readBookHandler: IQueryHandler<ReadBookQuery, Book>,
     @inject(TYPES.CreateBookCommandHandler) private readonly createBookCommandHandler: ICommandHandler<CreateBookCommand, Book>,
-    @inject(TYPES.DeleteBookCommandHandler) private readonly deleteBookCommandHandler: ICommandHandler<DeleteBookCommand, void>
+    @inject(TYPES.DeleteBookCommandHandler) private readonly deleteBookCommandHandler: ICommandHandler<DeleteBookCommand, void>,
+    @inject(TYPES.UpdateBookCommandHandler) private readonly updateBookCommandHandler: ICommandHandler<UpdateBookCommand, Book>,
   ) {}
 
   async getBooks(req: Request, res: Response): Promise<void> {
@@ -24,8 +26,7 @@ export class BookController {
       const query = new ReadBookListQuery();
       const books = await this.readBookListHandler.handle(query);
       res.json(books);
-    } catch (err) {
-      console.error('Error listing books:', err);
+    } catch (err) {      
       res.status(500).json({ message: 'Failed to list books' });
     }
   }
@@ -41,7 +42,6 @@ export class BookController {
       }
       res.json(book);
     } catch (err: any) {
-      console.error(`Error retrieving book ${id}:`, err);
       res.status(500).json({ error: 'Failed to retrieve book' });
     }
   }
@@ -52,8 +52,18 @@ export class BookController {
       const createdBook = await this.createBookCommandHandler.handle(command);
       res.status(201).json(createdBook);
     } catch (err) {
-      console.error('Error creating book:', err);
       res.status(500).json({ message: 'Failed to create book' });
+    }
+  }
+
+  async updateBook(req: Request, res: Response): Promise<void> {
+    //const id = req.params.id;
+    try {
+      const command = new UpdateBookCommand(req.body);
+      const updatedBook = await this.updateBookCommandHandler.handle(command);      
+      res.status(200).json(updatedBook);
+    } catch (err: any) {
+      res.status(500).json({ error: 'Failed to update book' });
     }
   }
 
@@ -64,7 +74,6 @@ export class BookController {
       await this.deleteBookCommandHandler.handle(command);
       res.status(204).send();
     } catch (err: any) {
-      console.error(`Error deleting book ${id}:`, err);
       res.status(500).json({ error: "Failed to delete book" });
     }
   }

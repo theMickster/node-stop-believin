@@ -11,7 +11,7 @@ describe('bookRoutes', () => {
 
   it("should register correct routes", () => {
     const routes = getRoutesFromRouter();
-    expect(routes.length).toBe(4);
+    expect(routes.length).toBe(5);
 
     const getRoute = routes.find(x => 
         x.route?.path === '/' && 
@@ -25,6 +25,10 @@ describe('bookRoutes', () => {
         x.route?.path === '/:id' && 
         x.route?.stack?.some((layer: any) => layer.method === 'get'));  
 
+    const updateByIdRoute = routes.find(x => 
+        x.route?.path === '/:id' && 
+        x.route?.stack?.some((layer: any) => layer.method === 'put'));  
+
     const deleteByIdRoute = routes.find(x => 
         x.route?.path === '/:id' && 
         x.route?.stack?.some((layer: any) => layer.method === 'delete'));  
@@ -32,6 +36,7 @@ describe('bookRoutes', () => {
     expect(getRoute).toBeDefined();
     expect(postRoute).toBeDefined();
     expect(getByIdRoute).toBeDefined();
+    expect(updateByIdRoute).toBeDefined();
     expect(deleteByIdRoute).toBeDefined();        
   });
     

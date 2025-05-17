@@ -2,7 +2,9 @@ import { BookController } from "@controllers/book.controller";
 import { Book } from "@data/entities/book";
 import { CreateBookCommand } from "@features/book/commands/createBook.command";
 import { DeleteBookCommand } from "@features/book/commands/deleteBook.command";
+import { UpdateBookCommand } from "@features/book/commands/updateBook.command";
 import { CreateBookDto } from "@features/book/models/createBookDto";
+import { UpdateBookDto } from "@features/book/models/updateBookDto";
 import { ReadBookQuery } from "@features/book/queries/readBook.query";
 import { ReadBookListQuery } from "@features/book/queries/readBookList.query";
 import { fakeBooks } from "@fixtures/books";
@@ -17,6 +19,7 @@ describe('BookController', () => {
   const mockReadBookHandler = mock<IQueryHandler<ReadBookQuery, Book>>();
   const mockCreateBookCommandHandler = mock<ICommandHandler<CreateBookCommand, Book>>();
   const mockDeleteBookCommandHandler = mock<ICommandHandler<DeleteBookCommand, void>>();
+  const mockUpdateBookCommandHandler = mock<ICommandHandler<UpdateBookCommand, Book>>();
 
   let sut: BookController;  
 
@@ -34,12 +37,14 @@ describe('BookController', () => {
     mockReset(mockReadBookHandler);
     mockReset(mockCreateBookCommandHandler);
     mockReset(mockDeleteBookCommandHandler);
+    mockReset(mockUpdateBookCommandHandler);
 
     sut = new BookController(
       mockReadBookListHandler,
       mockReadBookHandler,
       mockCreateBookCommandHandler,
       mockDeleteBookCommandHandler,
+      mockUpdateBookCommandHandler
     );    
   });
 
@@ -201,6 +206,57 @@ describe('BookController', () => {
       expect(res.statusCode).toBe(500);
       const responseData = JSON.parse(res._getData());
       expect(responseData).toEqual({ error: "Failed to delete book" });
+    });
+  });
+
+  describe('updateBook', () => {
+    it('should update the correct book by id', async () => {
+      const id = "41ca7c11-87d8-4d18-b210-74099094ec31";
+      const updateBookDto: UpdateBookDto =  {
+        id: id,
+        name: "Update Book",
+        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith" }],
+      };
+
+      const updatedBook: Book = {
+        id: id,
+        bookId: id,
+        entityType: "Book",
+        name: "Update Book",
+        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith" }],
+      };      
+      
+      mockUpdateBookCommandHandler.handle.mockResolvedValue(updatedBook);
+      
+      const req = createMockRequest({ id });
+      req.body = updateBookDto;
+      const res = httpMocks.createResponse();
+      
+      await sut.updateBook(req, res);
+      
+      expect(mockUpdateBookCommandHandler.handle).toHaveBeenCalledWith(new UpdateBookCommand(updateBookDto));
+      expect(res.statusCode).toBe(200);
+      expect(res._getData()).toEqual(JSON.stringify(updatedBook));
+    });
+
+    it('should return the correct error upon hard exception', async () => {
+      const id = "41ca7c11-87d8-4d18-b210-74099094ec31";
+      const updateBookDto: UpdateBookDto =  {
+        id: id,
+        name: "Update Book",
+        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith" }],
+      };
+
+      mockUpdateBookCommandHandler.handle.mockRejectedValue(new Error('Whoops! There was a Cosmos Error!'));
+
+      const req = createMockRequest({ id });
+      req.body = updateBookDto;
+      const res = httpMocks.createResponse();
+
+      await sut.updateBook(req, res);
+
+      expect(res.statusCode).toBe(500);
+      expect(res._getData()).toEqual(JSON.stringify({ error: 'Failed to update book' }));
     });
   });
 
