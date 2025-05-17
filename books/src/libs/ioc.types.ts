@@ -8,6 +8,10 @@ const TYPES = {
     BookContainer: Symbol.for('BookContainer'),
     AuthorContainer: Symbol.for('AuthorContainer'),
     AppConfig: Symbol.for('AppConfig'),
+    UpdateBookValidator: Symbol.for('UpdateBookValidator'),
+    UpdateBookCommandHandler: Symbol.for("UpdateBookCommandHandler"),    
+    DeleteBookValidator: Symbol.for('DeleteBookValidator'),
+    DeleteBookCommandHandler: Symbol.for("DeleteBookCommandHandler"),
 };
 
 export default TYPES;

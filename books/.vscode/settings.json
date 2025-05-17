@@ -6,7 +6,8 @@
         "_test_": "Test",
         "fixtures": "Snippet",
         "queries": "Quasar",
-        "features": "Home"
+        "features": "Home",
+        "cqrs": "Link"
     },
     "material-icon-theme.files.associations": {
         "*.query.ts": "Sequelize",

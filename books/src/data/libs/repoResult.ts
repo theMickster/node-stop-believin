@@ -1,7 +1,7 @@
 export interface RepoResult<T> {
   success: boolean;
-  data?: T;
-  error?: string;
+  data?: T | null;
+  error?: string | null;
 }
 
 export const repoOk = <T>(data: T): RepoResult<T> => ({

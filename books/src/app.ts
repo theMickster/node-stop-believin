@@ -1,10 +1,9 @@
 import express from 'express';
-import { bookRoutes } from './routes/book.route';
+import { bookRoutes } from './routes/book.routes';
 import { errorHandler } from './middleware/errorHandler';
 import bodyParser from 'body-parser';
 
 const app = express();
-
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

@@ -1,10 +1,10 @@
-import { ReadBookQueryHandler } from './readBook.query.handler';
-import { BookRepository } from '../../../data/repos/bookRepository';
-import { fakeBooks } from '@fixtures/books';
-import { Book } from 'data/entities/book';
-import { RepoResult } from 'data/libs/repoResult';
+import { Book } from "@data/entities/book";
+import { RepoResult } from "@data/libs/repoResult";
+import { BookRepository } from "@data/repos/bookRepository";
+import { fakeBooks } from "@fixtures/books";
+import { ReadBookQueryHandler } from "./readBook.query.handler";
 
-jest.mock('../../../data/repos/bookRepository');
+jest.mock('@data/repos/bookRepository');
 
 describe('ReadBookQueryHandler', () => {
       let mockBookRepository: jest.Mocked<BookRepository>;
@@ -41,7 +41,7 @@ describe('ReadBookQueryHandler', () => {
       });
 
       it('should throw an error if the book is not found', async () => {
-        const notFoundResult: RepoResult<Book> = {success: false, data: undefined, error: 'Book not found'};
+        const notFoundResult: RepoResult<Book> = {success: false, data: null, error: 'Book not found'};
         mockBookRepository.getById.mockResolvedValue(notFoundResult);
         
         await expect(sut.handle(query)).rejects.toThrow('Book not found');
@@ -49,7 +49,7 @@ describe('ReadBookQueryHandler', () => {
       });
 
       it('should throw a generic error if repository fails without message', async () => {
-        mockBookRepository.getById.mockResolvedValue({success: false, data: undefined, error: undefined});        
+        mockBookRepository.getById.mockResolvedValue({success: false, data: null, error: null});        
     
         await expect(sut.handle(query)).rejects.toThrow('Failed to retrieve books');
         expect(mockBookRepository.getById).toHaveBeenCalledWith(query.id);

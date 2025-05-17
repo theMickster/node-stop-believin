@@ -1,13 +1,14 @@
-import { Book } from '../entities/book';
-import { mapCosmosDocumentToBook } from '../mapping/bookMappers';
-import { BookRepository } from '../repos/bookRepository';
 import { Container as CosmosContainer } from '@azure/cosmos';
+import { Book } from '@data/entities/book';
+import { repoOk } from '@data/libs/repoResult';
+import { mapCosmosDocumentToBook } from '@data/mapping/bookMappers';
 import { fakeCosmicBooks } from '@fixtures/books';
+import { BookRepository } from './bookRepository';
+
 
 describe('BookRepository', () => {
   let sut: BookRepository;
   let mockContainer: jest.Mocked<CosmosContainer>;
-
   
   beforeEach(() => {
     jest.clearAllMocks();
@@ -102,4 +103,95 @@ describe('BookRepository', () => {
       expect(mockContainer.items.create).toHaveBeenCalledWith(inputBook);
     });
   });
+
+  describe  ('update', () => {
+    it('should update a book and return valid entity', async () => {
+      const inputBook: Book = {
+        id: '10000000-0000-0000-0000-000000000001',
+        bookId: '10000000-0000-0000-0000-000000000001',
+        name: 'Book 1',
+        entityType: 'Book',
+        authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname' }],
+      };
+
+      const replace = jest.fn().mockResolvedValue({ resource: inputBook });
+      (mockContainer.item as jest.Mock).mockReturnValue({ replace });
+
+      const result = await sut.update(inputBook);
+
+      expect(result).toEqual(repoOk(inputBook));
+      expect(mockContainer.item).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return fail result when Cosmos DB throws', async () => {
+      const inputBook: Book = {
+        id: '10000000-0000-0000-0000-000000000001',
+        bookId: '10000000-0000-0000-0000-000000000001',
+        name: 'Book 1',
+        entityType: 'Book',
+        authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname' }],
+      };
+
+      const replace = jest.fn().mockRejectedValue({ code: 500 });
+      (mockContainer.item as jest.Mock).mockReturnValue({ replace });
+
+      const result = await sut.update(inputBook);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to update book');
+      expect(mockContainer.item).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return not found when Cosmos DB responds 404', async () => {
+      const inputBook: Book = {
+        id: '10000000-0000-0000-0000-000000000001',
+        bookId: '10000000-0000-0000-0000-000000000001',
+        name: 'Book 1',
+        entityType: 'Book',
+        authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname' }],
+      };
+
+      const replace = jest.fn().mockRejectedValue({ code: 404 });
+      (mockContainer.item as jest.Mock).mockReturnValue({ replace });
+
+      const result = await sut.update(inputBook);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Book not found');
+      expect(mockContainer.item).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe  ('delete', () => {
+    it('should return success when book is deleted', async () => {
+      const del = jest.fn().mockResolvedValue({});
+      (mockContainer.item as jest.Mock).mockReturnValue({ delete: del });
+
+      const result = await sut.delete('book-id-123');
+
+      expect(result).toEqual(repoOk(undefined));
+      expect(mockContainer.item).toHaveBeenCalledWith('book-id-123', ['book-id-123', 'Book']);
+    });
+
+    it('should return not found if book does not exist', async () => {
+      const del = jest.fn().mockRejectedValue({ code: 404 });
+      (mockContainer.item as jest.Mock).mockReturnValue({ delete: del });
+
+      const result = await sut.delete('book-id-123');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Book not found');
+    });
+
+    it('should return fail result on unknown error', async () => {
+      const del = jest.fn().mockRejectedValue({ code: 500 });
+      (mockContainer.item as jest.Mock).mockReturnValue({ delete: del });
+
+      const result = await sut.delete('book-id-123');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to delete book');
+    });
+  });
+
 });

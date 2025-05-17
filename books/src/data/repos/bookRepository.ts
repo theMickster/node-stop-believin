@@ -1,9 +1,9 @@
 import { Container as CosmosContainer, ItemResponse } from '@azure/cosmos';
-import { Book } from '../entities/book';
+import { Book } from '@data/entities/book';
+import { RepoResult, repoOk, repoFail } from '@data/libs/repoResult';
+import { mapCosmosDocumentToBook } from '@data/mapping/bookMappers';
+import TYPES from '@libs/ioc.types';
 import { inject, injectable } from 'inversify';
-import TYPES from '../../libs/ioc.types';
-import { mapCosmosDocumentToBook } from '../mapping/bookMappers';
-import { repoFail, repoOk, RepoResult } from '../libs/repoResult';
 
 @injectable()
 export class BookRepository {
@@ -52,6 +52,34 @@ export class BookRepository {
       return repoOk(mapCosmosDocumentToBook(createdItem));
     } catch {
       return repoFail('Failed to create book');
+    }
+  }
+
+  async update(book: Book): Promise<RepoResult<Book>> {
+    try {
+      const { resource: updatedItem } = await this.container.item(book.id, [book.id, 'Book']).replace(book);
+      if (!updatedItem) {
+        return repoFail('Failed to update book');
+      }      
+      return repoOk(mapCosmosDocumentToBook(updatedItem));
+    }
+    catch (err: any) {
+      if (err.code === 404) {
+        return repoFail('Book not found');
+      }
+      return repoFail('Failed to update book');
+    }
+  }
+
+  async delete(id: string): Promise<RepoResult<void>> {
+    try {
+      await this.container.item(id, [id, 'Book']).delete();
+      return repoOk(undefined);
+    } catch (err: any) {
+      if (err.code === 404) {
+        return repoFail('Book not found');
+      }
+      return repoFail('Failed to delete book');
     }
   }
 }
