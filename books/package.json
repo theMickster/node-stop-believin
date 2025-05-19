@@ -1,5 +1,5 @@
 {
-  "name": "express-books-api",
+  "name": "cosmic-books-api",
   "version": "1.0.0",
   "description": "A Node.js Express API for managing books with Azure Cosmos DB",
   "main": "dist/server.js",
@@ -23,12 +23,15 @@
   "dependencies": {
     "@azure/cosmos": "^4.3.0",
     "@azure/identity": "^4.9.1",
+    "applicationinsights": "^3.7.0",
     "body-parser": "^2.2.0",
     "inversify": "^7.5.1",
     "joi": "^17.13.3",
     "module-alias": "^2.2.3",
     "reflect-metadata": "^0.2.2",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "winston": "^3.17.0",
+    "winston-azure-application-insights": "^4.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",
