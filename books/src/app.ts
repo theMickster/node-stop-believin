@@ -2,6 +2,7 @@ import express from 'express';
 import { bookRoutes } from './routes/book.routes';
 import { errorHandler } from './middleware/errorHandler';
 import bodyParser from 'body-parser';
+import './libs/logging/telemetry'; 
 
 const app = express();
 

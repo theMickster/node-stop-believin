@@ -14,15 +14,12 @@ import { UpdateBookValidator } from '@features/book/validators/updateBook.valida
 import { UpdateBookCommandHandler } from '@features/book/commands/updateBook.command.handler';
 import { ILogger } from './logging/logger.interface';
 import { WinstonLogger } from './logging/winston.logger';
-import { AppInsightsLogger } from './logging/appInsights.logger';
 import { CosmicLogger } from './logging/cosmic.logger';
 
 const container = new Container();
 
 container.bind<typeof config>(TYPES.AppConfig).toConstantValue(config);
-
 container.bind<ILogger>(TYPES.WinstonLogger).to(WinstonLogger).inSingletonScope();
-container.bind<ILogger>(TYPES.AppInsightsLogger).to(AppInsightsLogger).inSingletonScope();
 container.bind<ILogger>(TYPES.Logger).to(CosmicLogger).inSingletonScope();
 
 container

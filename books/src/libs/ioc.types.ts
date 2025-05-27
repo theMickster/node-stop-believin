@@ -1,7 +1,6 @@
 const TYPES = {
     AppConfig: Symbol.for('AppConfig'),
     WinstonLogger: Symbol.for('WinstonLogger'),
-    AppInsightsLogger: Symbol.for('AppInsightsLogger'),    
     Logger: Symbol.for('Logger'),
     BookRepository: Symbol.for("BookRepository"),
     ReadBookListHandler: Symbol.for("ReadBookListHandler"),
