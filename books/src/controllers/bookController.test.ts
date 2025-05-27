@@ -10,6 +10,7 @@ import { ReadBookListQuery } from "@features/book/queries/readBookList.query";
 import { fakeBooks } from "@fixtures/books";
 import { ICommandHandler } from "@libs/cqrs/commandHandler";
 import { IQueryHandler } from "@libs/cqrs/queryHandler";
+import { ILogger } from "@libs/logging/logger.interface";
 import { Request as ExpressRequest } from 'express';
 import { mock, mockReset } from 'jest-mock-extended';
 import httpMocks from 'node-mocks-http';
@@ -20,7 +21,8 @@ describe('BookController', () => {
   const mockCreateBookCommandHandler = mock<ICommandHandler<CreateBookCommand, Book>>();
   const mockDeleteBookCommandHandler = mock<ICommandHandler<DeleteBookCommand, void>>();
   const mockUpdateBookCommandHandler = mock<ICommandHandler<UpdateBookCommand, Book>>();
-
+  const mockLogger = mock<ILogger>();
+  
   let sut: BookController;  
 
   const createMockRequest = (params: any = {}, body: any = {}, query: any = {}) => {
@@ -44,7 +46,8 @@ describe('BookController', () => {
       mockReadBookHandler,
       mockCreateBookCommandHandler,
       mockDeleteBookCommandHandler,
-      mockUpdateBookCommandHandler
+      mockUpdateBookCommandHandler,
+      mockLogger
     );    
   });
 
@@ -74,6 +77,7 @@ describe('BookController', () => {
       expect(res.statusCode).toBe(500);
       const responseData = JSON.parse(res._getData());
       expect(responseData).toEqual({ message: 'Failed to list books' });
+      expect(mockLogger.error).toHaveBeenCalledWith('Failed to fetch book list', { error: 'Whoops! There was a Cosmos Error!' });
     });
 
   });
@@ -109,6 +113,7 @@ describe('BookController', () => {
       expect(res.statusCode).toBe(404);
       const responseData = JSON.parse(res._getData());
       expect(responseData).toEqual({ error: 'Book not found' });
+      expect(mockLogger.error).toHaveBeenCalledTimes(1);
     });
 
     it('should return the correct error upon hard exception', async () => {
@@ -123,6 +128,7 @@ describe('BookController', () => {
       expect(res.statusCode).toBe(500);
       const responseData = JSON.parse(res._getData());
       expect(responseData).toEqual({ error: 'Failed to retrieve book' });
+      expect(mockLogger.error).toHaveBeenCalledWith('Failed to retrieve book', { error: 'Whoops! There was a Cosmos Error!', bookId });
     });
   });
 
@@ -170,6 +176,7 @@ describe('BookController', () => {
       expect(res.statusCode).toBe(500);
       const responseData = JSON.parse(res._getData());
       expect(responseData).toEqual({ message: "Failed to create book" });
+      expect(mockLogger.error).toHaveBeenCalledWith('Failed to create book', { error: 'Whoops! There was a Cosmos Error!' });
     });
   });
 
@@ -190,10 +197,6 @@ describe('BookController', () => {
       expect(res._getData()).toBe("");
     });
 
-    it('should return correct error when book not found', async () => {
-
-    });
-
     it('should return the correct error upon hard exception', async () => {
       const id = "40fb8622-652d-4edb-b665-1d97a5374b67";
       mockDeleteBookCommandHandler.handle.mockRejectedValue(new Error("Some Delete error"));
@@ -206,6 +209,7 @@ describe('BookController', () => {
       expect(res.statusCode).toBe(500);
       const responseData = JSON.parse(res._getData());
       expect(responseData).toEqual({ error: "Failed to delete book" });
+      expect(mockLogger.error).toHaveBeenCalledWith('Failed to delete book', { error: 'Some Delete error', bookId: id });
     });
   });
 
@@ -257,6 +261,7 @@ describe('BookController', () => {
 
       expect(res.statusCode).toBe(500);
       expect(res._getData()).toEqual(JSON.stringify({ error: 'Failed to update book' }));
+      expect(mockLogger.error).toHaveBeenCalledWith('Failed to update book', { error: 'Whoops! There was a Cosmos Error!' });
     });
   });
 

@@ -3,6 +3,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
+  setupFiles: ['<rootDir>/src/_test_/jest.setup.ts'],
   moduleDirectories : ['node_modules', 'src'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   moduleNameMapper: {
@@ -30,6 +31,7 @@ module.exports = {
     '!src/config/config.ts',
     '!src/libs/ioc.container.ts',
     '!src/libs/ioc.types.ts',
+    '!src/libs/logging/**',
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
