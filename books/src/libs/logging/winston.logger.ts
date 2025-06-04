@@ -3,6 +3,7 @@ import winston from 'winston';
 import { ILogger } from './logger.interface';
 import config from '../../config/config';
 import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
+import path from 'path';
 
 @injectable()
 export class WinstonLogger implements ILogger {
@@ -16,10 +17,31 @@ export class WinstonLogger implements ILogger {
       Environment: config.environment.toUpperCase(),
     };
 
+    const transports: winston.transport[] = [];
+
+    if (config.environment === 'development') {
+      transports.push(new winston.transports.Console({
+        format: winston.format.combine(
+          winston.format.colorize(),
+          winston.format.simple()
+        ),
+      }));      
+      transports.push(new winston.transports.File({
+        filename: path.join(process.cwd(), 'logs', 'app.log'),
+        level: config.logLevel,
+        format: winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.json()
+        ),
+      }));
+    } 
+
+    transports.push(new OpenTelemetryTransportV3({ format: winston.format.json() }));
+
     this.logger = winston.createLogger({
-      level: 'debug',
+      level: config.logLevel,
       format: winston.format.combine(winston.format.timestamp(), winston.format.prettyPrint()),
-      transports: [new winston.transports.Console(), new OpenTelemetryTransportV3({format: winston.format.json()})],
+      transports: transports,
     });
   }
 

@@ -2,7 +2,9 @@ import express from 'express';
 import { bookRoutes } from './routes/book.routes';
 import { errorHandler } from './middleware/errorHandler';
 import bodyParser from 'body-parser';
-import './libs/logging/telemetry'; 
+import {initializeTelemetry } from './libs/logging/telemetry'; 
+
+initializeTelemetry();
 
 const app = express();
 

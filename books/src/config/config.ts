@@ -14,6 +14,8 @@ interface Config {
     port: number;
     appInsightsConnectionString: string;
     environment: string;
+    logLevel: string;
+    serverName: string;
 }
 
 const config: Config = {
@@ -28,6 +30,8 @@ const config: Config = {
     nodeEnv: process.env.NODE_ENV ?? 'development',
     appInsightsConnectionString: process.env.ShawskyApplicationInsights ?? '',
     environment: process.env.NODE_ENV ?? 'development',
+    logLevel: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'development' ? 'debug' : 'info'),
+    serverName: process.env.SERVER_NAME ?? 'localhost',
 };
 
 export default config;
