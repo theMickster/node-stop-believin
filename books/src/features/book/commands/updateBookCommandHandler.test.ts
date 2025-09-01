@@ -1,11 +1,13 @@
 import { Book } from '@data/entities/book.entity';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
-import { BookRepository } from '@data/repos/bookRepository';
+import { BookRepository } from '@data/repos/book.repository';
 import { repoOk, repoFail } from '@data/libs/repoResult';
 import { UpdateBookCommandHandler } from './updateBook.command.handler';
 import { UpdateBookCommand } from './updateBook.command';
 import { UpdateBookValidator } from '../validators/updateBook.validator';
 import { UpdateBookDto } from '@features/book/models/updateBookDto';
+import { isCommandFail, isCommandOk } from '@libs/cqrs/commandResult';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
 import { mock, mockReset } from 'jest-mock-extended';
 
 describe('UpdateBookCommandHandler', () => {
@@ -62,8 +64,12 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(updatedBook);
+      expect(isCommandOk(result)).toBe(true);
+
+      if (isCommandOk(result)) {
+        expect(result.data).toEqual(updatedBook);
+      }
+
       expect(mockValidator.validate).toHaveBeenCalledWith(validUpdateDto);
       expect(mockBookRepository.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -189,9 +195,11 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result).toHaveProperty('success', true);
-      expect(result).toHaveProperty('data');
-      expect(result.data).toEqual(updatedBook);
+      expect(isCommandOk(result)).toBe(true);
+
+      if (isCommandOk(result)) {
+        expect(result.data).toEqual(updatedBook);
+      }
     });
 
     it('should return CommandResult with failure when validation fails', async () => {
@@ -204,9 +212,13 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Validation error: Book name is required');
-      expect(result.code).toBe('ValidationError');
+      expect(isCommandFail(result)).toBe(true);
+
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+        expect(result.error.message).toBe('Validation error: Book name is required');
+      }
+
       expect(mockBookRepository.update).not.toHaveBeenCalled();
     });
 
@@ -220,8 +232,11 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Validation error: Author ID must be a valid GUID');
+      expect(isCommandFail(result)).toBe(true);
+
+      if (isCommandFail(result)) {
+        expect(result.error.message).toBe('Validation error: Author ID must be a valid GUID');
+      }
     });
 
     it('should not call repository when validation fails', async () => {
@@ -237,31 +252,49 @@ describe('UpdateBookCommandHandler', () => {
       expect(mockBookRepository.update).not.toHaveBeenCalled();
     });
 
-    it('should throw error when repository update fails', async () => {
+    it('should return CommandResult with error when repository update fails', async () => {
       const command = new UpdateBookCommand(validUpdateDto);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.update.mockResolvedValue(repoFail('Database connection failed', 500));
 
-      await expect(sut.handle(command)).rejects.toThrow('Database connection failed');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+
+      if (isCommandFail(result)) {
+        expect(result.error.message).toBe('Database connection failed');
+      }
     });
 
-    it('should throw error when repository returns no data', async () => {
+    it('should return CommandResult with error when repository returns no data', async () => {
       const command = new UpdateBookCommand(validUpdateDto);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.update.mockResolvedValue(repoOk(null as any));
 
-      await expect(sut.handle(command)).rejects.toThrow('Unknown error updating book');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+
+      if (isCommandFail(result)) {
+        expect(result.error.message).toBe('Unknown error updating book');
+      }
     });
 
-    it('should throw error when repository returns unsuccessful result with no error message', async () => {
+    it('should return CommandResult with error when repository returns unsuccessful result with no error message', async () => {
       const command = new UpdateBookCommand(validUpdateDto);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.update.mockResolvedValue(repoFail(null as any, 500));
 
-      await expect(sut.handle(command)).rejects.toThrow('Unknown error updating book');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+
+      if (isCommandFail(result)) {
+        expect(result.error.message).toBe('Unknown error updating book');
+      }
     });
 
     it('should handle validation error for missing book ID', async () => {
@@ -274,8 +307,11 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Book ID is required');
+      expect(isCommandFail(result)).toBe(true);
+
+      if (isCommandFail(result)) {
+        expect(result.error.message).toContain('Book ID is required');
+      }
     });
 
     it('should handle validation error for invalid book ID format', async () => {
@@ -288,8 +324,11 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Book ID must be a valid guid');
+      expect(isCommandFail(result)).toBe(true);
+
+      if (isCommandFail(result)) {
+        expect(result.error.message).toContain('Book ID must be a valid guid');
+      }
     });
 
     it('should handle validation error for missing authors', async () => {
@@ -302,8 +341,11 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('At least one author is required');
+      expect(isCommandFail(result)).toBe(true);
+
+      if (isCommandFail(result)) {
+        expect(result.error.message).toContain('At least one author is required');
+      }
     });
 
     it('should handle validation error for author name too short', async () => {
@@ -316,8 +358,11 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('First name must be at least 2 characters');
+      expect(isCommandFail(result)).toBe(true);
+
+      if (isCommandFail(result)) {
+        expect(result.error.message).toContain('First name must be at least 2 characters');
+      }
     });
 
     it('should handle validation error for invalid author order', async () => {
@@ -330,8 +375,11 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Order must be at least 1');
+      expect(isCommandFail(result)).toBe(true);
+
+      if (isCommandFail(result)) {
+        expect(result.error.message).toContain('Order must be at least 1');
+      }
     });
 
     it('should handle book not found from validator', async () => {
@@ -344,8 +392,11 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('does not exist');
+      expect(isCommandFail(result)).toBe(true);
+
+      if (isCommandFail(result)) {
+        expect(result.error.message).toContain('does not exist');
+      }
     });
 
     it('should preserve author order in mapped book', async () => {

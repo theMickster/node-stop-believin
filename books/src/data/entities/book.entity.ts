@@ -1,4 +1,4 @@
-import { BookAuthor } from './book-author.type';
+import { AuthorRole } from './metadata/authorRole.type';
 import { BaseEntity, PartitionedEntity, SoftDeletable, Versionable } from './base/entity-traits';
 import { Rateable, Taggable } from './base/behavioral-traits';
 import { ENTITY_TYPES } from './base/entity-types';
@@ -70,6 +70,19 @@ export interface ExternalIds {
   googleBooksId?: string;
   openLibraryId?: string;
   goodreadsId?: string;
+}
+
+/**
+ * BookAuthor - embedded type for denormalized author information in Book entity
+ * This is NOT a separate document, but a composed type within the Book document
+ */
+export interface BookAuthor {
+  authorId: string;
+  firstName: string;
+  lastName: string;
+  displayName?: string;
+  role?: AuthorRole;
+  order: number;
 }
 
 /**

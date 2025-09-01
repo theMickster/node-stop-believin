@@ -2,9 +2,8 @@ import { Container as CosmosContainer } from '@azure/cosmos';
 import { Book } from '@data/entities/book.entity';
 import { repoOk } from '@data/libs/repoResult';
 import { fakeCosmicBooks } from '@fixtures/books';
-import { BookRepository } from './bookRepository';
+import { BookRepository } from './book.repository';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
-
 
 describe('BookRepository', () => {
   let sut: BookRepository;
@@ -75,16 +74,19 @@ describe('BookRepository', () => {
 
   describe('getById', () => {
     it('should return valid book by unique id', async () => {
-        const bookId = '00000000-0000-0000-0000-000000000007';
-        const book = fakeCosmicBooks.find(b => b.id === bookId);
-        const readMock = jest.fn().mockResolvedValue({ resource: book });
+      const bookId = '00000000-0000-0000-0000-000000000007';
+      const book = fakeCosmicBooks.find((b) => b.id === bookId);
+      const readMock = jest.fn().mockResolvedValue({ resource: book });
 
-        (mockContainer.item as jest.Mock).mockReturnValue({ read: readMock });
+      (mockContainer.item as jest.Mock).mockReturnValue({ read: readMock });
 
-        const result = await sut.getById('00000000-0000-0000-0000-000000000007');
-        expect(result.success).toBe(true);
-        expect(mockContainer.item).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000007', ['00000000-0000-0000-0000-000000000007', ENTITY_TYPES.BOOK]);
-        expect(result.data).toEqual(book);
+      const result = await sut.getById('00000000-0000-0000-0000-000000000007');
+      expect(result.success).toBe(true);
+      expect(mockContainer.item).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000007', [
+        '00000000-0000-0000-0000-000000000007',
+        ENTITY_TYPES.BOOK,
+      ]);
+      expect(result.data).toEqual(book);
     });
 
     it('should return fail result when resource is undefined', async () => {
@@ -373,5 +375,4 @@ describe('BookRepository', () => {
       });
     });
   });
-
 });

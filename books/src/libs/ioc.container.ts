@@ -3,16 +3,20 @@ import TYPES from './ioc.types';
 import { default as config } from '../config/config';
 import { CosmosClient, Container as CosmosContainer } from '@azure/cosmos';
 import { DefaultAzureCredential } from '@azure/identity';
-import { BookController } from '@controllers/book.controller';
-import { BookPublishController } from '@controllers/bookPublish.controller';
-import { BookClassifyController } from '@controllers/bookClassify.controller';
-import { BookRepository } from '@data/repos/bookRepository';
+import { AuthorController } from '@features/author/controllers/author.controller';
+import { BookController } from '@features/book/controllers/book.controller';
+import { BookPublishController } from '@features/book/controllers/publish/bookPublish.controller';
+import { BookClassifyController } from '@features/book/controllers/classify/bookClassify.controller';
+import { BookRepository } from '@data/repos/book.repository';
+import { AuthorRepository } from '@data/repos/author.repository';
 import { CreateBookCommandHandler } from '@features/book/commands/createBook.command.handler';
 import { DeleteBookCommandHandler } from '@features/book/commands/deleteBook.command.handler';
 import { PublishBookCommandHandler } from '@features/book/commands/publishBook.command.handler';
 import { UpdatePublicationCommandHandler } from '@features/book/commands/updatePublication.command.handler';
 import { ClassifyBookCommandHandler } from '@features/book/commands/classifyBook.command.handler';
 import { UpdateClassificationCommandHandler } from '@features/book/commands/updateClassification.command.handler';
+import { ReadAuthorQueryHandler } from '@features/author/queries/readAuthor.query.handler';
+import { ReadAuthorListQueryHandler } from '@features/author/queries/readAuthorList.query.handler';
 import { ReadBookQueryHandler } from '@features/book/queries/readBook.query.handler';
 import { ReadBookListQueryHandler } from '@features/book/queries/readBookList.query.handler';
 import { DeleteBookValidator } from '@features/book/validators/deleteBook.validator';
@@ -66,8 +70,11 @@ container
 
 // Bind Repositories
 container.bind<BookRepository>(TYPES.BookRepository).to(BookRepository);
+container.bind<AuthorRepository>(TYPES.AuthorRepository).to(AuthorRepository);
 
 // Bind Query Handlers
+container.bind<ReadAuthorListQueryHandler>(TYPES.ReadAuthorListHandler).to(ReadAuthorListQueryHandler);
+container.bind<ReadAuthorQueryHandler>(TYPES.ReadAuthorHandler).to(ReadAuthorQueryHandler);
 container.bind<ReadBookListQueryHandler>(TYPES.ReadBookListHandler).to(ReadBookListQueryHandler);
 container.bind<ReadBookQueryHandler>(TYPES.ReadBookHandler).to(ReadBookQueryHandler);
 
@@ -89,6 +96,7 @@ container.bind<DeleteBookValidator>(TYPES.DeleteBookValidator).to(DeleteBookVali
 container.bind<UpdateBookValidator>(TYPES.UpdateBookValidator).to(UpdateBookValidator);
 
 // Bind Controllers
+container.bind<AuthorController>(TYPES.AuthorController).to(AuthorController);
 container.bind<BookController>(TYPES.BookController).to(BookController);
 container.bind<BookPublishController>(TYPES.BookPublishController).to(BookPublishController);
 container.bind<BookClassifyController>(TYPES.BookClassifyController).to(BookClassifyController);

@@ -1,10 +1,12 @@
 import { Book } from '@data/entities/book.entity';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
-import { BookRepository } from '@data/repos/bookRepository';
+import { BookRepository } from '@data/repos/book.repository';
 import { repoOk, repoFail } from '@data/libs/repoResult';
 import { ClassifyBookCommandHandler } from './classifyBook.command.handler';
 import { ClassifyBookCommand } from './classifyBook.command';
 import { mock, mockReset } from 'jest-mock-extended';
+import { isCommandOk, isCommandFail } from '@libs/cqrs/commandResult';
+import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 
 describe('ClassifyBookCommandHandler', () => {
   const mockBookRepository = mock<BookRepository>();
@@ -52,11 +54,14 @@ describe('ClassifyBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.libraryClassification).toEqual({
-        deweyDecimal: '813.6',
-        libraryOfCongressNumber: 'PZ7.R79835',
-        oclcNumber: '123456789',
-      });
+      expect(isCommandOk(result)).toBe(true);
+      if (isCommandOk(result)) {
+        expect(result.data.libraryClassification).toEqual({
+          deweyDecimal: '813.6',
+          libraryOfCongressNumber: 'PZ7.R79835',
+          oclcNumber: '123456789',
+        });
+      }
       expect(mockBookRepository.update).toHaveBeenCalledWith(
         expect.objectContaining({
           libraryClassification: {
@@ -87,9 +92,12 @@ describe('ClassifyBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.libraryClassification).toEqual({
-        deweyDecimal: '813.6',
-      });
+      expect(isCommandOk(result)).toBe(true);
+      if (isCommandOk(result)) {
+        expect(result.data.libraryClassification).toEqual({
+          deweyDecimal: '813.6',
+        });
+      }
     });
 
     it('should classify book with only Library of Congress number', async () => {
@@ -110,9 +118,12 @@ describe('ClassifyBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.libraryClassification).toEqual({
-        libraryOfCongressNumber: 'PZ7.R79835',
-      });
+      expect(isCommandOk(result)).toBe(true);
+      if (isCommandOk(result)) {
+        expect(result.data.libraryClassification).toEqual({
+          libraryOfCongressNumber: 'PZ7.R79835',
+        });
+      }
     });
 
     it('should classify book with only OCLC number', async () => {
@@ -133,9 +144,12 @@ describe('ClassifyBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.libraryClassification).toEqual({
-        oclcNumber: '123456789',
-      });
+      expect(isCommandOk(result)).toBe(true);
+      if (isCommandOk(result)) {
+        expect(result.data.libraryClassification).toEqual({
+          oclcNumber: '123456789',
+        });
+      }
     });
 
     it('should increment book version', async () => {
@@ -179,33 +193,54 @@ describe('ClassifyBookCommandHandler', () => {
       );
     });
 
-    it('should throw error when validation fails', async () => {
+    it('should return error when validation fails', async () => {
       const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {});
 
-      await expect(sut.handle(command)).rejects.toThrow('Validation failed');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+        expect(result.error.message).toContain('At least one classification field');
+        expect(result.error.statusCode).toBe(HttpStatus.BAD_REQUEST);
+      }
     });
 
-    it('should throw error when book not found', async () => {
+    it('should return error when book not found', async () => {
       const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         deweyDecimal: '813.6',
       });
 
       mockBookRepository.getById.mockResolvedValue(repoFail('Book not found', 404));
 
-      await expect(sut.handle(command)).rejects.toThrow('Book not found');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
+        expect(result.error.message).toBe('Book not found');
+        expect(result.error.statusCode).toBe(HttpStatus.NOT_FOUND);
+      }
     });
 
-    it('should throw error when repository returns no data', async () => {
+    it('should return error when repository returns no data', async () => {
       const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         deweyDecimal: '813.6',
       });
 
       mockBookRepository.getById.mockResolvedValue(repoOk(null as any));
 
-      await expect(sut.handle(command)).rejects.toThrow('Book not found');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
+        expect(result.error.message).toBe('Book not found');
+        expect(result.error.statusCode).toBe(HttpStatus.NOT_FOUND);
+      }
     });
 
-    it('should throw error when update fails', async () => {
+    it('should return error when update fails', async () => {
       const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         deweyDecimal: '813.6',
       });
@@ -213,10 +248,17 @@ describe('ClassifyBookCommandHandler', () => {
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(repoFail('Database error', 500));
 
-      await expect(sut.handle(command)).rejects.toThrow('Database error');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
+        expect(result.error.message).toBe('Database error');
+        expect(result.error.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     });
 
-    it('should throw error when update returns no data', async () => {
+    it('should return error when update returns no data', async () => {
       const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         deweyDecimal: '813.6',
       });
@@ -224,25 +266,44 @@ describe('ClassifyBookCommandHandler', () => {
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(repoOk(null as any));
 
-      await expect(sut.handle(command)).rejects.toThrow('Failed to classify book');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
+        expect(result.error.message).toBe('Failed to classify book');
+        expect(result.error.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     });
 
-    it('should throw error with invalid Dewey Decimal format', async () => {
+    it('should return error with invalid Dewey Decimal format', async () => {
       const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         deweyDecimal: '81.3',
       });
 
-      await expect(sut.handle(command)).rejects.toThrow('Validation failed');
-      await expect(sut.handle(command)).rejects.toThrow('Dewey Decimal must be in format XXX.XX');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+        expect(result.error.message).toContain('Dewey Decimal must be in format XXX.XX');
+        expect(result.error.statusCode).toBe(HttpStatus.BAD_REQUEST);
+      }
     });
 
-    it('should throw error with invalid OCLC number', async () => {
+    it('should return error with invalid OCLC number', async () => {
       const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         oclcNumber: '123-456',
       });
 
-      await expect(sut.handle(command)).rejects.toThrow('Validation failed');
-      await expect(sut.handle(command)).rejects.toThrow('OCLC number must contain only digits');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+        expect(result.error.message).toContain('OCLC number must contain only digits');
+        expect(result.error.statusCode).toBe(HttpStatus.BAD_REQUEST);
+      }
     });
   });
 });

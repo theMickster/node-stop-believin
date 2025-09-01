@@ -1,4 +1,4 @@
-import { BookClassifyController } from '@controllers/bookClassify.controller';
+import { BookClassifyController } from '@features/book/controllers/classify/bookClassify.controller';
 import { Book } from '@data/entities/book.entity';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { ClassifyBookCommand } from '@features/book/commands/classifyBook.command';
@@ -6,6 +6,8 @@ import { UpdateClassificationCommand } from '@features/book/commands/updateClass
 import { ClassifyBookDto } from '@features/book/models/classifyBookDto';
 import { UpdateClassificationDto } from '@features/book/models/updateClassificationDto';
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
+import { commandOk, commandFail } from '@libs/cqrs/commandResult';
+import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import { ILogger } from '@libs/logging/logger.interface';
 import { Request } from 'express';
 import { mock, mockReset } from 'jest-mock-extended';
@@ -72,7 +74,7 @@ describe('BookClassifyController', () => {
     };
 
     it('should classify a book successfully', async () => {
-      mockClassifyBookCommandHandler.handle.mockResolvedValue(classifiedBook);
+      mockClassifyBookCommandHandler.handle.mockResolvedValue(commandOk(classifiedBook));
       const req = createMockClassifyRequest({ id: bookId }, classifyBookDto);
       const res = httpMocks.createResponse();
 
@@ -100,7 +102,7 @@ describe('BookClassifyController', () => {
           deweyDecimal: '813.6',
         },
       };
-      mockClassifyBookCommandHandler.handle.mockResolvedValue(book);
+      mockClassifyBookCommandHandler.handle.mockResolvedValue(commandOk(book));
       const req = createMockClassifyRequest({ id: bookId }, dto);
       const res = httpMocks.createResponse();
 
@@ -113,7 +115,9 @@ describe('BookClassifyController', () => {
     });
 
     it('should return 404 when book is not found', async () => {
-      mockClassifyBookCommandHandler.handle.mockRejectedValue(new Error('Book not found'));
+      mockClassifyBookCommandHandler.handle.mockResolvedValue(
+        commandFail(ErrorCodes.BOOK_NOT_FOUND, 'Book not found', HttpStatus.NOT_FOUND),
+      );
       const req = createMockClassifyRequest({ id: bookId }, classifyBookDto);
       const res = httpMocks.createResponse();
 
@@ -124,11 +128,13 @@ describe('BookClassifyController', () => {
       );
       expect(res.statusCode).toBe(404);
       const responseData = JSON.parse(res._getData());
-      expect(responseData.error).toBe('Book not found');
+      expect(responseData.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
     });
 
     it('should return 500 on general error', async () => {
-      mockClassifyBookCommandHandler.handle.mockRejectedValue(new Error('Database connection failed'));
+      mockClassifyBookCommandHandler.handle.mockResolvedValue(
+        commandFail(ErrorCodes.DATABASE_ERROR, 'Database connection failed', HttpStatus.INTERNAL_SERVER_ERROR),
+      );
       const req = createMockClassifyRequest({ id: bookId }, classifyBookDto);
       const res = httpMocks.createResponse();
 
@@ -139,17 +145,15 @@ describe('BookClassifyController', () => {
       );
       expect(res.statusCode).toBe(500);
       const responseData = JSON.parse(res._getData());
-      expect(responseData.error).toBe('Failed to classify book');
-      expect(mockLogger.error).toHaveBeenCalledWith('Failed to classify book', {
-        error: 'Database connection failed',
-        bookId,
-      });
+      expect(responseData.error.code).toBe(ErrorCodes.DATABASE_ERROR);
     });
 
-    it('should return 500 on validation error', async () => {
-      mockClassifyBookCommandHandler.handle.mockRejectedValue(
-        new Error(
+    it('should return 400 on validation error', async () => {
+      mockClassifyBookCommandHandler.handle.mockResolvedValue(
+        commandFail(
+          ErrorCodes.VALIDATION_FAILED,
           'Validation failed: At least one classification field (deweyDecimal, libraryOfCongressNumber, or oclcNumber) must be provided',
+          HttpStatus.BAD_REQUEST,
         ),
       );
       const req = createMockClassifyRequest({ id: bookId }, classifyBookDto);
@@ -157,14 +161,9 @@ describe('BookClassifyController', () => {
 
       await sut.classifyBook(req, res);
 
-      expect(res.statusCode).toBe(500);
+      expect(res.statusCode).toBe(400);
       const responseData = JSON.parse(res._getData());
-      expect(responseData.error).toBe('Failed to classify book');
-      expect(mockLogger.error).toHaveBeenCalledWith('Failed to classify book', {
-        error:
-          'Validation failed: At least one classification field (deweyDecimal, libraryOfCongressNumber, or oclcNumber) must be provided',
-        bookId,
-      });
+      expect(responseData.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
     });
   });
 
@@ -196,7 +195,7 @@ describe('BookClassifyController', () => {
     };
 
     it('should update classification information successfully', async () => {
-      mockUpdateClassificationCommandHandler.handle.mockResolvedValue(updatedBook);
+      mockUpdateClassificationCommandHandler.handle.mockResolvedValue(commandOk(updatedBook));
       const req = createMockUpdateRequest({ id: bookId }, updateClassificationDto);
       const res = httpMocks.createResponse();
 
@@ -226,7 +225,7 @@ describe('BookClassifyController', () => {
           oclcNumber: '987654321',
         },
       };
-      mockUpdateClassificationCommandHandler.handle.mockResolvedValue(book);
+      mockUpdateClassificationCommandHandler.handle.mockResolvedValue(commandOk(book));
       const req = createMockUpdateRequest({ id: bookId }, dto);
       const res = httpMocks.createResponse();
 
@@ -250,7 +249,7 @@ describe('BookClassifyController', () => {
       const book: Book = {
         ...bookWithoutClassification,
       };
-      mockUpdateClassificationCommandHandler.handle.mockResolvedValue(book);
+      mockUpdateClassificationCommandHandler.handle.mockResolvedValue(commandOk(book));
       const req = createMockUpdateRequest({ id: bookId }, dto);
       const res = httpMocks.createResponse();
 
@@ -265,7 +264,9 @@ describe('BookClassifyController', () => {
     });
 
     it('should return 404 when book is not found', async () => {
-      mockUpdateClassificationCommandHandler.handle.mockRejectedValue(new Error('Book not found'));
+      mockUpdateClassificationCommandHandler.handle.mockResolvedValue(
+        commandFail(ErrorCodes.BOOK_NOT_FOUND, 'Book not found', HttpStatus.NOT_FOUND),
+      );
       const req = createMockUpdateRequest({ id: bookId }, updateClassificationDto);
       const res = httpMocks.createResponse();
 
@@ -276,11 +277,13 @@ describe('BookClassifyController', () => {
       );
       expect(res.statusCode).toBe(404);
       const responseData = JSON.parse(res._getData());
-      expect(responseData.error).toBe('Book not found');
+      expect(responseData.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
     });
 
     it('should return 500 on general error', async () => {
-      mockUpdateClassificationCommandHandler.handle.mockRejectedValue(new Error('Database connection failed'));
+      mockUpdateClassificationCommandHandler.handle.mockResolvedValue(
+        commandFail(ErrorCodes.DATABASE_ERROR, 'Database connection failed', HttpStatus.INTERNAL_SERVER_ERROR),
+      );
       const req = createMockUpdateRequest({ id: bookId }, updateClassificationDto);
       const res = httpMocks.createResponse();
 
@@ -291,29 +294,25 @@ describe('BookClassifyController', () => {
       );
       expect(res.statusCode).toBe(500);
       const responseData = JSON.parse(res._getData());
-      expect(responseData.error).toBe('Failed to update classification');
-      expect(mockLogger.error).toHaveBeenCalledWith('Failed to update classification', {
-        error: 'Database connection failed',
-        bookId,
-      });
+      expect(responseData.error.code).toBe(ErrorCodes.DATABASE_ERROR);
     });
 
-    it('should return 500 on validation error', async () => {
-      mockUpdateClassificationCommandHandler.handle.mockRejectedValue(
-        new Error('Validation failed: At least one classification field must be provided'),
+    it('should return 400 on validation error', async () => {
+      mockUpdateClassificationCommandHandler.handle.mockResolvedValue(
+        commandFail(
+          ErrorCodes.VALIDATION_FAILED,
+          'Validation failed: At least one classification field must be provided',
+          HttpStatus.BAD_REQUEST,
+        ),
       );
       const req = createMockUpdateRequest({ id: bookId }, updateClassificationDto);
       const res = httpMocks.createResponse();
 
       await sut.updateClassification(req, res);
 
-      expect(res.statusCode).toBe(500);
+      expect(res.statusCode).toBe(400);
       const responseData = JSON.parse(res._getData());
-      expect(responseData.error).toBe('Failed to update classification');
-      expect(mockLogger.error).toHaveBeenCalledWith('Failed to update classification', {
-        error: 'Validation failed: At least one classification field must be provided',
-        bookId,
-      });
+      expect(responseData.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
     });
   });
 });

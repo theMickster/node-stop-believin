@@ -1,44 +1,51 @@
-import { BookAuthor } from '@data/entities/book-author.type';
-import { CreateBookAuthorDto } from '@features/book/models/createBookDto';
-import { ReadAuthorDto } from '@features/book/models/readBookDto';
-import { UpdateBookAuthorDto } from '@features/book/models/updateBookDto';
+import { Author } from '@data/entities/author.entity';
+import { ReadAuthorDto, SocialMediaDto } from '@features/author/models/readAuthorDto';
 
 /**
- * Maps author DTOs or Cosmos DB documents to a BookAuthor entity (embedded in Book)
- * Used when:
- * - Hydrating Book entities from Cosmos DB documents
- * - Converting DTOs (CreateBookAuthorDto, UpdateBookAuthorDto) to entities
+ * Helper function to build SocialMediaDto from Author entity
+ * Returns undefined if no social media links exist
  */
-export function mapToBookAuthor(source: CreateBookAuthorDto | UpdateBookAuthorDto | BookAuthor): BookAuthor {
+function buildSocialMedia(author: Author): SocialMediaDto | undefined {
+  if (!author.socialMedia) {
+    return undefined;
+  }
+
   return {
-    authorId: source.authorId,
-    firstName: source.firstName,
-    lastName: source.lastName,
-    order: source.order,
-    ...(source.displayName !== undefined && { displayName: source.displayName }),
-    ...(source.role !== undefined && { role: source.role }),
+    ...(author.socialMedia.twitter && { twitter: author.socialMedia.twitter }),
+    ...(author.socialMedia.instagram && { instagram: author.socialMedia.instagram }),
+    ...(author.socialMedia.facebook && { facebook: author.socialMedia.facebook }),
+    ...(author.socialMedia.linkedin && { linkedin: author.socialMedia.linkedin }),
+    ...(author.socialMedia.goodreads && { goodreads: author.socialMedia.goodreads }),
+    ...(author.socialMedia.amazonAuthor && { amazonAuthor: author.socialMedia.amazonAuthor }),
   };
 }
 
 /**
- * Maps a BookAuthor (embedded in Book entity) to ReadAuthorDto
- * Used when converting Book entities to read DTOs for API responses
+ * Maps an Author entity to ReadAuthorDto
+ * Used when converting Author entities to read DTOs for API responses
  */
-export function mapBookAuthorToReadAuthorDto(bookAuthor: BookAuthor): ReadAuthorDto {
-  const dto: ReadAuthorDto = {
-    authorId: bookAuthor.authorId,
-    firstName: bookAuthor.firstName,
-    lastName: bookAuthor.lastName,
-    order: bookAuthor.order,
+export function mapAuthorToReadAuthorDto(author: Author): ReadAuthorDto {
+  const socialMedia = buildSocialMedia(author);
+
+  return {
+    id: author.id,
+    authorId: author.authorId,
+    firstName: author.firstName,
+    ...(author.middleName && { middleName: author.middleName }),
+    lastName: author.lastName,
+    displayName: author.displayName,
+    ...(author.pseudonyms && { pseudonyms: author.pseudonyms }),
+    ...(author.suffix && { suffix: author.suffix }),
+    ...(author.shortBio && { shortBio: author.shortBio }),
+    ...(author.longBio && { longBio: author.longBio }),
+    genres: author.genres,
+    ...(author.email && { email: author.email }),
+    ...(author.website && { website: author.website }),
+    ...(socialMedia && { socialMedia }),
+    ...(author.profilePhotoUrl && { profilePhotoUrl: author.profilePhotoUrl }),
+    ...(author.bannerImageUrl && { bannerImageUrl: author.bannerImageUrl }),
+    ...(author.photoGallery && { photoGallery: author.photoGallery }),
+    status: author.status,
+    isVerified: author.isVerified,
   };
-
-  if (bookAuthor.displayName !== undefined) {
-    dto.displayName = bookAuthor.displayName;
-  }
-
-  if (bookAuthor.role !== undefined) {
-    dto.role = bookAuthor.role;
-  }
-
-  return dto;
 }

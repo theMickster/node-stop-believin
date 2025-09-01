@@ -1,5 +1,6 @@
-import { IQuery } from "./query";
+import { IQuery } from './query';
+import { QueryResult } from './queryResult';
 
 export interface IQueryHandler<TQuery extends IQuery, TResult> {
-  handle(query: TQuery): Promise<TResult>;
+  handle(query: TQuery): Promise<QueryResult<TResult>>;
 }

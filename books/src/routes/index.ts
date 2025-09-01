@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { versionOneRoutes } from './v1';
 import { versionTwoRoutes } from './v2';
-import { InfoController } from '@controllers/info.controller';
+import { InfoController } from '@features/info/controllers/info.controller';
 
 export function apiRoutes(): Router {
   const router = Router();

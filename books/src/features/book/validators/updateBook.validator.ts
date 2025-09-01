@@ -1,6 +1,6 @@
 import { inject, injectable } from 'inversify';
 import Joi from 'joi';
-import { BookRepository } from '@data/repos/bookRepository';
+import { BookRepository } from '@data/repos/book.repository';
 import TYPES from '@libs/ioc.types';
 import { UpdateBookDto } from '@features/book/models/updateBookDto';
 import { AbstractBookValidator } from './abstractBook.validator';

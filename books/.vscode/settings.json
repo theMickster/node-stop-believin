@@ -1,22 +1,28 @@
 {
-    "workbench.iconTheme": "material-icon-theme",
-    "material-icon-theme.folders.associations": {
-        "entities": "database",
-        "data": "Core",
-        "_test_": "Test",
-        "fixtures": "Snippet",
-        "queries": "Quasar",
-        "features": "Home",
-        "cqrs": "Link",
-        "postman": "api"
-    },
-    "material-icon-theme.files.associations": {
-        "*.query.ts": "Sequelize",
-        "*.query.handler.ts": "Roadmap",
-        "*.validator.ts": "Arduino",
-        "*.command.ts": "Cabal",
-        "*.command.handler.ts": "Roadmap",
-    },
-    "explorer.autoReveal": true,
-    "explorer.compactFolders": false
+  "workbench.iconTheme": "material-icon-theme",
+  "material-icon-theme.folders.associations": {
+    "entities": "database",
+    "data": "Core",
+    "_test_": "Test",
+    "fixtures": "Snippet",
+    "queries": "Quasar",
+    "features": "Home",
+    "cqrs": "Link",
+    "postman": "Shader",
+    "author": "Apollo",
+    "v1": "Routes",
+    "v2": "Routes"
+  },
+  "material-icon-theme.files.associations": {
+    "*.query.ts": "Sequelize",
+    "*.query.handler.ts": "Roadmap",
+    "*.validator.ts": "Arduino",
+    "*.command.ts": "Cabal",
+    "*.command.handler.ts": "Roadmap",
+    "*.entity.ts": "Fastlane",
+    "*.type.ts": "Laravel",
+    "*.repository.ts": "Deepsource"
+  },
+  "explorer.autoReveal": true,
+  "explorer.compactFolders": false
 }

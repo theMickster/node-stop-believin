@@ -1,4 +1,4 @@
-import { BookRepository } from '@data/repos/bookRepository';
+import { BookRepository } from '@data/repos/book.repository';
 import { UpdateBookValidator } from './updateBook.validator';
 import { UpdateBookDto } from '../models/updateBookDto';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
@@ -69,14 +69,18 @@ describe('UpdateBookValidator', () => {
     }
   });
 
-    it('should fail validation if the book does not exist', async () => {
+  it('should fail validation if the book does not exist', async () => {
     (mockBookRepository.getById as jest.Mock).mockResolvedValue({ success: true, data: null });
-    const dto: UpdateBookDto = { id: validBookId, name: "Updated Title",authors: [{ authorId: "44452d4e-7feb-49f3-846e-585431a7aa49", firstName: "Alice", lastName: "Smith", order: 1 }] };
-    
+    const dto: UpdateBookDto = {
+      id: validBookId,
+      name: 'Updated Title',
+      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith', order: 1 }],
+    };
+
     const result = await sut.validate(dto);
     expect(result.valid).toBe(false);
     if (!result.valid) {
-        expect(result.error?.message).toBe("Book not found");
+      expect(result.error?.message).toBe('Book not found');
     }
   });
 });

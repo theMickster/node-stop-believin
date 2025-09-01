@@ -1,4 +1,4 @@
-import { AuthorBookRole } from '@data/entities/book-author.type';
+import { AuthorRole } from '@data/entities/metadata/authorRole.type';
 
 export interface ReadBookDto {
   id: string;
@@ -13,9 +13,10 @@ export interface ReadAuthorDto {
   firstName: string;
   lastName: string;
   displayName?: string;
-  role?: AuthorBookRole;
+  role?: AuthorRole;
   order: number;
 }
+
 export interface ClassificationInfoDto {
   genres?: string[];
   subjects?: string[];
