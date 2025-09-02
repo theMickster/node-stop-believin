@@ -1,5 +1,9 @@
 import { Author } from '@data/entities/author.entity';
 import { ReadAuthorDto, SocialMediaDto } from '@features/author/models/readAuthorDto';
+import { CreateAuthorDto } from '@features/author/models/createAuthorDto';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+
+const AUTHOR_ENTITY_TYPE = ENTITY_TYPES.AUTHOR;
 
 /**
  * Helper function to build SocialMediaDto from Author entity
@@ -47,5 +51,41 @@ export function mapAuthorToReadAuthorDto(author: Author): ReadAuthorDto {
     ...(author.photoGallery && { photoGallery: author.photoGallery }),
     status: author.status,
     isVerified: author.isVerified,
+  };
+}
+
+/**
+ * Maps a CreateAuthorDto to Author entity
+ * Used when creating a new author from the API request
+ * Note: Statistics are NOT included in creation - they should be calculated separately
+ */
+export function mapCreateDtoToAuthor(newId: string, dto: CreateAuthorDto): Author {
+  return {
+    id: newId,
+    authorId: newId,
+    entityType: AUTHOR_ENTITY_TYPE,
+    firstName: dto.firstName,
+    ...(dto.middleName && { middleName: dto.middleName }),
+    lastName: dto.lastName,
+    displayName: dto.displayName,
+    ...(dto.pseudonyms && { pseudonyms: dto.pseudonyms }),
+    ...(dto.suffix && { suffix: dto.suffix }),
+    ...(dto.shortBio && { shortBio: dto.shortBio }),
+    ...(dto.longBio && { longBio: dto.longBio }),
+    genres: dto.genres,
+    ...(dto.email && { email: dto.email }),
+    ...(dto.website && { website: dto.website }),
+    ...(dto.socialMedia && { socialMedia: dto.socialMedia }),
+    ...(dto.profilePhotoUrl && { profilePhotoUrl: dto.profilePhotoUrl }),
+    ...(dto.bannerImageUrl && { bannerImageUrl: dto.bannerImageUrl }),
+    ...(dto.photoGallery && { photoGallery: dto.photoGallery }),
+    status: dto.status,
+    isVerified: dto.isVerified,
+    createdAt: new Date(),
+    createdBy: 'system',
+    updatedAt: new Date(),
+    updatedBy: 'system',
+    isDeleted: false,
+    version: 1,
   };
 }

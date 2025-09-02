@@ -1,13 +1,19 @@
+import { Author } from '@data/entities/author.entity';
+import { CreateAuthorCommand } from '@features/author/commands/createAuthor.command';
+import { CreateAuthorDto } from '@features/author/models/createAuthorDto';
 import { ReadAuthorDto } from '@features/author/models/readAuthorDto';
 import { ReadAuthorQuery } from '@features/author/queries/readAuthor.query';
 import { ReadAuthorListQuery } from '@features/author/queries/readAuthorList.query';
+import { ICommandHandler } from '@libs/cqrs/commandHandler';
+import { isCommandFail } from '@libs/cqrs/commandResult';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import { isQueryFail } from '@libs/cqrs/queryResult';
+import { HttpStatus } from '@libs/cqrs/errorCodes';
 import TYPES from '@libs/ioc.types';
 import { ILogger } from '@libs/logging/logger.interface';
 import { Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
-import { Get, RequireRoles } from '@libs/decorators/route.decorators';
+import { Get, Post, RequireRoles } from '@libs/decorators/route.decorators';
 import authConfig from '../../../config/authConfig';
 
 @injectable()
@@ -15,6 +21,7 @@ export class AuthorController {
   constructor(
     @inject(TYPES.ReadAuthorListHandler) private readonly readAuthorListHandler: IQueryHandler<ReadAuthorListQuery, ReadAuthorDto[]>,
     @inject(TYPES.ReadAuthorHandler) private readonly readAuthorHandler: IQueryHandler<ReadAuthorQuery, ReadAuthorDto | null>,
+    @inject(TYPES.CreateAuthorCommandHandler) private readonly createAuthorCommandHandler: ICommandHandler<CreateAuthorCommand, Author>,
     @inject(TYPES.Logger) private readonly logger: ILogger
   ) {}
 
@@ -59,5 +66,30 @@ export class AuthorController {
     }
 
     res.json(result.data);
+  }
+
+  @Post('/')
+  @RequireRoles(authConfig.roles.admin, authConfig.roles.writer)
+  async createAuthor(req: Request<object, object, CreateAuthorDto>, res: Response): Promise<void> {
+    const command = new CreateAuthorCommand(req.body);
+    const result = await this.createAuthorCommandHandler.handle(command);
+
+    if (isCommandFail(result)) {
+      this.logger.error('Failed to create author', {
+        code: result.error.code,
+        message: result.error.message,
+        field: result.error.field,
+      });
+      res.status(result.error.statusCode).json({
+        error: {
+          code: result.error.code,
+          message: result.error.message,
+          field: result.error.field,
+        },
+      });
+      return;
+    }
+
+    res.status(HttpStatus.CREATED).json(result.data);
   }
 }

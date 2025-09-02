@@ -6,6 +6,7 @@ const TYPES = {
     AuthorRepository: Symbol.for("AuthorRepository"),
     ReadAuthorListHandler: Symbol.for("ReadAuthorListHandler"),
     ReadAuthorHandler: Symbol.for("ReadAuthorHandler"),
+    CreateAuthorCommandHandler: Symbol.for("CreateAuthorCommandHandler"),
     ReadBookListHandler: Symbol.for("ReadBookListHandler"),
     ReadBookHandler: Symbol.for("ReadBookHandler"),
     CreateBookCommandHandler: Symbol.for("CreateBookCommandHandler"),
