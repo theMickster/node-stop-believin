@@ -1,7 +1,9 @@
-import { BookRepository } from '@data/repos/book.repository';
-import { UpdateBookValidator } from './updateBook.validator';
-import { UpdateBookDto } from '../models/updateBookDto';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { BookRepository } from '@data/repos/book.repository';
+
+import { UpdateBookDto } from '../models/updateBookDto';
+
+import { UpdateBookValidator } from './updateBook.validator';
 
 describe('UpdateBookValidator', () => {
   let sut: UpdateBookValidator;

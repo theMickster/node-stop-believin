@@ -1,18 +1,5 @@
-import { AuthorController } from './author.controller';
-import { Author } from '@data/entities/author.entity';
-import { CreateAuthorCommand } from '@features/author/commands/createAuthor.command';
-import { ReadAuthorDto } from '@features/author/models/readAuthorDto';
-import { ReadAuthorQuery } from '@features/author/queries/readAuthor.query';
-import { ReadAuthorListQuery } from '@features/author/queries/readAuthorList.query';
 import { fakeAuthors } from '@fixtures/authors';
-import { ICommandHandler } from '@libs/cqrs/commandHandler';
-import { commandFail, commandOk } from '@libs/cqrs/commandResult';
-import { IQueryHandler } from '@libs/cqrs/queryHandler';
-import { queryFail, queryOk } from '@libs/cqrs/queryResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
-import { ILogger } from '@libs/logging/logger.interface';
-import { mock, mockReset } from 'jest-mock-extended';
-import httpMocks from 'node-mocks-http';
+import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
 import { mockEmptyRequest, mockRequestWithParams, mockRequestWithBody } from '_test_/builders/mockRequestBuilder';
 import {
   expectSuccess,
@@ -21,12 +8,32 @@ import {
   expectInternalServerError,
   expectBadRequest,
 } from '_test_/helpers/controllerAssertions';
+import { mock, mockReset } from 'jest-mock-extended';
+import httpMocks from 'node-mocks-http';
+
+import { ICommandHandler } from '@libs/cqrs/commandHandler';
+import { commandFail, commandOk } from '@libs/cqrs/commandResult';
+import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { IQueryHandler } from '@libs/cqrs/queryHandler';
+import { queryFail, queryOk } from '@libs/cqrs/queryResult';
+import { ILogger } from '@libs/logging/logger.interface';
+
+import { Author } from '@data/entities/author.entity';
+
+import { CreateAuthorCommand } from '@features/author/commands/createAuthor.command';
+import { ReadAuthorDto } from '@features/author/models/readAuthorDto';
+import { ReadAuthorQuery } from '@features/author/queries/readAuthor.query';
+import { ReadAuthorListQuery } from '@features/author/queries/readAuthorList.query';
+
+
+import { AuthorController } from './author.controller';
 
 describe('AuthorController', () => {
   const mockReadAuthorListHandler = mock<IQueryHandler<ReadAuthorListQuery, ReadAuthorDto[]>>();
   const mockReadAuthorHandler = mock<IQueryHandler<ReadAuthorQuery, ReadAuthorDto | null>>();
   const mockCreateAuthorCommandHandler = mock<ICommandHandler<CreateAuthorCommand, Author>>();
   const mockLogger = mock<ILogger>();
+  const mockContext = buildMockExecutionContext().withUserId('test-user-123').withDisplayName('Test User').build();
 
   let sut: AuthorController;
 
@@ -163,7 +170,7 @@ describe('AuthorController', () => {
       const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
-      await sut.createAuthor(req, res);
+      await sut.createAuthor(req, res, mockContext);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
       expectCreated(res, (data) => {
@@ -203,7 +210,7 @@ describe('AuthorController', () => {
       const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
-      await sut.createAuthor(req, res);
+      await sut.createAuthor(req, res, mockContext);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
       expectCreated(res, (data) => {
@@ -230,7 +237,7 @@ describe('AuthorController', () => {
       const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
-      await sut.createAuthor(req, res);
+      await sut.createAuthor(req, res, mockContext);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
       expectBadRequest(res, 'First name is required');
@@ -257,7 +264,7 @@ describe('AuthorController', () => {
       const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
-      await sut.createAuthor(req, res);
+      await sut.createAuthor(req, res, mockContext);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
       expectBadRequest(res, 'At least one genre is required');
@@ -280,7 +287,7 @@ describe('AuthorController', () => {
       const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
-      await sut.createAuthor(req, res);
+      await sut.createAuthor(req, res, mockContext);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
       expectInternalServerError(res, 'Cosmos DB is down');
@@ -308,7 +315,7 @@ describe('AuthorController', () => {
       const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
-      await sut.createAuthor(req, res);
+      await sut.createAuthor(req, res, mockContext);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
       expectBadRequest(res, 'Email must be a valid email address');
@@ -332,7 +339,7 @@ describe('AuthorController', () => {
       const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
-      await sut.createAuthor(req, res);
+      await sut.createAuthor(req, res, mockContext);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
       expectBadRequest(res, 'Invalid status');

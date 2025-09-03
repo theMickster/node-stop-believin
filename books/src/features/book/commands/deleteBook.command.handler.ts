@@ -1,10 +1,15 @@
-import { BookRepository } from '@data/repos/book.repository';
+import { inject, injectable } from 'inversify';
+
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { CommandResult, commandFail, commandOk } from '@libs/cqrs/commandResult';
 import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import TYPES from '@libs/ioc.types';
-import { inject, injectable } from 'inversify';
+
+import { BookRepository } from '@data/repos/book.repository';
+
+
 import { DeleteBookValidator } from '../validators/deleteBook.validator';
+
 import { DeleteBookCommand } from './deleteBook.command';
 
 @injectable()

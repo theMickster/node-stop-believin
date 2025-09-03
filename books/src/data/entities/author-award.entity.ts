@@ -1,6 +1,6 @@
 import { BaseEntity, PartitionedEntity } from './base/entity-traits';
-import { MediaContent } from './base/media-content';
 import { ENTITY_TYPES } from './base/entity-types';
+import { MediaContent } from './base/media-content';
 
 export type AwardSignificance = 'Major' | 'Moderate' | 'Minor';
 

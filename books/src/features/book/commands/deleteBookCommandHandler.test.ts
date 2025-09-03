@@ -1,11 +1,16 @@
-import { BookRepository } from '@data/repos/book.repository';
+import { buildBookRepoMock } from '_test_/builders/bookRepositoryMockBuilder';
+import { mock, mockReset } from 'jest-mock-extended';
+
 import { isCommandFail, isCommandOk } from '@libs/cqrs/commandResult';
 import { ErrorCodes } from '@libs/cqrs/errorCodes';
+
+import { BookRepository } from '@data/repos/book.repository';
+
 import { DeleteBookValidator } from '../validators/deleteBook.validator';
+
 import { DeleteBookCommand } from './deleteBook.command';
 import { DeleteBookCommandHandler } from './deleteBook.command.handler';
-import { mock, mockReset } from 'jest-mock-extended';
-import { buildBookRepoMock } from '_test_/builders/bookRepositoryMockBuilder';
+
 
 describe('DeleteBookCommandHandler', () => {
   const mockRepo = mock<BookRepository>();

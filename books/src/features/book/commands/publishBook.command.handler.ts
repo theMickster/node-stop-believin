@@ -1,12 +1,17 @@
-import { Book } from '@data/entities/book.entity';
-import { BookRepository } from '@data/repos/book.repository';
+import { injectable, inject } from 'inversify';
+
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { CommandResult, commandOk, commandFail } from '@libs/cqrs/commandResult';
 import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import TYPES from '@libs/ioc.types';
-import { injectable, inject } from 'inversify';
-import { PublishBookCommand } from './publishBook.command';
+
+import { Book } from '@data/entities/book.entity';
+import { BookRepository } from '@data/repos/book.repository';
+
+
 import { PublishBookValidator } from '../validators/publishBook.validator';
+
+import { PublishBookCommand } from './publishBook.command';
 
 @injectable()
 export class PublishBookCommandHandler implements ICommandHandler<PublishBookCommand, Book> {

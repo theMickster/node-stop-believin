@@ -1,8 +1,10 @@
 import { NextFunction } from 'express';
 import httpMocks from 'node-mocks-http';
-import { createRequestLoggingMiddleware } from './requestLogging';
-import { requestContextMiddleware } from './requestContext';
+
 import { ILogger } from '../libs/logging/logger.interface';
+
+import { requestContextMiddleware } from './requestContext';
+import { createRequestLoggingMiddleware } from './requestLogging';
 
 describe('requestLogging', () => {
   let mockLogger: jest.Mocked<ILogger>;

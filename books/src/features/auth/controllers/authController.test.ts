@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { AuthController } from './auth.controller';
 import { ITokenPayload } from 'passport-azure-ad';
+
+import { AuthController } from './auth.controller';
 
 describe('AuthController', () => {
   let controller: AuthController;

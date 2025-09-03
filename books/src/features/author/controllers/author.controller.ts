@@ -1,21 +1,29 @@
+import { Request, Response } from 'express';
+import { inject, injectable } from 'inversify';
+
+import { ICommandHandler } from '@libs/cqrs/commandHandler';
+import { isCommandFail } from '@libs/cqrs/commandResult';
+import { HttpStatus } from '@libs/cqrs/errorCodes';
+import { IQueryHandler } from '@libs/cqrs/queryHandler';
+import { isQueryFail } from '@libs/cqrs/queryResult';
+import { LogOperation, CaptureContext } from '@libs/decorators/logging.decorators';
+import { Get, Post, RequireRoles, ExecutionContext as ExecutionContextDecorator } from '@libs/decorators/route.decorators';
+import TYPES from '@libs/ioc.types';
+import { ILogger } from '@libs/logging/logger.interface';
+
+import { ExecutionContext } from '@middleware/requestContext';
+
+import authConfig from '../../../config/authConfig';
+
 import { Author } from '@data/entities/author.entity';
+
 import { CreateAuthorCommand } from '@features/author/commands/createAuthor.command';
 import { CreateAuthorDto } from '@features/author/models/createAuthorDto';
 import { ReadAuthorDto } from '@features/author/models/readAuthorDto';
 import { ReadAuthorQuery } from '@features/author/queries/readAuthor.query';
 import { ReadAuthorListQuery } from '@features/author/queries/readAuthorList.query';
-import { ICommandHandler } from '@libs/cqrs/commandHandler';
-import { isCommandFail } from '@libs/cqrs/commandResult';
-import { IQueryHandler } from '@libs/cqrs/queryHandler';
-import { isQueryFail } from '@libs/cqrs/queryResult';
-import { HttpStatus } from '@libs/cqrs/errorCodes';
-import TYPES from '@libs/ioc.types';
-import { ILogger } from '@libs/logging/logger.interface';
-import { Request, Response } from 'express';
-import { inject, injectable } from 'inversify';
-import { Get, Post, RequireRoles } from '@libs/decorators/route.decorators';
-import { LogOperation, CaptureContext } from '@libs/decorators/logging.decorators';
-import authConfig from '../../../config/authConfig';
+
+
 
 @injectable()
 export class AuthorController {
@@ -23,8 +31,8 @@ export class AuthorController {
     @inject(TYPES.ReadAuthorListHandler) private readonly readAuthorListHandler: IQueryHandler<ReadAuthorListQuery, ReadAuthorDto[]>,
     @inject(TYPES.ReadAuthorHandler) private readonly readAuthorHandler: IQueryHandler<ReadAuthorQuery, ReadAuthorDto | null>,
     @inject(TYPES.CreateAuthorCommandHandler) private readonly createAuthorCommandHandler: ICommandHandler<CreateAuthorCommand, Author>,
-    // @ts-expect-error - Logger is used by @LogOperation decorator via 'this.logger'
-    @inject(TYPES.Logger) private readonly logger: ILogger
+    // @ts-expect-error - Logger is used by @LogOperation decorator via getLoggerFromContext()
+    @inject(TYPES.Logger) private readonly logger: ILogger,
   ) {}
 
   @Get('/')
@@ -67,8 +75,12 @@ export class AuthorController {
   @Post('/')
   @RequireRoles(authConfig.roles.admin, authConfig.roles.writer)
   @LogOperation('CreateAuthor')
-  async createAuthor(req: Request<object, object, CreateAuthorDto>, res: Response): Promise<void> {
-    const command = new CreateAuthorCommand(req.body);
+  async createAuthor(
+    req: Request<object, object, CreateAuthorDto>,
+    res: Response,
+    @ExecutionContextDecorator() context: ExecutionContext,
+  ): Promise<void> {
+    const command = new CreateAuthorCommand(req.body, context);
     const result = await this.createAuthorCommandHandler.handle(command);
 
     if (isCommandFail(result)) {

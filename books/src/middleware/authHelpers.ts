@@ -1,4 +1,5 @@
 import { RequestHandler } from 'express';
+
 import { authenticateToken } from './authMiddleware';
 import { requireRole } from './authorizationMiddleware';
 

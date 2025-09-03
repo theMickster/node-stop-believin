@@ -1,4 +1,5 @@
 import Joi from 'joi';
+
 import { UpdateClassificationDto } from '../models/updateClassificationDto';
 
 export const UpdateClassificationValidator = Joi.object<UpdateClassificationDto>({

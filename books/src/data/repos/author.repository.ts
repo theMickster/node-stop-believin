@@ -1,9 +1,12 @@
 import { Container as CosmosContainer } from '@azure/cosmos';
+import { inject, injectable } from 'inversify';
+
+import TYPES from '@libs/ioc.types';
+
 import { Author } from '@data/entities/author.entity';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+
 import { CosmosRepository } from './base/cosmosRepository';
-import TYPES from '@libs/ioc.types';
-import { inject, injectable } from 'inversify';
 
 /**
  * Repository for Author entities

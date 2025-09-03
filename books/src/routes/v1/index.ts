@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { authorRoutes } from '@features/author/routes/author.routes';
 import { bookRoutes } from '@features/book/routes/book.routes';
 

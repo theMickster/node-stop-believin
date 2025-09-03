@@ -1,15 +1,19 @@
+import { Request, Response } from 'express';
+import { inject, injectable } from 'inversify';
+
+import { ICommandHandler } from '@libs/cqrs/commandHandler';
+import { isCommandFail } from '@libs/cqrs/commandResult';
+import { Post, Put, RequireRoles } from '@libs/decorators/route.decorators';
+import TYPES from '@libs/ioc.types';
+import { ILogger } from '@libs/logging/logger.interface';
+
 import { Book } from '@data/entities/book.entity';
+
 import { ClassifyBookCommand } from '@features/book/commands/classifyBook.command';
 import { UpdateClassificationCommand } from '@features/book/commands/updateClassification.command';
 import { ClassifyBookDto } from '@features/book/models/classifyBookDto';
 import { UpdateClassificationDto } from '@features/book/models/updateClassificationDto';
-import { ICommandHandler } from '@libs/cqrs/commandHandler';
-import { isCommandFail } from '@libs/cqrs/commandResult';
-import TYPES from '@libs/ioc.types';
-import { ILogger } from '@libs/logging/logger.interface';
-import { Request, Response } from 'express';
-import { inject, injectable } from 'inversify';
-import { Post, Put, RequireRoles } from '@libs/decorators/route.decorators';
+
 import authConfig from '../../../../config/authConfig';
 
 @injectable()

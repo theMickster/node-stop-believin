@@ -1,5 +1,5 @@
-import { setGlobalLogger, getGlobalLogger, getLoggerFromContext } from './loggerAccessor';
 import { ILogger } from './logger.interface';
+import { setGlobalLogger, getGlobalLogger, getLoggerFromContext } from './loggerAccessor';
 
 describe('loggerAccessor', () => {
   let mockLogger: jest.Mocked<ILogger>;

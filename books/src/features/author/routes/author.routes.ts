@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { AuthorController } from '@features/author/controllers/author.controller';
+
+import { buildRoutes } from '@libs/decorators/routeBuilder';
 import iocContainer from '@libs/ioc.container';
 import TYPES from '@libs/ioc.types';
-import { buildRoutes } from '@libs/decorators/routeBuilder';
+
+import { AuthorController } from '@features/author/controllers/author.controller';
 
 /**
  * @swagger

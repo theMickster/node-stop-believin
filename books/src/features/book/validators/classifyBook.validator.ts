@@ -1,4 +1,5 @@
 import Joi from 'joi';
+
 import { ClassifyBookDto } from '../models/classifyBookDto';
 
 export const ClassifyBookValidator = Joi.object<ClassifyBookDto>({

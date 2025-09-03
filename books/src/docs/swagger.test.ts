@@ -1,4 +1,5 @@
 import type { OAS3Definition } from 'swagger-jsdoc';
+
 import { swaggerSpec } from './swagger';
 
 describe('Swagger Configuration', () => {

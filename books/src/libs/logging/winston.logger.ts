@@ -1,9 +1,12 @@
+import path from 'path';
+
+import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
 import { injectable } from 'inversify';
 import winston from 'winston';
-import { ILogger } from './logger.interface';
+
 import config from '../../config/config';
-import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
-import path from 'path';
+
+import { ILogger } from './logger.interface';
 
 @injectable()
 export class WinstonLogger implements ILogger {

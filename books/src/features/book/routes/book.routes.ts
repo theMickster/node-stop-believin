@@ -1,12 +1,15 @@
 import { Router, RequestHandler } from 'express';
-import { BookController } from '../controllers/book.controller';
-import { BookPublishController } from '../controllers/publish/bookPublish.controller';
-import { BookClassifyController } from '../controllers/classify/bookClassify.controller';
-import iocContainer from '../../../libs/ioc.container';
-import TYPES from '@libs/ioc.types';
+
 import { buildRoutes, getRoutes, getAuthMetadata } from '@libs/decorators/routeBuilder';
+import TYPES from '@libs/ioc.types';
+
 import { authenticateToken } from '@middleware/authMiddleware';
 import { requireRole } from '@middleware/authorizationMiddleware';
+
+import iocContainer from '../../../libs/ioc.container';
+import { BookController } from '../controllers/book.controller';
+import { BookClassifyController } from '../controllers/classify/bookClassify.controller';
+import { BookPublishController } from '../controllers/publish/bookPublish.controller';
 
 /**
  * @swagger

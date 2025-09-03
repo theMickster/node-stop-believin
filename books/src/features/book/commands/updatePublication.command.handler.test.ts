@@ -1,13 +1,18 @@
-import { Book } from '@data/entities/book.entity';
-import { ENTITY_TYPES } from '@data/entities/base/entity-types';
-import { BookRepository } from '@data/repos/book.repository';
-import { repoOk, repoFail } from '@data/libs/repoResult';
-import { UpdatePublicationCommandHandler } from './updatePublication.command.handler';
-import { UpdatePublicationCommand } from './updatePublication.command';
-import { ILogger } from '@libs/logging/logger.interface';
 import { mock, mockReset } from 'jest-mock-extended';
+
 import { isCommandOk, isCommandFail } from '@libs/cqrs/commandResult';
 import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { ILogger } from '@libs/logging/logger.interface';
+
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { Book } from '@data/entities/book.entity';
+import { repoOk, repoFail } from '@data/libs/repoResult';
+import { BookRepository } from '@data/repos/book.repository';
+
+import { UpdatePublicationCommand } from './updatePublication.command';
+import { UpdatePublicationCommandHandler } from './updatePublication.command.handler';
+
+
 
 describe('UpdatePublicationCommandHandler', () => {
   const mockBookRepository = mock<BookRepository>();

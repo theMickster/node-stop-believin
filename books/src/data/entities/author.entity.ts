@@ -1,7 +1,7 @@
-import { BaseEntity, PartitionedEntity, SoftDeletable, Versionable } from './base/entity-traits';
-import { SocialMediaLinks } from './base/social-media';
-import { ENTITY_TYPES } from './base/entity-types';
 import { AuthorStatistics } from './authorStatistics.entity';
+import { BaseEntity, PartitionedEntity, SoftDeletable, Versionable } from './base/entity-traits';
+import { ENTITY_TYPES } from './base/entity-types';
+import { SocialMediaLinks } from './base/social-media';
 import { AuthorStatus } from './metadata/authorStatus.type';
 
 /**

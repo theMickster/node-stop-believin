@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const tseslint = require('typescript-eslint');
+const importPlugin = require('eslint-plugin-import');
 
 module.exports = [
   // Ignore patterns
@@ -18,6 +19,9 @@ module.exports = [
 
   {
     files: ['**/*.ts'],
+    plugins: {
+      import: importPlugin,
+    },
     languageOptions: {
       parserOptions: {
         project: './tsconfig.json',
@@ -44,6 +48,51 @@ module.exports = [
       '@typescript-eslint/no-unused-vars': ['error', {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
+      }],
+
+      // Import ordering rules
+      'import/order': ['error', {
+        'groups': [
+          'builtin',   // Node.js built-in modules
+          'external',  // npm packages
+          'internal',  // Your @libs, @features, etc.
+          'parent',    // ../
+          'sibling',   // ./
+          'index',     // ./index
+        ],
+        'pathGroups': [
+          {
+            pattern: '@libs/**',
+            group: 'internal',
+            position: 'before',
+          },
+          {
+            pattern: '@middleware/**',
+            group: 'internal',
+            position: 'before',
+          },
+          {
+            pattern: '@data/**',
+            group: 'internal',
+            position: 'after',
+          },
+          {
+            pattern: '@features/**',
+            group: 'internal',
+            position: 'after',
+          },
+          {
+            pattern: '../../../config/**',
+            group: 'internal',
+            position: 'before',
+          },
+        ],
+        'pathGroupsExcludedImportTypes': ['builtin'],
+        'newlines-between': 'always',
+        'alphabetize': {
+          order: 'asc',
+          caseInsensitive: true,
+        },
       }],
     },
   },

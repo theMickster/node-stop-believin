@@ -1,7 +1,9 @@
 import { Container as CosmosContainer, ItemResponse, PartitionKey, SqlParameter } from '@azure/cosmos';
+
+import { isErrorWithCode } from '@libs/guards/errorGuards';
+
 import { BaseEntity, PartitionedEntity } from '@data/entities/base/entity-traits';
 import { RepoResult, repoOk, repoFail } from '@data/libs/repoResult';
-import { isErrorWithCode } from '@libs/guards/errorGuards';
 
 /**
  * Base repository for Cosmos DB operations

@@ -1,8 +1,3 @@
-import { BookRepository } from '@data/repos/book.repository';
-import { PublishBookCommandHandler } from './publishBook.command.handler';
-import { PublishBookCommand } from './publishBook.command';
-import { mock, mockReset } from 'jest-mock-extended';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import { createBaseBook, withVersion } from '@fixtures/book.fixtures';
 import { buildBookRepoMock } from '_test_/builders/bookRepositoryMockBuilder';
 import {
@@ -13,6 +8,14 @@ import {
   expectDatabaseError,
   expectConflictError,
 } from '_test_/helpers/commandAssertions';
+import { mock, mockReset } from 'jest-mock-extended';
+
+import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+
+import { BookRepository } from '@data/repos/book.repository';
+
+import { PublishBookCommand } from './publishBook.command';
+import { PublishBookCommandHandler } from './publishBook.command.handler';
 
 describe('PublishBookCommandHandler', () => {
   const mockBookRepository = mock<BookRepository>();

@@ -1,11 +1,12 @@
 import { AzureMonitorOpenTelemetryOptions, useAzureMonitor } from '@azure/monitor-opentelemetry';
-import config from '../../config/config';
+import { metrics, ProxyTracerProvider, trace } from '@opentelemetry/api';
+import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
+import { WinstonInstrumentation } from '@opentelemetry/instrumentation-winston';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVER_ADDRESS, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { WinstonInstrumentation } from '@opentelemetry/instrumentation-winston';
-import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
-import { metrics, ProxyTracerProvider, trace } from '@opentelemetry/api';
+
+import config from '../../config/config';
 
 export function initializeTelemetry(): void {
   const connectionString = config.appInsightsConnectionString;

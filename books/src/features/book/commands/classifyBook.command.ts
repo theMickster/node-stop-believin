@@ -1,4 +1,5 @@
 import { ICommand } from '@libs/cqrs/command';
+
 import { ClassifyBookDto } from '../models/classifyBookDto';
 
 export class ClassifyBookCommand implements ICommand {

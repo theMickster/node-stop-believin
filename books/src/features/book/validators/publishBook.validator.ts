@@ -1,4 +1,5 @@
 import Joi from 'joi';
+
 import { PublishBookDto } from '../models/publishBookDto';
 
 const isbnSchema = Joi.object({

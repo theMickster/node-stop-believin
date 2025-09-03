@@ -1,7 +1,9 @@
 import { Container as CosmosContainer, ItemResponse, Items } from '@azure/cosmos';
-import { AuthorRepository } from './author.repository';
+
 import { Author } from '@data/entities/author.entity';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+
+import { AuthorRepository } from './author.repository';
 
 describe('AuthorRepository', () => {
   let mockContainer: jest.Mocked<CosmosContainer>;

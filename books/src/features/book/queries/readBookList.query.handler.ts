@@ -1,12 +1,16 @@
 import { injectable, inject } from 'inversify';
-import { ReadBookListQuery } from './readBookList.query';
-import { ReadBookDto } from '@features/book/models/readBookDto';
-import { BookRepository } from '@data/repos/book.repository';
-import { mapBookToReadBookDto } from '@data/mapping/bookMappers';
+
+import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import { QueryResult, queryOk, queryFail } from '@libs/cqrs/queryResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import TYPES from '@libs/ioc.types';
+
+import { mapBookToReadBookDto } from '@data/mapping/bookMappers';
+import { BookRepository } from '@data/repos/book.repository';
+
+import { ReadBookDto } from '@features/book/models/readBookDto';
+
+import { ReadBookListQuery } from './readBookList.query';
 
 @injectable()
 export class ReadBookListQueryHandler implements IQueryHandler<ReadBookListQuery, ReadBookDto[]> {

@@ -1,15 +1,25 @@
-import { AuthorRepository } from '@data/repos/author.repository';
-import { CreateAuthorCommandHandler } from './createAuthor.command.handler';
-import { CreateAuthorCommand } from './createAuthor.command';
-import { Author } from '@data/entities/author.entity';
-import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { buildAuthorRepoMock } from '_test_/builders/authorRepositoryMockBuilder';
+import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
+import { mock, mockReset } from 'jest-mock-extended';
+
 import { isCommandFail, isCommandOk } from '@libs/cqrs/commandResult';
 import { ErrorCodes } from '@libs/cqrs/errorCodes';
-import { mock, mockReset } from 'jest-mock-extended';
-import { buildAuthorRepoMock } from '_test_/builders/authorRepositoryMockBuilder';
+
+import { Author } from '@data/entities/author.entity';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { AuthorRepository } from '@data/repos/author.repository';
+
+import { CreateAuthorCommand } from './createAuthor.command';
+import { CreateAuthorCommandHandler } from './createAuthor.command.handler';
+
+
 
 describe('CreateAuthorCommandHandler', () => {
   const mockRepo = mock<AuthorRepository>();
+  const mockContext = buildMockExecutionContext()
+    .withUserId('system')
+    .withTimestamp(new Date('2024-01-01'))
+    .build();
   let sut: CreateAuthorCommandHandler;
 
   beforeEach(() => {
@@ -26,7 +36,7 @@ describe('CreateAuthorCommandHandler', () => {
       status: 'Active' as const,
       isVerified: true,
     };
-    const cmd = new CreateAuthorCommand(dto);
+    const cmd = new CreateAuthorCommand(dto, mockContext);
 
     const fakeAuthor: Author = {
       id: '5aa2872a-202c-4d19-9a04-74b4f638275e',
@@ -80,7 +90,7 @@ describe('CreateAuthorCommandHandler', () => {
       status: 'Active' as const,
       isVerified: true,
     };
-    const cmd = new CreateAuthorCommand(dto);
+    const cmd = new CreateAuthorCommand(dto, mockContext);
 
     const fakeAuthor: Author = {
       id: 'fdd96c5d-3c69-4e58-a23e-41c18d93f8bc',
@@ -117,7 +127,7 @@ describe('CreateAuthorCommandHandler', () => {
       status: 'Active' as const,
       isVerified: true,
     };
-    const cmd = new CreateAuthorCommand(dto);
+    const cmd = new CreateAuthorCommand(dto, mockContext);
 
     const result = await sut.handle(cmd);
 
@@ -139,7 +149,7 @@ describe('CreateAuthorCommandHandler', () => {
       status: 'Active' as const,
       isVerified: true,
     };
-    const cmd = new CreateAuthorCommand(dto);
+    const cmd = new CreateAuthorCommand(dto, mockContext);
 
     const result = await sut.handle(cmd);
 
@@ -161,7 +171,7 @@ describe('CreateAuthorCommandHandler', () => {
       status: 'Active' as const,
       isVerified: true,
     };
-    const cmd = new CreateAuthorCommand(dto);
+    const cmd = new CreateAuthorCommand(dto, mockContext);
 
     const result = await sut.handle(cmd);
 
@@ -183,7 +193,7 @@ describe('CreateAuthorCommandHandler', () => {
       status: 'Active' as const,
       isVerified: true,
     };
-    const cmd = new CreateAuthorCommand(dto);
+    const cmd = new CreateAuthorCommand(dto, mockContext);
 
     const result = await sut.handle(cmd);
 
@@ -205,7 +215,7 @@ describe('CreateAuthorCommandHandler', () => {
       status: 'InvalidStatus' as never,
       isVerified: true,
     };
-    const cmd = new CreateAuthorCommand(dto);
+    const cmd = new CreateAuthorCommand(dto, mockContext);
 
     const result = await sut.handle(cmd);
 
@@ -227,7 +237,7 @@ describe('CreateAuthorCommandHandler', () => {
       status: 'Active' as const,
       isVerified: true,
     };
-    const cmd = new CreateAuthorCommand(dto);
+    const cmd = new CreateAuthorCommand(dto, mockContext);
 
     const result = await sut.handle(cmd);
 
@@ -249,7 +259,7 @@ describe('CreateAuthorCommandHandler', () => {
       status: 'Active' as const,
       isVerified: true,
     };
-    const cmd = new CreateAuthorCommand(dto);
+    const cmd = new CreateAuthorCommand(dto, mockContext);
     buildAuthorRepoMock(mockRepo).createFails('Cosmos DB is down', 500);
 
     const result = await sut.handle(cmd);
@@ -272,7 +282,7 @@ describe('CreateAuthorCommandHandler', () => {
       status: 'Active' as const,
       isVerified: true,
     };
-    const cmd = new CreateAuthorCommand(dto);
+    const cmd = new CreateAuthorCommand(dto, mockContext);
     mockRepo.create.mockResolvedValue({ success: false, statusCode: 500 });
 
     const result = await sut.handle(cmd);

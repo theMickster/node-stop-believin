@@ -1,6 +1,8 @@
 import { inject, injectable } from 'inversify';
-import { ILogger } from './logger.interface';
+
 import TYPES from '../ioc.types';
+
+import { ILogger } from './logger.interface';
 
 /**
  * Cosmic Logger

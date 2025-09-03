@@ -1,5 +1,6 @@
-import { bookRoutes } from './book.routes';
 import { RouterLayer, isRouteLayer, hasMethod } from '@libs/types/expressRouterTypes';
+
+import { bookRoutes } from './book.routes';
 
 describe('bookRoutes', () => {
   let router: ReturnType<typeof bookRoutes>;

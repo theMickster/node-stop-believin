@@ -1,7 +1,7 @@
-import { AuthorRole } from './metadata/authorRole.type';
-import { BaseEntity, PartitionedEntity, SoftDeletable, Versionable } from './base/entity-traits';
 import { Rateable, Taggable } from './base/behavioral-traits';
+import { BaseEntity, PartitionedEntity, SoftDeletable, Versionable } from './base/entity-traits';
 import { ENTITY_TYPES } from './base/entity-types';
+import { AuthorRole } from './metadata/authorRole.type';
 
 export type BookFormat = 'Hardcover' | 'Paperback' | 'eBook' | 'Audiobook' | 'Video' | 'PracticeTest';
 export type BookLanguage = 'en' | 'es' | 'fr' | 'de' | 'ja' | 'zh' | 'pt' | 'it' | 'ru' | 'ar';

@@ -1,14 +1,19 @@
-import { Book } from '@data/entities/book.entity';
-import { mapCreateDtoToBook } from '@data/mapping/bookMappers';
-import { BookRepository } from '@data/repos/book.repository';
+import { injectable, inject } from 'inversify';
+import { v4 } from 'uuid';
+
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { CommandResult, commandOk, commandFail } from '@libs/cqrs/commandResult';
 import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import TYPES from '@libs/ioc.types';
-import { injectable, inject } from 'inversify';
-import { v4 } from 'uuid';
-import { CreateBookCommand } from './createBook.command';
+
+import { Book } from '@data/entities/book.entity';
+import { mapCreateDtoToBook } from '@data/mapping/bookMappers';
+import { BookRepository } from '@data/repos/book.repository';
+
+
 import { CreateBookValidator } from '../validators/createBook.validator';
+
+import { CreateBookCommand } from './createBook.command';
 
 @injectable()
 export class CreateBookCommandHandler implements ICommandHandler<CreateBookCommand, Book> {
@@ -26,7 +31,7 @@ export class CreateBookCommandHandler implements ICommandHandler<CreateBookComma
     }
 
     const newId = v4();
-    const bookToCreate = mapCreateDtoToBook(newId, validationResult.value);
+    const bookToCreate = mapCreateDtoToBook(newId, validationResult.value, command.context);
 
     const result = await this.bookRepository.create(bookToCreate);
     if (!result.success || !result.data) {

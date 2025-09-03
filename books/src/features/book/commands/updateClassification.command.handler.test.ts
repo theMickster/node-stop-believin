@@ -1,12 +1,16 @@
-import { Book } from '@data/entities/book.entity';
-import { ENTITY_TYPES } from '@data/entities/base/entity-types';
-import { BookRepository } from '@data/repos/book.repository';
-import { repoOk, repoFail } from '@data/libs/repoResult';
-import { UpdateClassificationCommandHandler } from './updateClassification.command.handler';
-import { UpdateClassificationCommand } from './updateClassification.command';
 import { mock, mockReset } from 'jest-mock-extended';
+
 import { isCommandOk, isCommandFail } from '@libs/cqrs/commandResult';
 import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { Book } from '@data/entities/book.entity';
+import { repoOk, repoFail } from '@data/libs/repoResult';
+import { BookRepository } from '@data/repos/book.repository';
+
+import { UpdateClassificationCommand } from './updateClassification.command';
+import { UpdateClassificationCommandHandler } from './updateClassification.command.handler';
+
 
 describe('UpdateClassificationCommandHandler', () => {
   const mockBookRepository = mock<BookRepository>();

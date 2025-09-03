@@ -1,12 +1,16 @@
 import { injectable, inject } from 'inversify';
-import { ReadAuthorListQuery } from './readAuthorList.query';
-import { ReadAuthorDto } from '@features/author/models/readAuthorDto';
-import { AuthorRepository } from '@data/repos/author.repository';
-import { mapAuthorToReadAuthorDto } from '@data/mapping/authorMappers';
+
+import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import { QueryResult, queryOk, queryFail } from '@libs/cqrs/queryResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import TYPES from '@libs/ioc.types';
+
+import { mapAuthorToReadAuthorDto } from '@data/mapping/authorMappers';
+import { AuthorRepository } from '@data/repos/author.repository';
+
+import { ReadAuthorDto } from '@features/author/models/readAuthorDto';
+
+import { ReadAuthorListQuery } from './readAuthorList.query';
 
 @injectable()
 export class ReadAuthorListQueryHandler implements IQueryHandler<ReadAuthorListQuery, ReadAuthorDto[]> {

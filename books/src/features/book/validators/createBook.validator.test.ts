@@ -1,5 +1,6 @@
-import { CreateBookValidator } from './createBook.validator'; 
 import { v4 as uuidv4 } from 'uuid';
+
+import { CreateBookValidator } from './createBook.validator'; 
 
 describe('CreateBookValidator', () => {
     const validBook = {

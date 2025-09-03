@@ -1,5 +1,6 @@
-import { InfoController } from './info.controller';
 import { Request, Response } from 'express';
+
+import { InfoController } from './info.controller';
 
 describe('InfoController', () => {
   let controller: InfoController;

@@ -1,14 +1,19 @@
-import { Author } from '@data/entities/author.entity';
-import { mapCreateDtoToAuthor } from '@data/mapping/authorMappers';
-import { AuthorRepository } from '@data/repos/author.repository';
+import { injectable, inject } from 'inversify';
+import { v4 } from 'uuid';
+
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { CommandResult, commandOk, commandFail } from '@libs/cqrs/commandResult';
 import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import TYPES from '@libs/ioc.types';
-import { injectable, inject } from 'inversify';
-import { v4 } from 'uuid';
-import { CreateAuthorCommand } from './createAuthor.command';
+
+import { Author } from '@data/entities/author.entity';
+import { mapCreateDtoToAuthor } from '@data/mapping/authorMappers';
+import { AuthorRepository } from '@data/repos/author.repository';
+
+
 import { CreateAuthorValidator } from '../validators/createAuthor.validator';
+
+import { CreateAuthorCommand } from './createAuthor.command';
 
 @injectable()
 export class CreateAuthorCommandHandler implements ICommandHandler<CreateAuthorCommand, Author> {
@@ -26,7 +31,7 @@ export class CreateAuthorCommandHandler implements ICommandHandler<CreateAuthorC
     }
 
     const newId = v4();
-    const authorToCreate = mapCreateDtoToAuthor(newId, validationResult.value);
+    const authorToCreate = mapCreateDtoToAuthor(newId, validationResult.value, command.context);
 
     const result = await this.authorRepository.create(authorToCreate);
     if (!result.success || !result.data) {

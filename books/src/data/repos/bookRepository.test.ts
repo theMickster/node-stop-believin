@@ -1,10 +1,14 @@
 import { Container as CosmosContainer } from '@azure/cosmos';
+import { fakeCosmicBooks } from '@fixtures/books';
+import { buildCosmosContainerMock } from '_test_/builders/cosmosContainerMockBuilder';
+
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { Book } from '@data/entities/book.entity';
 import { repoOk } from '@data/libs/repoResult';
-import { fakeCosmicBooks } from '@fixtures/books';
+
 import { BookRepository } from './book.repository';
-import { ENTITY_TYPES } from '@data/entities/base/entity-types';
-import { buildCosmosContainerMock } from '_test_/builders/cosmosContainerMockBuilder';
+
+
 
 describe('BookRepository', () => {
   let sut: BookRepository;

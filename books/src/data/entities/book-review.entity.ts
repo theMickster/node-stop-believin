@@ -1,5 +1,5 @@
-import { BaseEntity, PartitionedEntity } from './base/entity-traits';
 import { Taggable } from './base/behavioral-traits';
+import { BaseEntity, PartitionedEntity } from './base/entity-traits';
 import { ENTITY_TYPES } from './base/entity-types';
 
 export type ReviewStatus = 'Published' | 'Pending' | 'Rejected' | 'Flagged' | 'Archived';

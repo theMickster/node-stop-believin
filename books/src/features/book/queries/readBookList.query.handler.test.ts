@@ -1,9 +1,13 @@
-import { BookRepository } from '@data/repos/book.repository';
-import { ReadBookListQueryHandler } from './readBookList.query.handler';
-import { mapBookToReadBookDto } from '@data/mapping/bookMappers';
 import { fakeBooks } from '@fixtures/books';
-import { isQueryFail, isQueryOk } from '@libs/cqrs/queryResult';
+
 import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { isQueryFail, isQueryOk } from '@libs/cqrs/queryResult';
+
+import { mapBookToReadBookDto } from '@data/mapping/bookMappers';
+import { BookRepository } from '@data/repos/book.repository';
+
+import { ReadBookListQueryHandler } from './readBookList.query.handler';
+
 
 jest.mock('@data/repos/book.repository');
 

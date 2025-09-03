@@ -161,3 +161,38 @@ export function RequireRoles(...roles: string[]): MethodDecorator {
     );
   };
 }
+/**
+ * Parameter Decorator: Inject ExecutionContext into controller method parameter
+ *
+ * Extracts the current request's ExecutionContext from AsyncLocalStorage
+ * and injects it into the decorated parameter.
+ *
+ * The ExecutionContext contains:
+ * - User identity (userId, displayName, userName, userEmail)
+ * - Temporal context (timestamp for consistent createdAt/updatedAt)
+ * - Tracking IDs (correlationId, requestId, sessionId, idempotencyKey)
+ * - Client context (clientIp, userAgent, language, country, deviceType)
+ * - Authorization (roles, scopes)
+ *
+ * @example
+ * import { ExecutionContext } from '@middleware/requestContext';
+ *
+ * @Post('/')
+ * async createAuthor(
+ *   req: Request<object, object, CreateAuthorDto>,
+ *   res: Response,
+ *   @ExecutionContext() context: ExecutionContext
+ * ): Promise<void> {
+ *   const command = new CreateAuthorCommand(req.body, context);
+ *   // Use context.userId, context.timestamp, etc.
+ * }
+ */
+export function ExecutionContext(): ParameterDecorator {
+  return function (target: object, propertyKey: string | symbol | undefined, parameterIndex: number) {
+    if (!propertyKey) return;
+    // Store metadata about which parameter should receive the context
+    const existingParams = (Reflect.getOwnMetadata('executionContext:params', target, propertyKey) as number[] | undefined) || [];
+    existingParams.push(parameterIndex);
+    Reflect.defineMetadata('executionContext:params', existingParams, target, propertyKey);
+  };
+}

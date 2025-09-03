@@ -1,7 +1,11 @@
 import { Router, RequestHandler } from 'express';
+
 import { authenticateToken } from '@middleware/authMiddleware';
 import { requireRole } from '@middleware/authorizationMiddleware';
+import { getRequestContext } from '@middleware/requestContext';
+
 import { getRoutes, getAuthMetadata } from './route.decorators';
+import 'reflect-metadata';
 
 // Re-export utilities for use by route files
 export { getRoutes, getAuthMetadata } from './route.decorators';
@@ -48,25 +52,44 @@ export function buildRoutes(controller: object): Router {
       }
     }
 
-    // Bind handler to controller instance and cast to RequestHandler
-    const boundHandler = handler.bind(controller) as RequestHandler;
+    // Check if this method has @ExecutionContext() parameter decorators
+    const contextParamIndexes = Reflect.getOwnMetadata('executionContext:params', controller, methodName) as number[] | undefined;
+
+    // Bind handler to controller instance
+    const boundHandler = handler.bind(controller) as (...args: unknown[]) => unknown;
+
+    // Create a wrapper that injects ExecutionContext if needed
+    const wrappedHandler: RequestHandler = (req, res, next) => {
+      const args: unknown[] = [req, res, next];
+
+      // Inject ExecutionContext at the specified parameter positions
+      if (contextParamIndexes && contextParamIndexes.length > 0) {
+        const context = getRequestContext(req);
+        for (const paramIndex of contextParamIndexes) {
+          args[paramIndex] = context;
+        }
+      }
+
+      // Call the original handler with injected parameters
+      return boundHandler(...args) as unknown;
+    };
 
     // Register route using switch statement to avoid unsafe dynamic access
     switch (method) {
       case 'get':
-        router.get(path, ...middlewares, boundHandler);
+        router.get(path, ...middlewares, wrappedHandler);
         break;
       case 'post':
-        router.post(path, ...middlewares, boundHandler);
+        router.post(path, ...middlewares, wrappedHandler);
         break;
       case 'put':
-        router.put(path, ...middlewares, boundHandler);
+        router.put(path, ...middlewares, wrappedHandler);
         break;
       case 'patch':
-        router.patch(path, ...middlewares, boundHandler);
+        router.patch(path, ...middlewares, wrappedHandler);
         break;
       case 'delete':
-        router.delete(path, ...middlewares, boundHandler);
+        router.delete(path, ...middlewares, wrappedHandler);
         break;
       default:
         throw new TypeError(`Unsupported HTTP method: ${method}`);

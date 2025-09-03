@@ -1,31 +1,35 @@
-import { Container } from 'inversify';
-import TYPES from './ioc.types';
-import { default as config } from '../config/config';
 import { CosmosClient, Container as CosmosContainer } from '@azure/cosmos';
 import { DefaultAzureCredential } from '@azure/identity';
-import { AuthorController } from '@features/author/controllers/author.controller';
-import { BookController } from '@features/book/controllers/book.controller';
-import { BookPublishController } from '@features/book/controllers/publish/bookPublish.controller';
-import { BookClassifyController } from '@features/book/controllers/classify/bookClassify.controller';
-import { BookRepository } from '@data/repos/book.repository';
+import { Container } from 'inversify';
+
 import { AuthorRepository } from '@data/repos/author.repository';
+import { BookRepository } from '@data/repos/book.repository';
+
 import { CreateAuthorCommandHandler } from '@features/author/commands/createAuthor.command.handler';
+import { AuthorController } from '@features/author/controllers/author.controller';
+import { ReadAuthorQueryHandler } from '@features/author/queries/readAuthor.query.handler';
+import { ReadAuthorListQueryHandler } from '@features/author/queries/readAuthorList.query.handler';
+import { ClassifyBookCommandHandler } from '@features/book/commands/classifyBook.command.handler';
 import { CreateBookCommandHandler } from '@features/book/commands/createBook.command.handler';
 import { DeleteBookCommandHandler } from '@features/book/commands/deleteBook.command.handler';
 import { PublishBookCommandHandler } from '@features/book/commands/publishBook.command.handler';
-import { UpdatePublicationCommandHandler } from '@features/book/commands/updatePublication.command.handler';
-import { ClassifyBookCommandHandler } from '@features/book/commands/classifyBook.command.handler';
+import { UpdateBookCommandHandler } from '@features/book/commands/updateBook.command.handler';
 import { UpdateClassificationCommandHandler } from '@features/book/commands/updateClassification.command.handler';
-import { ReadAuthorQueryHandler } from '@features/author/queries/readAuthor.query.handler';
-import { ReadAuthorListQueryHandler } from '@features/author/queries/readAuthorList.query.handler';
+import { UpdatePublicationCommandHandler } from '@features/book/commands/updatePublication.command.handler';
+import { BookController } from '@features/book/controllers/book.controller';
+import { BookClassifyController } from '@features/book/controllers/classify/bookClassify.controller';
+import { BookPublishController } from '@features/book/controllers/publish/bookPublish.controller';
 import { ReadBookQueryHandler } from '@features/book/queries/readBook.query.handler';
 import { ReadBookListQueryHandler } from '@features/book/queries/readBookList.query.handler';
 import { DeleteBookValidator } from '@features/book/validators/deleteBook.validator';
 import { UpdateBookValidator } from '@features/book/validators/updateBook.validator';
-import { UpdateBookCommandHandler } from '@features/book/commands/updateBook.command.handler';
-import { ILogger } from './logging/logger.interface';
+
+import { default as config } from '../config/config';
+
+import TYPES from './ioc.types';
 import { ContextualWinstonLogger } from './logging/contextual.winston.logger';
 import { CosmicLogger } from './logging/cosmic.logger';
+import { ILogger } from './logging/logger.interface';
 
 const container = new Container();
 

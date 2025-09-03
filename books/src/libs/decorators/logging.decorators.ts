@@ -1,6 +1,8 @@
 import 'reflect-metadata';
 import { Request, Response } from 'express';
+
 import { getLoggerFromContext } from '@libs/logging/loggerAccessor';
+
 import { getRequestContext } from '@middleware/requestContext';
 
 /**
@@ -157,7 +159,7 @@ export function LogOperation(options?: string | LogOperationOptions): MethodDeco
       const startTime = Date.now();
 
       // Extract context
-      const requestContext = getRequestContext();
+      const requestContext = getRequestContext(req);
       const capturedContext = getCapturedContext(target, propertyKey, req);
 
       const baseMetadata = {

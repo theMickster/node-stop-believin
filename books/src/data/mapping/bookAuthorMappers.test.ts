@@ -1,7 +1,9 @@
-import { mapToBookAuthor, mapBookAuthorToReadAuthorDto } from './bookAuthorMappers';
 import { BookAuthor } from '@data/entities/book.entity';
+
 import { CreateBookAuthorDto } from '@features/book/models/createBookDto';
 import { UpdateBookAuthorDto } from '@features/book/models/updateBookDto';
+
+import { mapToBookAuthor, mapBookAuthorToReadAuthorDto } from './bookAuthorMappers';
 
 describe('bookAuthorMappers', () => {
   describe('mapToBookAuthor', () => {

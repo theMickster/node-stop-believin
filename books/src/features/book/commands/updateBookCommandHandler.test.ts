@@ -1,18 +1,31 @@
-import { Book } from '@data/entities/book.entity';
-import { ENTITY_TYPES } from '@data/entities/base/entity-types';
-import { BookRepository } from '@data/repos/book.repository';
-import { repoOk, repoFail } from '@data/libs/repoResult';
-import { UpdateBookCommandHandler } from './updateBook.command.handler';
-import { UpdateBookCommand } from './updateBook.command';
-import { UpdateBookValidator } from '../validators/updateBook.validator';
-import { UpdateBookDto } from '@features/book/models/updateBookDto';
+import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
+import { mock, mockReset } from 'jest-mock-extended';
+
 import { isCommandFail, isCommandOk } from '@libs/cqrs/commandResult';
 import { ErrorCodes } from '@libs/cqrs/errorCodes';
-import { mock, mockReset } from 'jest-mock-extended';
+
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { Book } from '@data/entities/book.entity';
+import { repoOk, repoFail } from '@data/libs/repoResult';
+import { BookRepository } from '@data/repos/book.repository';
+
+import { UpdateBookDto } from '@features/book/models/updateBookDto';
+
+import { UpdateBookValidator } from '../validators/updateBook.validator';
+
+import { UpdateBookCommand } from './updateBook.command';
+import { UpdateBookCommandHandler } from './updateBook.command.handler';
+
+
+
 
 describe('UpdateBookCommandHandler', () => {
   const mockBookRepository = mock<BookRepository>();
   const mockValidator = mock<UpdateBookValidator>();
+  const mockContext = buildMockExecutionContext()
+    .withUserId('system')
+    .withTimestamp(new Date('2024-12-01'))
+    .build();
   let sut: UpdateBookCommandHandler;
 
   const validUpdateDto: UpdateBookDto = {
@@ -57,7 +70,7 @@ describe('UpdateBookCommandHandler', () => {
 
   describe('handle', () => {
     it('should update book successfully', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
@@ -105,7 +118,7 @@ describe('UpdateBookCommandHandler', () => {
         ],
       };
 
-      const command = new UpdateBookCommand(dtoWithMultipleAuthors);
+      const command = new UpdateBookCommand(dtoWithMultipleAuthors, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
@@ -137,7 +150,7 @@ describe('UpdateBookCommandHandler', () => {
         ],
       };
 
-      const command = new UpdateBookCommand(dtoWithAuthorDetails);
+      const command = new UpdateBookCommand(dtoWithAuthorDetails, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
@@ -157,7 +170,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should call validator with correct dto', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
@@ -169,7 +182,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should call repository update with mapped book', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
@@ -188,7 +201,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should return CommandResult with success true', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
@@ -203,7 +216,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should return CommandResult with failure when validation fails', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({
         valid: false,
@@ -223,7 +236,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should return failure with validation error message', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({
         valid: false,
@@ -240,7 +253,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should not call repository when validation fails', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({
         valid: false,
@@ -253,7 +266,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should return CommandResult with error when repository update fails', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.update.mockResolvedValue(repoFail('Database connection failed', 500));
@@ -268,7 +281,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should return CommandResult with error when repository returns no data', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -284,7 +297,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should return CommandResult with error when repository returns unsuccessful result with no error message', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -300,7 +313,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should handle validation error for missing book ID', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({
         valid: false,
@@ -317,7 +330,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should handle validation error for invalid book ID format', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({
         valid: false,
@@ -334,7 +347,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should handle validation error for missing authors', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({
         valid: false,
@@ -351,7 +364,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should handle validation error for author name too short', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({
         valid: false,
@@ -368,7 +381,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should handle validation error for invalid author order', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({
         valid: false,
@@ -385,7 +398,7 @@ describe('UpdateBookCommandHandler', () => {
     });
 
     it('should handle book not found from validator', async () => {
-      const command = new UpdateBookCommand(validUpdateDto);
+      const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({
         valid: false,
@@ -426,7 +439,7 @@ describe('UpdateBookCommandHandler', () => {
         ],
       };
 
-      const command = new UpdateBookCommand(dtoWithOrderedAuthors);
+      const command = new UpdateBookCommand(dtoWithOrderedAuthors, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));

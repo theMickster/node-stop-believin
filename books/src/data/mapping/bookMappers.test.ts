@@ -1,7 +1,10 @@
-import { Book } from '@data/entities/book.entity';
-import { ENTITY_TYPES } from '@data/entities/base/entity-types';
-import { mapBookToReadBookDto } from './bookMappers';
 import { v4 as uuidv4 } from 'uuid';
+
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { Book } from '@data/entities/book.entity';
+
+import { mapBookToReadBookDto } from './bookMappers';
+
 
 describe('mapBookToReadBookDto', () => {
   const baseBook: Book = {

@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+
 import { ILogger } from '../libs/logging/logger.interface';
+
 import { getRequestContext } from './requestContext';
 
 /**
@@ -17,7 +19,7 @@ import { getRequestContext } from './requestContext';
  */
 export function createRequestLoggingMiddleware(logger: ILogger) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const context = getRequestContext();
+    const context = getRequestContext(req);
     const startTime = Date.now();
 
     // Log incoming request

@@ -1,10 +1,13 @@
+import path from 'path';
+
+import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
 import { injectable, unmanaged } from 'inversify';
 import winston from 'winston';
-import { ILogger } from './logger.interface';
-import { getRequestContext } from '../../middleware/requestContext';
+
 import config from '../../config/config';
-import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
-import path from 'path';
+import { RequestContext } from '../../middleware/requestContext';
+
+import { ILogger } from './logger.interface';
 
 /**
  * Contextual Winston Logger
@@ -93,7 +96,10 @@ export class ContextualWinstonLogger implements ILogger {
    * @returns Enriched metadata object
    */
   private enrichMetadata(meta?: Record<string, unknown>): Record<string, unknown> {
-    const context = getRequestContext();
+    // Note: Without AsyncLocalStorage, we can't automatically get the context here.
+    // The context should be explicitly passed in the metadata when logging.
+    // This is a trade-off for avoiding the experimental async_hooks API.
+    const context = meta?.executionContext as RequestContext | undefined;
 
     return {
       // 1. Static application properties

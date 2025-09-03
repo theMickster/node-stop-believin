@@ -1,4 +1,21 @@
+import { Request, Response } from 'express';
+import { inject, injectable } from 'inversify';
+
+import { ICommandHandler } from '@libs/cqrs/commandHandler';
+import { isCommandFail } from '@libs/cqrs/commandResult';
+import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { IQueryHandler } from '@libs/cqrs/queryHandler';
+import { isQueryFail } from '@libs/cqrs/queryResult';
+import { Get, Post, Put, Delete, RequireRoles, ExecutionContext as ExecutionContextDecorator } from '@libs/decorators/route.decorators';
+import TYPES from '@libs/ioc.types';
+import { ILogger } from '@libs/logging/logger.interface';
+
+import { ExecutionContext } from '@middleware/requestContext';
+
+import authConfig from '../../../config/authConfig';
+
 import { Book } from '@data/entities/book.entity';
+
 import { CreateBookCommand } from '@features/book/commands/createBook.command';
 import { DeleteBookCommand } from '@features/book/commands/deleteBook.command';
 import { UpdateBookCommand } from '@features/book/commands/updateBook.command';
@@ -6,17 +23,8 @@ import { CreateBookDto } from '@features/book/models/createBookDto';
 import { ReadBookDto } from '@features/book/models/readBookDto';
 import { ReadBookQuery } from '@features/book/queries/readBook.query';
 import { ReadBookListQuery } from '@features/book/queries/readBookList.query';
-import { ICommandHandler } from '@libs/cqrs/commandHandler';
-import { isCommandFail } from '@libs/cqrs/commandResult';
-import { IQueryHandler } from '@libs/cqrs/queryHandler';
-import { isQueryFail } from '@libs/cqrs/queryResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
-import TYPES from '@libs/ioc.types';
-import { ILogger } from '@libs/logging/logger.interface';
-import { Request, Response } from 'express';
-import { inject, injectable } from 'inversify';
-import { Get, Post, Put, Delete, RequireRoles } from '@libs/decorators/route.decorators';
-import authConfig from '../../../config/authConfig';
+
+
 
 @injectable()
 export class BookController {
@@ -89,8 +97,12 @@ export class BookController {
   }
 
   @Post('/')
-  async createBook(req: Request<object, object, CreateBookDto>, res: Response): Promise<void> {
-    const command = new CreateBookCommand(req.body);
+  async createBook(
+    req: Request<object, object, CreateBookDto>,
+    res: Response,
+    @ExecutionContextDecorator() context: ExecutionContext,
+  ): Promise<void> {
+    const command = new CreateBookCommand(req.body, context);
     const result = await this.createBookCommandHandler.handle(command);
 
     if (isCommandFail(result)) {
@@ -114,8 +126,12 @@ export class BookController {
 
   @Put('/:id')
   @RequireRoles(authConfig.roles.admin, authConfig.roles.writer)
-  async updateBook(req: Request, res: Response): Promise<void> {
-    const command = new UpdateBookCommand(req.body);
+  async updateBook(
+    req: Request,
+    res: Response,
+    @ExecutionContextDecorator() context: ExecutionContext,
+  ): Promise<void> {
+    const command = new UpdateBookCommand(req.body, context);
     const result = await this.updateBookCommandHandler.handle(command);
 
     if (isCommandFail(result)) {

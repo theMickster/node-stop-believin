@@ -1,6 +1,7 @@
 import { NextFunction } from 'express';
 import httpMocks from 'node-mocks-http';
-import { requestContextMiddleware, getRequestContext, asyncLocalStorage } from './requestContext';
+
+import { requestContextMiddleware, getRequestContext } from './requestContext';
 
 describe('requestContext', () => {
   let mockNext: NextFunction;
@@ -58,7 +59,7 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
         expect(context).toBeDefined();
         expect(context?.method).toBe('POST');
         expect(context?.path).toBe('/api/test');
@@ -84,7 +85,7 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
         expect(context?.userId).toBe('user-object-id');
         expect(context?.userName).toBe('test@example.com');
         expect(context?.userEmail).toBe('test@example.com');
@@ -106,9 +107,10 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
         expect(context?.userId).toBe('user-subject-id');
-        expect(context?.userName).toBe('Test User');
+        expect(context?.displayName).toBe('Test User');
+        expect(context?.userName).toBe('test@example.com');
         expect(context?.userEmail).toBe('test@example.com');
       });
     });
@@ -126,7 +128,7 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
         expect(context?.userEmail).toBe('custom@example.com');
       });
     });
@@ -143,7 +145,7 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
         expect(context?.roles).toEqual(['Admin', 'Reader']);
       });
     });
@@ -160,7 +162,7 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
         expect(context?.scopes).toEqual(['read', 'write', 'delete']);
       });
     });
@@ -174,7 +176,7 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
         expect(context?.userId).toBeUndefined();
         expect(context?.userName).toBeUndefined();
         expect(context?.userEmail).toBeUndefined();
@@ -195,7 +197,7 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
         expect(context?.clientIp).toBeUndefined();
       });
     });
@@ -209,7 +211,7 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
         expect(context?.userAgent).toBeUndefined();
       });
     });
@@ -226,7 +228,7 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
         expect(context?.clientIp).toBe('192.168.1.1');
       });
     });
@@ -256,7 +258,7 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
 
         expect(context).toMatchObject({
           correlationId: 'existing-correlation',
@@ -280,8 +282,9 @@ describe('requestContext', () => {
   });
 
   describe('getRequestContext', () => {
-    it('should return undefined when called outside request context', () => {
-      const context = getRequestContext();
+    it('should return undefined when called with request without context', () => {
+      const req = httpMocks.createRequest();
+      const context = getRequestContext(req);
       expect(context).toBeUndefined();
     });
 
@@ -294,7 +297,7 @@ describe('requestContext', () => {
 
       requestContextMiddleware(req, res, (err) => {
         if (err) throw err;
-        const context = getRequestContext();
+        const context = getRequestContext(req);
         expect(context).toBeDefined();
         expect(context?.method).toBe('GET');
         expect(context?.path).toBe('/test');
@@ -318,7 +321,7 @@ describe('requestContext', () => {
           // Simulate async operation
           await new Promise((r) => setTimeout(r, 10));
 
-          const context = getRequestContext();
+          const context = getRequestContext(req);
           expect(context).toBeDefined();
           expect(context?.correlationId).toBe('async-test-id');
           expect(context?.path).toBe('/async-test');
@@ -329,11 +332,4 @@ describe('requestContext', () => {
     });
   });
 
-  describe('asyncLocalStorage', () => {
-    it('should be properly exported and usable', () => {
-      expect(asyncLocalStorage).toBeDefined();
-      expect(typeof asyncLocalStorage.run).toBe('function');
-      expect(typeof asyncLocalStorage.getStore).toBe('function');
-    });
-  });
 });

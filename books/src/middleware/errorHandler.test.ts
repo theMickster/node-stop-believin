@@ -1,5 +1,6 @@
-import { errorHandler, AppError } from './errorHandler';
 import { Request, Response, NextFunction } from 'express';
+
+import { errorHandler, AppError } from './errorHandler';
 
 describe('errorHandler middleware', () => {
   let req: Partial<Request>;

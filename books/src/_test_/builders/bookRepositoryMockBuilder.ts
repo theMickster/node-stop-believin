@@ -1,7 +1,8 @@
 import { DeepMockProxy } from 'jest-mock-extended';
-import { BookRepository } from '@data/repos/book.repository';
+
 import { Book } from '@data/entities/book.entity';
 import { repoOk, repoFail } from '@data/libs/repoResult';
+import { BookRepository } from '@data/repos/book.repository';
 
 /**
  * Fluent builder for setting up BookRepository mocks

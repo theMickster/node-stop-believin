@@ -1,9 +1,12 @@
+import { fakeAuthors } from '@fixtures/authors';
+
+import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { isQueryOk, isQueryFail } from '@libs/cqrs/queryResult';
+
 import { Author } from '@data/entities/author.entity';
 import { RepoResult } from '@data/libs/repoResult';
 import { AuthorRepository } from '@data/repos/author.repository';
-import { fakeAuthors } from '@fixtures/authors';
-import { isQueryOk, isQueryFail } from '@libs/cqrs/queryResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+
 import { ReadAuthorQueryHandler } from './readAuthor.query.handler';
 
 jest.mock('@data/repos/author.repository');

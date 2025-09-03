@@ -1,7 +1,8 @@
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { repoOk, repoFail } from '@data/libs/repoResult';
 import { BookRepository } from '@data/repos/book.repository';
+
 import { DeleteBookValidator } from './deleteBook.validator';
-import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 describe('DeleteBookValidator', () => {
   let sut: DeleteBookValidator;

@@ -1,7 +1,8 @@
 import { DeepMockProxy } from 'jest-mock-extended';
-import { AuthorRepository } from '@data/repos/author.repository';
+
 import { Author } from '@data/entities/author.entity';
 import { repoOk, repoFail } from '@data/libs/repoResult';
+import { AuthorRepository } from '@data/repos/author.repository';
 
 /**
  * Fluent builder for setting up AuthorRepository mocks

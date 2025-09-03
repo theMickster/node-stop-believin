@@ -1,9 +1,13 @@
-import { AuthorRepository } from '@data/repos/author.repository';
-import { ReadAuthorListQueryHandler } from './readAuthorList.query.handler';
-import { mapAuthorToReadAuthorDto } from '@data/mapping/authorMappers';
 import { fakeAuthors } from '@fixtures/authors';
-import { isQueryOk, isQueryFail } from '@libs/cqrs/queryResult';
+
 import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { isQueryOk, isQueryFail } from '@libs/cqrs/queryResult';
+
+import { mapAuthorToReadAuthorDto } from '@data/mapping/authorMappers';
+import { AuthorRepository } from '@data/repos/author.repository';
+
+import { ReadAuthorListQueryHandler } from './readAuthorList.query.handler';
+
 
 jest.mock('@data/repos/author.repository');
 

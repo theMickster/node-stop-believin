@@ -1,11 +1,12 @@
 import { DeepMockProxy } from 'jest-mock-extended';
+
 import { ICommand } from '@libs/cqrs/command';
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
+import { commandOk, commandFail } from '@libs/cqrs/commandResult';
+import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import { IQuery } from '@libs/cqrs/query';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
-import { commandOk, commandFail } from '@libs/cqrs/commandResult';
 import { queryOk, queryFail } from '@libs/cqrs/queryResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 
 /**
  * Fluent builder for setting up CommandHandler mocks

@@ -1,4 +1,5 @@
 import { ICommand } from '@libs/cqrs/command';
+
 import { UpdateClassificationDto } from '../models/updateClassificationDto';
 
 export class UpdateClassificationCommand implements ICommand {

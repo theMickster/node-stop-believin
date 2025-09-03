@@ -1,5 +1,5 @@
-import { Book } from '@data/entities/book.entity';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { Book } from '@data/entities/book.entity';
 
 /**
  * Base test book fixture - unpublished, unclassified

@@ -1,39 +1,50 @@
-import { Book } from '@data/entities/book.entity';
-import { CreateBookDto } from '@features/book/models/createBookDto';
-import { mapToBookAuthor, mapBookAuthorToReadAuthorDto } from './bookAuthorMappers';
-import { UpdateBookDto } from '@features/book/models/updateBookDto';
-import { ReadBookDto, PublicationInfoDto, ClassificationInfoDto } from '@features/book/models/readBookDto';
+import { ExecutionContext } from '@middleware/requestContext';
+
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { Book } from '@data/entities/book.entity';
+
+import { CreateBookDto } from '@features/book/models/createBookDto';
+import { ReadBookDto, PublicationInfoDto, ClassificationInfoDto } from '@features/book/models/readBookDto';
+import { UpdateBookDto } from '@features/book/models/updateBookDto';
+
+import { mapToBookAuthor, mapBookAuthorToReadAuthorDto } from './bookAuthorMappers';
+
 
 const BOOK_ENTITY_TYPE = ENTITY_TYPES.BOOK;
 
-export function mapCreateDtoToBook(newId: string, dto: CreateBookDto): Book {
+export function mapCreateDtoToBook(newId: string, dto: CreateBookDto, context: ExecutionContext): Book {
+  const timestamp = context.timestamp;
+  const userId = context.userId ?? 'system';
+
   return {
     id: newId,
     bookId: newId,
     entityType: BOOK_ENTITY_TYPE,
     name: dto.name,
     authors: Array.isArray(dto.authors) ? dto.authors.map(mapToBookAuthor) : [],
-    createdAt: new Date('2024-01-01'),
-    createdBy: 'test-user',
-    updatedAt: new Date('2024-01-01'),
-    updatedBy: 'test-user',
+    createdAt: timestamp,
+    createdBy: userId,
+    updatedAt: timestamp,
+    updatedBy: userId,
     isDeleted: false,
     version: 1,
   };
 }
 
-export function mapUpdateDtoToBook(dto: UpdateBookDto): Book {
+export function mapUpdateDtoToBook(dto: UpdateBookDto, context: ExecutionContext): Book {
+  const timestamp = context.timestamp;
+  const userId = context.userId ?? 'system';
+
   return {
     id: dto.id,
     bookId: dto.id,
     entityType: BOOK_ENTITY_TYPE,
     name: dto.name,
     authors: Array.isArray(dto.authors) ? dto.authors.map(mapToBookAuthor) : [],
-    createdAt: new Date('2024-01-01'),
-    createdBy: 'test-user',
-    updatedAt: new Date('2024-01-01'),
-    updatedBy: 'test-user',
+    createdAt: new Date('2024-01-01'), // Keep original createdAt for updates
+    createdBy: 'test-user', // Keep original createdBy for updates
+    updatedAt: timestamp,
+    updatedBy: userId,
     isDeleted: false,
     version: 1,
   };

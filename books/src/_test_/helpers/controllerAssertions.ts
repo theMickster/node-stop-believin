@@ -1,5 +1,6 @@
-import { ILogger } from '@libs/logging/logger.interface';
 import { DeepMockProxy } from 'jest-mock-extended';
+
+import { ILogger } from '@libs/logging/logger.interface';
 
 // Define the mock response interface with the methods we need
 interface MockResponse {

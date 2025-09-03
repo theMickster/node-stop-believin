@@ -1,5 +1,6 @@
 import passport from 'passport';
 import { BearerStrategy, IBearerStrategyOptionWithRequest, ITokenPayload } from 'passport-azure-ad';
+
 import authConfig from '../config/authConfig';
 
 /**

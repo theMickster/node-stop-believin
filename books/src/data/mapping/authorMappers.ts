@@ -1,7 +1,10 @@
+import { ExecutionContext } from '@middleware/requestContext';
+
 import { Author } from '@data/entities/author.entity';
-import { ReadAuthorDto, SocialMediaDto } from '@features/author/models/readAuthorDto';
-import { CreateAuthorDto } from '@features/author/models/createAuthorDto';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+
+import { CreateAuthorDto } from '@features/author/models/createAuthorDto';
+import { ReadAuthorDto, SocialMediaDto } from '@features/author/models/readAuthorDto';
 
 const AUTHOR_ENTITY_TYPE = ENTITY_TYPES.AUTHOR;
 
@@ -59,7 +62,10 @@ export function mapAuthorToReadAuthorDto(author: Author): ReadAuthorDto {
  * Used when creating a new author from the API request
  * Note: Statistics are NOT included in creation - they should be calculated separately
  */
-export function mapCreateDtoToAuthor(newId: string, dto: CreateAuthorDto): Author {
+export function mapCreateDtoToAuthor(newId: string, dto: CreateAuthorDto, context: ExecutionContext): Author {
+  const timestamp = context.timestamp;
+  const userId = context.userId ?? 'system';
+
   return {
     id: newId,
     authorId: newId,
@@ -81,10 +87,10 @@ export function mapCreateDtoToAuthor(newId: string, dto: CreateAuthorDto): Autho
     ...(dto.photoGallery && { photoGallery: dto.photoGallery }),
     status: dto.status,
     isVerified: dto.isVerified,
-    createdAt: new Date(),
-    createdBy: 'system',
-    updatedAt: new Date(),
-    updatedBy: 'system',
+    createdAt: timestamp,
+    createdBy: userId,
+    updatedAt: timestamp,
+    updatedBy: userId,
     isDeleted: false,
     version: 1,
   };

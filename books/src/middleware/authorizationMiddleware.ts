@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ITokenPayload } from 'passport-azure-ad';
+
 import authConfig from '../config/authConfig';
 
 /**

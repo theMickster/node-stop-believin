@@ -1,9 +1,12 @@
 import { Request, Response } from 'express';
 import httpMocks from 'node-mocks-http';
-import { LogOperation, CaptureContext, Observe } from './logging.decorators';
-import { setGlobalLogger, getLoggerFromContext } from '@libs/logging/loggerAccessor';
+
 import { ILogger } from '@libs/logging/logger.interface';
+import { setGlobalLogger, getLoggerFromContext } from '@libs/logging/loggerAccessor';
+
 import { requestContextMiddleware } from '@middleware/requestContext';
+
+import { LogOperation, CaptureContext, Observe } from './logging.decorators';
 
 describe('Logging Decorators', () => {
   let mockLogger: jest.Mocked<ILogger>;

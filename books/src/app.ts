@@ -1,17 +1,18 @@
+import bodyParser from 'body-parser';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
-import { apiRoutes } from './routes';
-import { errorHandler } from './middleware/errorHandler';
-import bodyParser from 'body-parser';
-import { initializeTelemetry } from './libs/logging/telemetry';
+
 import { swaggerSpec } from './docs/swagger';
-import passport from './middleware/authMiddleware';
-import { requestContextMiddleware } from './middleware/requestContext';
-import { createRequestLoggingMiddleware } from './middleware/requestLogging';
 import container from './libs/ioc.container';
 import TYPES from './libs/ioc.types';
 import { ILogger } from './libs/logging/logger.interface';
 import { setGlobalLogger } from './libs/logging/loggerAccessor';
+import { initializeTelemetry } from './libs/logging/telemetry';
+import passport from './middleware/authMiddleware';
+import { errorHandler } from './middleware/errorHandler';
+import { requestContextMiddleware } from './middleware/requestContext';
+import { createRequestLoggingMiddleware } from './middleware/requestLogging';
+import { apiRoutes } from './routes';
 
 initializeTelemetry();
 

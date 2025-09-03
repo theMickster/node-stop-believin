@@ -1,9 +1,12 @@
+import { fakeBooks } from '@fixtures/books';
+
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { isQueryFail, isQueryOk } from '@libs/cqrs/queryResult';
+
 import { Book } from '@data/entities/book.entity';
 import { RepoResult } from '@data/libs/repoResult';
 import { BookRepository } from '@data/repos/book.repository';
-import { fakeBooks } from '@fixtures/books';
-import { isQueryFail, isQueryOk } from '@libs/cqrs/queryResult';
-import { ErrorCodes } from '@libs/cqrs/errorCodes';
+
 import { ReadBookQueryHandler } from './readBook.query.handler';
 
 jest.mock('@data/repos/book.repository');

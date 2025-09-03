@@ -1,5 +1,6 @@
-import { UpdatePublicationDto } from '../models/updatePublicationDto';
 import { ICommand } from '@libs/cqrs/command';
+
+import { UpdatePublicationDto } from '../models/updatePublicationDto';
 
 export class UpdatePublicationCommand implements ICommand {
   constructor(
