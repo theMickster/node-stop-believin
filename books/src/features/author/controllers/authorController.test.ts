@@ -11,9 +11,16 @@ import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import { queryFail, queryOk } from '@libs/cqrs/queryResult';
 import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import { ILogger } from '@libs/logging/logger.interface';
-import { Request as ExpressRequest } from 'express';
 import { mock, mockReset } from 'jest-mock-extended';
 import httpMocks from 'node-mocks-http';
+import { mockEmptyRequest, mockRequestWithParams, mockRequestWithBody } from '_test_/builders/mockRequestBuilder';
+import {
+  expectSuccess,
+  expectCreated,
+  expectNotFound,
+  expectInternalServerError,
+  expectBadRequest,
+} from '_test_/helpers/controllerAssertions';
 
 describe('AuthorController', () => {
   const mockReadAuthorListHandler = mock<IQueryHandler<ReadAuthorListQuery, ReadAuthorDto[]>>();
@@ -22,15 +29,6 @@ describe('AuthorController', () => {
   const mockLogger = mock<ILogger>();
 
   let sut: AuthorController;
-
-  const createMockRequest = (params: any = {}, body: any = {}, query: any = {}) => {
-    const req = httpMocks.createRequest({
-      params: params,
-      body: body,
-      query: query,
-    }) as ExpressRequest;
-    return req;
-  };
 
   beforeEach(() => {
     mockReset(mockReadAuthorListHandler);
@@ -42,7 +40,7 @@ describe('AuthorController', () => {
       mockReadAuthorListHandler,
       mockReadAuthorHandler,
       mockCreateAuthorCommandHandler,
-      mockLogger
+      mockLogger,
     );
   });
 
@@ -62,34 +60,29 @@ describe('AuthorController', () => {
       ];
 
       mockReadAuthorListHandler.handle.mockResolvedValue(queryOk(mockAuthors));
-      const req = createMockRequest();
+      const req = mockEmptyRequest();
       const res = httpMocks.createResponse();
 
       await sut.getAuthors(req, res);
 
       expect(mockReadAuthorListHandler.handle).toHaveBeenCalledWith(new ReadAuthorListQuery());
-      expect(res.statusCode).toBe(200);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toBeInstanceOf(Array);
-      expect(responseData.length).toBe(mockAuthors.length);
+      expectSuccess(res, (data) => {
+        expect(data).toBeInstanceOf(Array);
+        expect((data as unknown[]).length).toBe(mockAuthors.length);
+      });
     });
 
     it('should return the correct error upon hard exception', async () => {
       mockReadAuthorListHandler.handle.mockResolvedValue(
-        queryFail(ErrorCodes.DATABASE_ERROR, 'Whoops! There was a Cosmos Error!', HttpStatus.INTERNAL_SERVER_ERROR)
+        queryFail(ErrorCodes.DATABASE_ERROR, 'Whoops! There was a Cosmos Error!', HttpStatus.INTERNAL_SERVER_ERROR),
       );
-      const req = createMockRequest();
+      const req = mockEmptyRequest();
       const res = httpMocks.createResponse();
 
       await sut.getAuthors(req, res);
+
       expect(mockReadAuthorListHandler.handle).toHaveBeenCalledWith(new ReadAuthorListQuery());
-      expect(res.statusCode).toBe(500);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual({ message: 'Failed to list authors' });
-      expect(mockLogger.error).toHaveBeenCalledWith('Failed to fetch author list', {
-        code: ErrorCodes.DATABASE_ERROR,
-        message: 'Whoops! There was a Cosmos Error!',
-      });
+      expectInternalServerError(res, 'Failed to list authors');
     });
   });
 
@@ -109,51 +102,43 @@ describe('AuthorController', () => {
 
       mockReadAuthorHandler.handle.mockResolvedValue(queryOk(mockAuthor));
 
-      const req = createMockRequest({ id: authorId });
+      const req = mockRequestWithParams({ id: authorId });
       const res = httpMocks.createResponse();
 
       await sut.getAuthorById(req, res);
 
       expect(mockReadAuthorHandler.handle).toHaveBeenCalledWith(new ReadAuthorQuery(authorId));
-      expect(res.statusCode).toBe(200);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual(mockAuthor);
+      expectSuccess(res, (data) => {
+        expect(data).toEqual(mockAuthor);
+      });
     });
 
     it('should return correct error when author not found', async () => {
       const authorId = 'c6495368-edc2-4e16-a525-bf6837e38da2';
       mockReadAuthorHandler.handle.mockResolvedValue(queryOk(null));
 
-      const req = createMockRequest({ id: authorId });
+      const req = mockRequestWithParams({ id: authorId });
       const res = httpMocks.createResponse();
 
       await sut.getAuthorById(req, res);
+
       expect(mockReadAuthorHandler.handle).toHaveBeenCalledWith(new ReadAuthorQuery(authorId));
-      expect(res.statusCode).toBe(404);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual({ error: 'Author not found' });
-      expect(mockLogger.error).toHaveBeenCalledTimes(0);
+      expectNotFound(res, 'Author not found');
     });
 
     it('should return the correct error upon hard exception', async () => {
       const authorId = '911aa084-ad4b-4d16-a0b6-cad5fe2589c6';
       mockReadAuthorHandler.handle.mockResolvedValue(
-        queryFail(ErrorCodes.DATABASE_ERROR, 'Whoops! There was a Cosmos Error!', HttpStatus.INTERNAL_SERVER_ERROR)
+        queryFail(ErrorCodes.DATABASE_ERROR, 'Whoops! There was a Cosmos Error!', HttpStatus.INTERNAL_SERVER_ERROR),
       );
 
-      const req = createMockRequest({ id: authorId });
+      const req = mockRequestWithParams({ id: authorId });
       const res = httpMocks.createResponse();
 
       await sut.getAuthorById(req, res);
+
       expect(mockReadAuthorHandler.handle).toHaveBeenCalledWith(new ReadAuthorQuery(authorId));
-      expect(res.statusCode).toBe(500);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual({ error: 'Failed to retrieve author' });
-      expect(mockLogger.error).toHaveBeenCalledWith('Failed to retrieve author', {
-        code: ErrorCodes.DATABASE_ERROR,
-        message: 'Whoops! There was a Cosmos Error!',
-        authorId,
-      });
+      expectInternalServerError(res, 'Failed to retrieve author');
     });
   });
 
@@ -175,17 +160,18 @@ describe('AuthorController', () => {
 
       mockCreateAuthorCommandHandler.handle.mockResolvedValue(commandOk(createdAuthor));
 
-      const req = createMockRequest({}, createDto);
+      const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
       await sut.createAuthor(req, res);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
-      expect(res.statusCode).toBe(HttpStatus.CREATED);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.firstName).toBe('Stephen');
-      expect(responseData.lastName).toBe('King');
-      expect(responseData.displayName).toBe('Stephen King');
+      expectCreated(res, (data) => {
+        const authorData = data as Author;
+        expect(authorData.firstName).toBe('Stephen');
+        expect(authorData.lastName).toBe('King');
+        expect(authorData.displayName).toBe('Stephen King');
+      });
     });
 
     it('should successfully create an author with all optional fields', async () => {
@@ -214,16 +200,17 @@ describe('AuthorController', () => {
 
       mockCreateAuthorCommandHandler.handle.mockResolvedValue(commandOk(createdAuthor));
 
-      const req = createMockRequest({}, createDto);
+      const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
       await sut.createAuthor(req, res);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
-      expect(res.statusCode).toBe(HttpStatus.CREATED);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.middleName).toBe('R.R.');
-      expect(responseData.pseudonyms).toContain('GRRM');
+      expectCreated(res, (data) => {
+        const authorData = data as Author;
+        expect(authorData.middleName).toBe('R.R.');
+        expect(authorData.pseudonyms).toContain('GRRM');
+      });
     });
 
     it('should return validation error when firstName is missing', async () => {
@@ -237,19 +224,16 @@ describe('AuthorController', () => {
       };
 
       mockCreateAuthorCommandHandler.handle.mockResolvedValue(
-        commandFail(ErrorCodes.VALIDATION_FAILED, 'Validation failed: First name is required', HttpStatus.BAD_REQUEST)
+        commandFail(ErrorCodes.VALIDATION_FAILED, 'Validation failed: First name is required', HttpStatus.BAD_REQUEST),
       );
 
-      const req = createMockRequest({}, createDto);
+      const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
       await sut.createAuthor(req, res);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
-      expect(res.statusCode).toBe(HttpStatus.BAD_REQUEST);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
-      expect(responseData.error.message).toContain('First name is required');
+      expectBadRequest(res, 'First name is required');
     });
 
     it('should return validation error when genres are empty', async () => {
@@ -266,20 +250,17 @@ describe('AuthorController', () => {
         commandFail(
           ErrorCodes.VALIDATION_FAILED,
           'Validation failed: At least one genre is required',
-          HttpStatus.BAD_REQUEST
-        )
+          HttpStatus.BAD_REQUEST,
+        ),
       );
 
-      const req = createMockRequest({}, createDto);
+      const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
       await sut.createAuthor(req, res);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
-      expect(res.statusCode).toBe(HttpStatus.BAD_REQUEST);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
-      expect(responseData.error.message).toContain('At least one genre is required');
+      expectBadRequest(res, 'At least one genre is required');
     });
 
     it('should return database error when repository fails', async () => {
@@ -293,26 +274,16 @@ describe('AuthorController', () => {
       };
 
       mockCreateAuthorCommandHandler.handle.mockResolvedValue(
-        commandFail(ErrorCodes.DATABASE_ERROR, 'Cosmos DB is down', HttpStatus.INTERNAL_SERVER_ERROR)
+        commandFail(ErrorCodes.DATABASE_ERROR, 'Cosmos DB is down', HttpStatus.INTERNAL_SERVER_ERROR),
       );
 
-      const req = createMockRequest({}, createDto);
+      const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
       await sut.createAuthor(req, res);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
-      expect(res.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.error.code).toBe(ErrorCodes.DATABASE_ERROR);
-      expect(responseData.error.message).toBe('Cosmos DB is down');
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        'Failed to create author',
-        expect.objectContaining({
-          code: ErrorCodes.DATABASE_ERROR,
-          message: 'Cosmos DB is down',
-        })
-      );
+      expectInternalServerError(res, 'Cosmos DB is down');
     });
 
     it('should return validation error for invalid email', async () => {
@@ -330,20 +301,17 @@ describe('AuthorController', () => {
         commandFail(
           ErrorCodes.VALIDATION_FAILED,
           'Validation failed: Email must be a valid email address',
-          HttpStatus.BAD_REQUEST
-        )
+          HttpStatus.BAD_REQUEST,
+        ),
       );
 
-      const req = createMockRequest({}, createDto);
+      const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
       await sut.createAuthor(req, res);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
-      expect(res.statusCode).toBe(HttpStatus.BAD_REQUEST);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
-      expect(responseData.error.message).toContain('Email must be a valid email address');
+      expectBadRequest(res, 'Email must be a valid email address');
     });
 
     it('should return validation error for invalid status', async () => {
@@ -352,23 +320,22 @@ describe('AuthorController', () => {
         lastName: 'King',
         displayName: 'Stephen King',
         genres: ['Horror'],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         status: 'InvalidStatus' as any,
         isVerified: true,
       };
 
       mockCreateAuthorCommandHandler.handle.mockResolvedValue(
-        commandFail(ErrorCodes.VALIDATION_FAILED, 'Validation failed: Invalid status', HttpStatus.BAD_REQUEST)
+        commandFail(ErrorCodes.VALIDATION_FAILED, 'Validation failed: Invalid status', HttpStatus.BAD_REQUEST),
       );
 
-      const req = createMockRequest({}, createDto);
+      const req = mockRequestWithBody({}, createDto);
       const res = httpMocks.createResponse();
 
       await sut.createAuthor(req, res);
 
       expect(mockCreateAuthorCommandHandler.handle).toHaveBeenCalled();
-      expect(res.statusCode).toBe(HttpStatus.BAD_REQUEST);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+      expectBadRequest(res, 'Invalid status');
     });
   });
 });

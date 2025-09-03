@@ -69,4 +69,8 @@ export class WinstonLogger implements ILogger {
   debug(message: string, meta?: Record<string, unknown>): void {
     this.logger.debug(message, this.enrichMetadata(meta));
   }
+
+  child(_context: Record<string, unknown>): ILogger {
+    throw new Error('WinstonLogger.child() is not implemented. Use ContextualWinstonLogger instead.');
+  }
 }

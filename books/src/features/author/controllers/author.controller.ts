@@ -14,6 +14,7 @@ import { ILogger } from '@libs/logging/logger.interface';
 import { Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
 import { Get, Post, RequireRoles } from '@libs/decorators/route.decorators';
+import { LogOperation, CaptureContext } from '@libs/decorators/logging.decorators';
 import authConfig from '../../../config/authConfig';
 
 @injectable()
@@ -22,20 +23,18 @@ export class AuthorController {
     @inject(TYPES.ReadAuthorListHandler) private readonly readAuthorListHandler: IQueryHandler<ReadAuthorListQuery, ReadAuthorDto[]>,
     @inject(TYPES.ReadAuthorHandler) private readonly readAuthorHandler: IQueryHandler<ReadAuthorQuery, ReadAuthorDto | null>,
     @inject(TYPES.CreateAuthorCommandHandler) private readonly createAuthorCommandHandler: ICommandHandler<CreateAuthorCommand, Author>,
+    // @ts-expect-error - Logger is used by @LogOperation decorator via 'this.logger'
     @inject(TYPES.Logger) private readonly logger: ILogger
   ) {}
 
   @Get('/')
   @RequireRoles(authConfig.roles.admin, authConfig.roles.reader)
+  @LogOperation('GetAuthors')
   async getAuthors(_req: Request, res: Response): Promise<void> {
     const query = new ReadAuthorListQuery();
     const result = await this.readAuthorListHandler.handle(query);
 
     if (isQueryFail(result)) {
-      this.logger.error('Failed to fetch author list', {
-        code: result.error.code,
-        message: result.error.message,
-      });
       res.status(result.error.statusCode).json({ message: 'Failed to list authors' });
       return;
     }
@@ -45,17 +44,14 @@ export class AuthorController {
 
   @Get('/:id')
   @RequireRoles(authConfig.roles.admin, authConfig.roles.reader)
+  @CaptureContext('authorId', 'params', 'id')
+  @LogOperation('GetAuthorById')
   async getAuthorById(req: Request, res: Response): Promise<void> {
     const id = req.params.id;
     const query = new ReadAuthorQuery(id);
     const result = await this.readAuthorHandler.handle(query);
 
     if (isQueryFail(result)) {
-      this.logger.error('Failed to retrieve author', {
-        code: result.error.code,
-        message: result.error.message,
-        authorId: id,
-      });
       res.status(result.error.statusCode).json({ error: 'Failed to retrieve author' });
       return;
     }
@@ -70,16 +66,12 @@ export class AuthorController {
 
   @Post('/')
   @RequireRoles(authConfig.roles.admin, authConfig.roles.writer)
+  @LogOperation('CreateAuthor')
   async createAuthor(req: Request<object, object, CreateAuthorDto>, res: Response): Promise<void> {
     const command = new CreateAuthorCommand(req.body);
     const result = await this.createAuthorCommandHandler.handle(command);
 
     if (isCommandFail(result)) {
-      this.logger.error('Failed to create author', {
-        code: result.error.code,
-        message: result.error.message,
-        field: result.error.field,
-      });
       res.status(result.error.statusCode).json({
         error: {
           code: result.error.code,

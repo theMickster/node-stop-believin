@@ -2,24 +2,19 @@ import { BookRepository } from '@data/repos/book.repository';
 import { CreateBookCommandHandler } from './createBook.command.handler';
 import { CreateBookCommand } from './createBook.command';
 import { Book } from '../../../data/entities/book.entity';
-import { repoOk, repoFail } from '../../../data/libs/repoResult';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { isCommandFail, isCommandOk } from '@libs/cqrs/commandResult';
 import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { mock, mockReset } from 'jest-mock-extended';
+import { buildBookRepoMock } from '_test_/builders/bookRepositoryMockBuilder';
 
 describe('CreateBookCommandHandler', () => {
-  let mockRepo: jest.Mocked<BookRepository>;
+  const mockRepo = mock<BookRepository>();
   let sut: CreateBookCommandHandler;
 
   beforeEach(() => {
-    mockRepo = {
-      getAll: jest.fn(),
-      getById: jest.fn(),
-      create: jest.fn(),
-    } as any;
-
+    mockReset(mockRepo);
     sut = new CreateBookCommandHandler(mockRepo);
-    jest.clearAllMocks();
   });
 
   it('should successfully create a new book', async () => {
@@ -45,7 +40,7 @@ describe('CreateBookCommandHandler', () => {
       isDeleted: false,
       version: 1,
     };
-    mockRepo.create.mockResolvedValue(repoOk(fakeBook));
+    buildBookRepoMock(mockRepo).createReturns(fakeBook);
 
     const result = await sut.handle(cmd);
 
@@ -81,7 +76,7 @@ describe('CreateBookCommandHandler', () => {
       authors: [{ authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 }],
     };
     const cmd = new CreateBookCommand(dto);
-    mockRepo.create.mockResolvedValue(repoFail('Cosmos DB is down', 500));
+    buildBookRepoMock(mockRepo).createFails('Cosmos DB is down', 500);
 
     const result = await sut.handle(cmd);
 

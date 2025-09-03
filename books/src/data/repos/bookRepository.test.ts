@@ -4,6 +4,7 @@ import { repoOk } from '@data/libs/repoResult';
 import { fakeCosmicBooks } from '@fixtures/books';
 import { BookRepository } from './book.repository';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { buildCosmosContainerMock } from '_test_/builders/cosmosContainerMockBuilder';
 
 describe('BookRepository', () => {
   let sut: BookRepository;
@@ -27,17 +28,7 @@ describe('BookRepository', () => {
       version: 1,
     };
 
-    const fetchAllMock = jest.fn().mockResolvedValue({ resources: fakeCosmicBooks });
-
-    mockContainer = {
-      items: {
-        query: jest.fn().mockReturnValue({
-          fetchAll: fetchAllMock,
-        }) as any,
-        create: jest.fn(),
-      },
-      item: jest.fn(),
-    } as unknown as jest.Mocked<CosmosContainer>;
+    mockContainer = buildCosmosContainerMock().queryReturns(fakeCosmicBooks).build();
 
     sut = new BookRepository(mockContainer);
   });

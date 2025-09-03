@@ -4,19 +4,16 @@ import { ErrorCodes } from '@libs/cqrs/errorCodes';
 import { DeleteBookValidator } from '../validators/deleteBook.validator';
 import { DeleteBookCommand } from './deleteBook.command';
 import { DeleteBookCommandHandler } from './deleteBook.command.handler';
+import { mock, mockReset } from 'jest-mock-extended';
+import { buildBookRepoMock } from '_test_/builders/bookRepositoryMockBuilder';
 
 describe('DeleteBookCommandHandler', () => {
+  const mockRepo = mock<BookRepository>();
   let handler: DeleteBookCommandHandler;
-  let mockRepo: jest.Mocked<BookRepository>;
   let mockValidator: jest.Mocked<DeleteBookValidator>;
 
   beforeEach(() => {
-    mockRepo = {
-      getAll: jest.fn(),
-      getById: jest.fn(),
-      create: jest.fn(),
-      delete: jest.fn(),
-    } as any;
+    mockReset(mockRepo);
 
     mockValidator = new DeleteBookValidator(mockRepo) as jest.Mocked<DeleteBookValidator>;
     mockValidator.validate = jest.fn();
@@ -26,7 +23,7 @@ describe('DeleteBookCommandHandler', () => {
   it('should delete the book successfully', async () => {
     const command = new DeleteBookCommand('0365ea2a-4afc-4916-a933-5c7a5ae067e0');
     mockValidator.validate.mockResolvedValue({ valid: true });
-    mockRepo.delete.mockResolvedValue({ success: true, statusCode: 0 });
+    buildBookRepoMock(mockRepo).deleteReturns();
 
     const result = await handler.handle(command);
 

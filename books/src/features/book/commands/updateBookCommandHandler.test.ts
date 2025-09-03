@@ -271,6 +271,7 @@ describe('UpdateBookCommandHandler', () => {
       const command = new UpdateBookCommand(validUpdateDto);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockBookRepository.update.mockResolvedValue(repoOk(null as any));
 
       const result = await sut.handle(command);
@@ -286,6 +287,7 @@ describe('UpdateBookCommandHandler', () => {
       const command = new UpdateBookCommand(validUpdateDto);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockBookRepository.update.mockResolvedValue(repoFail(null as any, 500));
 
       const result = await sut.handle(command);

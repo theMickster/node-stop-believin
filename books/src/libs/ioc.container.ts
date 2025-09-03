@@ -24,13 +24,13 @@ import { DeleteBookValidator } from '@features/book/validators/deleteBook.valida
 import { UpdateBookValidator } from '@features/book/validators/updateBook.validator';
 import { UpdateBookCommandHandler } from '@features/book/commands/updateBook.command.handler';
 import { ILogger } from './logging/logger.interface';
-import { WinstonLogger } from './logging/winston.logger';
+import { ContextualWinstonLogger } from './logging/contextual.winston.logger';
 import { CosmicLogger } from './logging/cosmic.logger';
 
 const container = new Container();
 
 container.bind<typeof config>(TYPES.AppConfig).toConstantValue(config);
-container.bind<ILogger>(TYPES.WinstonLogger).to(WinstonLogger).inSingletonScope();
+container.bind<ILogger>(TYPES.WinstonLogger).to(ContextualWinstonLogger).inSingletonScope();
 container.bind<ILogger>(TYPES.Logger).to(CosmicLogger).inSingletonScope();
 
 container

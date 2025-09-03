@@ -275,6 +275,7 @@ describe('UpdateClassificationCommandHandler', () => {
         deweyDecimal: '823.914',
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockBookRepository.getById.mockResolvedValue(repoOk(null as any));
 
       const result = await sut.handle(command);
@@ -311,6 +312,7 @@ describe('UpdateClassificationCommandHandler', () => {
       });
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockBookRepository.update.mockResolvedValue(repoOk(null as any));
 
       const result = await sut.handle(command);

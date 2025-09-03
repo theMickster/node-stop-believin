@@ -2,24 +2,19 @@ import { AuthorRepository } from '@data/repos/author.repository';
 import { CreateAuthorCommandHandler } from './createAuthor.command.handler';
 import { CreateAuthorCommand } from './createAuthor.command';
 import { Author } from '@data/entities/author.entity';
-import { repoOk, repoFail } from '@data/libs/repoResult';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { isCommandFail, isCommandOk } from '@libs/cqrs/commandResult';
 import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { mock, mockReset } from 'jest-mock-extended';
+import { buildAuthorRepoMock } from '_test_/builders/authorRepositoryMockBuilder';
 
 describe('CreateAuthorCommandHandler', () => {
-  let mockRepo: jest.Mocked<AuthorRepository>;
+  const mockRepo = mock<AuthorRepository>();
   let sut: CreateAuthorCommandHandler;
 
   beforeEach(() => {
-    mockRepo = {
-      getAll: jest.fn(),
-      getById: jest.fn(),
-      create: jest.fn(),
-    } as any;
-
+    mockReset(mockRepo);
     sut = new CreateAuthorCommandHandler(mockRepo);
-    jest.clearAllMocks();
   });
 
   it('should successfully create a new author', async () => {
@@ -50,7 +45,7 @@ describe('CreateAuthorCommandHandler', () => {
       isDeleted: false,
       version: 1,
     };
-    mockRepo.create.mockResolvedValue(repoOk(fakeAuthor));
+    buildAuthorRepoMock(mockRepo).createReturns(fakeAuthor);
 
     const result = await sut.handle(cmd);
 
@@ -99,7 +94,7 @@ describe('CreateAuthorCommandHandler', () => {
       isDeleted: false,
       version: 1,
     };
-    mockRepo.create.mockResolvedValue(repoOk(fakeAuthor));
+    buildAuthorRepoMock(mockRepo).createReturns(fakeAuthor);
 
     const result = await sut.handle(cmd);
 
@@ -207,7 +202,7 @@ describe('CreateAuthorCommandHandler', () => {
       lastName: 'King',
       displayName: 'Stephen King',
       genres: ['Horror'],
-      status: 'InvalidStatus' as any,
+      status: 'InvalidStatus' as never,
       isVerified: true,
     };
     const cmd = new CreateAuthorCommand(dto);
@@ -255,7 +250,7 @@ describe('CreateAuthorCommandHandler', () => {
       isVerified: true,
     };
     const cmd = new CreateAuthorCommand(dto);
-    mockRepo.create.mockResolvedValue(repoFail('Cosmos DB is down', 500));
+    buildAuthorRepoMock(mockRepo).createFails('Cosmos DB is down', 500);
 
     const result = await sut.handle(cmd);
 
