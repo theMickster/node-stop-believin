@@ -94,10 +94,10 @@ describe('BookController', () => {
 
       expect(mockReadBookListHandler.handle).toHaveBeenCalledWith(new ReadBookListQuery());
       expectInternalServerError(res);
-      expectLoggerError(mockLogger, 'Failed to fetch book list', (context) => {
-        const ctx = context as { code: string; message: string };
-        expect(ctx.code).toBe(ErrorCodes.DATABASE_ERROR);
-        expect(ctx.message).toBe('Whoops! There was a Cosmos Error!');
+      expectLoggerError(mockLogger, 'Operation failed', (context) => {
+        const ctx = context as { statusCode: number; duration: number };
+        expect(ctx.statusCode).toBe(500);
+        expect(ctx.duration).toBeGreaterThanOrEqual(0);
       });
     });
   });
@@ -134,7 +134,7 @@ describe('BookController', () => {
 
       expect(mockReadBookHandler.handle).toHaveBeenCalledWith(new ReadBookQuery(bookId));
       expectNotFound(res, 'Book not found');
-      expectLoggerError(mockLogger);
+      // Note: 404 errors log as warnings, not errors, so no expectLoggerError
     });
 
     it('should return the correct error upon hard exception', async () => {
@@ -150,11 +150,10 @@ describe('BookController', () => {
 
       expect(mockReadBookHandler.handle).toHaveBeenCalledWith(new ReadBookQuery(bookId));
       expectInternalServerError(res);
-      expectLoggerError(mockLogger, 'Failed to retrieve book', (context) => {
-        const ctx = context as { code: string; message: string; bookId: string };
-        expect(ctx.code).toBe(ErrorCodes.DATABASE_ERROR);
-        expect(ctx.message).toBe('Whoops! There was a Cosmos Error!');
-        expect(ctx.bookId).toBe(bookId);
+      expectLoggerError(mockLogger, 'Operation failed', (context) => {
+        const ctx = context as { statusCode: number; duration: number };
+        expect(ctx.statusCode).toBe(500);
+        expect(ctx.duration).toBeGreaterThanOrEqual(0);
       });
     });
   });
@@ -216,10 +215,10 @@ describe('BookController', () => {
 
       expect(mockCreateBookCommandHandler.handle).toHaveBeenCalledWith(new CreateBookCommand(createBookDto, mockContext));
       expectInternalServerError(res);
-      expectLoggerError(mockLogger, 'Failed to create book', (context) => {
-        const ctx = context as { code: string; message: string };
-        expect(ctx.code).toBe(ErrorCodes.DATABASE_ERROR);
-        expect(ctx.message).toBe('Whoops! There was a Cosmos Error!');
+      expectLoggerError(mockLogger, 'Operation failed', (context) => {
+        const ctx = context as { statusCode: number; duration: number };
+        expect(ctx.statusCode).toBe(500);
+        expect(ctx.duration).toBeGreaterThanOrEqual(0);
       });
     });
   });
@@ -232,9 +231,9 @@ describe('BookController', () => {
       const req = mockRequestWithParams({ id });
       const res = httpMocks.createResponse();
 
-      await sut.deleteBook(req, res);
+      await sut.deleteBook(req, res, mockContext);
 
-      expect(mockDeleteBookCommandHandler.handle).toHaveBeenCalledWith(new DeleteBookCommand(id));
+      expect(mockDeleteBookCommandHandler.handle).toHaveBeenCalledWith(new DeleteBookCommand(id, mockContext));
       expectNoContent(res);
     });
 
@@ -246,15 +245,14 @@ describe('BookController', () => {
       const req = mockRequestWithParams({ id });
       const res = httpMocks.createResponse();
 
-      await sut.deleteBook(req, res);
+      await sut.deleteBook(req, res, mockContext);
 
-      expect(mockDeleteBookCommandHandler.handle).toHaveBeenCalledWith(new DeleteBookCommand(id));
+      expect(mockDeleteBookCommandHandler.handle).toHaveBeenCalledWith(new DeleteBookCommand(id, mockContext));
       expectInternalServerError(res);
-      expectLoggerError(mockLogger, 'Failed to delete book', (context) => {
-        const ctx = context as { code: string; message: string; bookId: string };
-        expect(ctx.code).toBe(ErrorCodes.DATABASE_ERROR);
-        expect(ctx.message).toBe('Some Delete error');
-        expect(ctx.bookId).toBe(id);
+      expectLoggerError(mockLogger, 'Operation failed', (context) => {
+        const ctx = context as { statusCode: number; duration: number };
+        expect(ctx.statusCode).toBe(500);
+        expect(ctx.duration).toBeGreaterThanOrEqual(0);
       });
     });
   });
@@ -319,10 +317,10 @@ describe('BookController', () => {
       await sut.updateBook(req, res, mockContext);
 
       expectInternalServerError(res);
-      expectLoggerError(mockLogger, 'Failed to update book', (context) => {
-        const ctx = context as { code: string; message: string };
-        expect(ctx.code).toBe(ErrorCodes.DATABASE_ERROR);
-        expect(ctx.message).toBe('Whoops! There was a Cosmos Error!');
+      expectLoggerError(mockLogger, 'Operation failed', (context) => {
+        const ctx = context as { statusCode: number; duration: number };
+        expect(ctx.statusCode).toBe(500);
+        expect(ctx.duration).toBeGreaterThanOrEqual(0);
       });
     });
   });

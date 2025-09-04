@@ -36,7 +36,8 @@ export class ClassifyBookCommandHandler implements ICommandHandler<ClassifyBookC
     const dewey = validationResult.value.deweyDecimal;
     const loc = validationResult.value.libraryOfCongressNumber;
     const oclc = validationResult.value.oclcNumber;
-    const now = new Date();
+    const timestamp = command.context.timestamp;
+    const userId = command.context.userId ?? 'system';
     const classifiedBook: Book = {
       ...book,
       libraryClassification: {
@@ -44,8 +45,8 @@ export class ClassifyBookCommandHandler implements ICommandHandler<ClassifyBookC
         ...(loc && { libraryOfCongressNumber: loc }),
         ...(oclc && { oclcNumber: oclc }),
       },
-      updatedAt: now,
-      updatedBy: 'system',
+      updatedAt: timestamp,
+      updatedBy: userId,
       version: book.version + 1,
     };
 

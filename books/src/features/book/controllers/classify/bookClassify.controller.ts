@@ -3,9 +3,16 @@ import { inject, injectable } from 'inversify';
 
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { isCommandFail } from '@libs/cqrs/commandResult';
-import { Post, Put, RequireRoles } from '@libs/decorators/route.decorators';
+import {
+  ExecutionContext as ExecutionContextDecorator,
+  Post,
+  Put,
+  RequireRoles,
+} from '@libs/decorators/route.decorators';
 import TYPES from '@libs/ioc.types';
 import { ILogger } from '@libs/logging/logger.interface';
+
+import { ExecutionContext } from '@middleware/requestContext';
 
 import { Book } from '@data/entities/book.entity';
 
@@ -28,9 +35,13 @@ export class BookClassifyController {
 
   @Post('/:id/classify')
   @RequireRoles(authConfig.roles.admin, authConfig.roles.writer)
-  async classifyBook(req: Request<{ id: string }, object, ClassifyBookDto>, res: Response): Promise<void> {
+  async classifyBook(
+    req: Request<{ id: string }, object, ClassifyBookDto>,
+    res: Response,
+    @ExecutionContextDecorator() context: ExecutionContext,
+  ): Promise<void> {
     const bookId = req.params.id;
-    const command = new ClassifyBookCommand(bookId, req.body);
+    const command = new ClassifyBookCommand(bookId, req.body, context);
     const result = await this.classifyBookCommandHandler.handle(command);
 
     if (isCommandFail(result)) {
@@ -56,9 +67,10 @@ export class BookClassifyController {
   async updateClassification(
     req: Request<{ id: string }, object, UpdateClassificationDto>,
     res: Response,
+    @ExecutionContextDecorator() context: ExecutionContext,
   ): Promise<void> {
     const bookId = req.params.id;
-    const command = new UpdateClassificationCommand(bookId, req.body);
+    const command = new UpdateClassificationCommand(bookId, req.body, context);
     const result = await this.updateClassificationCommandHandler.handle(command);
 
     if (isCommandFail(result)) {

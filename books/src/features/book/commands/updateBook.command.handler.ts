@@ -33,7 +33,18 @@ export class UpdateBookCommandHandler implements ICommandHandler<UpdateBookComma
       );
     }
 
-    const model = mapUpdateDtoToBook(command.updateBookDto, command.context);
+    // Fetch existing book to preserve original createdAt/createdBy
+    const existingBookResult = await this.bookRepository.getById(command.updateBookDto.id);
+
+    if (!existingBookResult.success || !existingBookResult.data) {
+      return commandFail(
+        ErrorCodes.BOOK_NOT_FOUND,
+        'Book not found',
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    const model = mapUpdateDtoToBook(existingBookResult.data, command.updateBookDto, command.context);
     const result = await this.bookRepository.update(model);
 
     if (!result.success || !result.data) {

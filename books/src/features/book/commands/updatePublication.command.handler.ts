@@ -66,7 +66,8 @@ export class UpdatePublicationCommandHandler implements ICommandHandler<UpdatePu
     }
 
     // 5. Apply publication updates
-    const now = new Date();
+    const timestamp = command.context.timestamp;
+    const userId = command.context.userId ?? 'system';
 
     const updatedBook: Book = {
       ...book,
@@ -74,8 +75,8 @@ export class UpdatePublicationCommandHandler implements ICommandHandler<UpdatePu
       ...(validationResult.value.publishedDate && { publishedDate: validationResult.value.publishedDate }),
       ...(validationResult.value.copyright !== undefined && { copyright: validationResult.value.copyright }),
       ...(validationResult.value.edition && { edition: validationResult.value.edition }),
-      updatedAt: now,
-      updatedBy: 'system', // TODO: Get from context/auth
+      updatedAt: timestamp,
+      updatedBy: userId,
       version: book.version + 1,
     };
 
@@ -93,8 +94,8 @@ export class UpdatePublicationCommandHandler implements ICommandHandler<UpdatePu
     this.logger.info('Publication information updated', {
       bookId: book.bookId,
       reason: validationResult.value.reason,
-      updatedBy: 'system',
-      updatedAt: now,
+      updatedBy: userId,
+      updatedAt: timestamp,
     });
 
     return commandOk(updateResult.data);

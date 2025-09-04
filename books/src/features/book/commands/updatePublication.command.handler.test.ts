@@ -1,8 +1,15 @@
+import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
+import {
+  expectCommandSuccess,
+  expectValidationError,
+  expectNotFoundError,
+  expectDatabaseError,
+  expectConflictError,
+} from '_test_/helpers/commandAssertions';
 import { mock, mockReset } from 'jest-mock-extended';
 
-import { isCommandOk, isCommandFail } from '@libs/cqrs/commandResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import { ILogger } from '@libs/logging/logger.interface';
+
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { Book } from '@data/entities/book.entity';
@@ -18,6 +25,7 @@ describe('UpdatePublicationCommandHandler', () => {
   const mockBookRepository = mock<BookRepository>();
   const mockLogger = mock<ILogger>();
   let sut: UpdatePublicationCommandHandler;
+  const mockContext = buildMockExecutionContext().build();
 
   const testBook: Book = {
     id: '123e4567-e89b-12d3-a456-426614174000',
@@ -49,7 +57,7 @@ describe('UpdatePublicationCommandHandler', () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn13: '9780987654321' },
         reason: 'Correcting ISBN due to data entry error',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.isbnExists.mockResolvedValue(repoOk(false));
@@ -63,10 +71,9 @@ describe('UpdatePublicationCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandOk(result)).toBe(true);
-      if (isCommandOk(result)) {
-        expect(result.data.isbn).toEqual({ isbn13: '9780987654321' });
-      }
+      expectCommandSuccess(result, (data) => {
+        expect(data.isbn).toEqual({ isbn13: '9780987654321' });
+      });
       expect(mockBookRepository.isbnExists).toHaveBeenCalledWith({ isbn13: '9780987654321' }, testBook.id);
     });
 
@@ -74,7 +81,7 @@ describe('UpdatePublicationCommandHandler', () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         copyright: '© 2025 Updated Publisher',
         reason: 'Publisher name changed',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(
@@ -87,17 +94,16 @@ describe('UpdatePublicationCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandOk(result)).toBe(true);
-      if (isCommandOk(result)) {
-        expect(result.data.copyright).toBe('© 2025 Updated Publisher');
-      }
+      expectCommandSuccess(result, (data) => {
+        expect(data.copyright).toBe('© 2025 Updated Publisher');
+      });
     });
 
     it('should update edition', async () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         edition: '2nd Edition',
         reason: 'Correcting edition information',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(
@@ -110,10 +116,9 @@ describe('UpdatePublicationCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandOk(result)).toBe(true);
-      if (isCommandOk(result)) {
-        expect(result.data.edition).toBe('2nd Edition');
-      }
+      expectCommandSuccess(result, (data) => {
+        expect(data.edition).toBe('2nd Edition');
+      });
     });
 
     it('should update published date', async () => {
@@ -121,7 +126,7 @@ describe('UpdatePublicationCommandHandler', () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         publishedDate: newDate,
         reason: 'Correcting publication date',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(
@@ -134,10 +139,9 @@ describe('UpdatePublicationCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandOk(result)).toBe(true);
-      if (isCommandOk(result)) {
-        expect(result.data.publishedDate).toEqual(newDate);
-      }
+      expectCommandSuccess(result, (data) => {
+        expect(data.publishedDate).toEqual(newDate);
+      });
     });
 
     it('should update multiple fields at once', async () => {
@@ -146,7 +150,7 @@ describe('UpdatePublicationCommandHandler', () => {
         copyright: '© 2025 New Publisher',
         edition: '2nd Edition',
         reason: 'Multiple corrections needed',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.isbnExists.mockResolvedValue(repoOk(false));
@@ -162,19 +166,18 @@ describe('UpdatePublicationCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandOk(result)).toBe(true);
-      if (isCommandOk(result)) {
-        expect(result.data.isbn).toEqual({ isbn13: '9780987654321' });
-        expect(result.data.copyright).toBe('© 2025 New Publisher');
-        expect(result.data.edition).toBe('2nd Edition');
-      }
+      expectCommandSuccess(result, (data) => {
+        expect(data.isbn).toEqual({ isbn13: '9780987654321' });
+        expect(data.copyright).toBe('© 2025 New Publisher');
+        expect(data.edition).toBe('2nd Edition');
+      });
     });
 
     it('should increment book version', async () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         copyright: '© 2025 Updated',
         reason: 'Copyright update required by publisher',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(repoOk({ ...testBook, version: 2 }));
@@ -192,7 +195,7 @@ describe('UpdatePublicationCommandHandler', () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         copyright: '© 2025 Updated',
         reason: 'Metadata update required',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(repoOk({ ...testBook, version: 2 }));
@@ -201,7 +204,7 @@ describe('UpdatePublicationCommandHandler', () => {
 
       expect(mockBookRepository.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          updatedBy: 'system',
+          updatedBy: 'test-user-id',
           updatedAt: expect.any(Date),
         }),
       );
@@ -211,7 +214,7 @@ describe('UpdatePublicationCommandHandler', () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         copyright: '© 2025 Updated',
         reason: 'Copyright correction',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(repoOk({ ...testBook, version: 2 }));
@@ -223,59 +226,45 @@ describe('UpdatePublicationCommandHandler', () => {
         expect.objectContaining({
           bookId: testBook.bookId,
           reason: 'Copyright correction',
-          updatedBy: 'system',
+          updatedBy: 'test-user-id',
         }),
       );
     });
 
     it('should return error when validation fails', async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {} as any);
+      const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {} as any, mockContext);
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-      if (isCommandFail(result)) {
-        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
-        expect(result.error.statusCode).toBe(HttpStatus.BAD_REQUEST);
-      }
+      expectValidationError(result);
     });
 
     it('should return error when book not found', async () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         copyright: '© 2025',
         reason: 'Copyright update needed',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoFail('Book not found', 404));
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-      if (isCommandFail(result)) {
-        expect(result.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
-        expect(result.error.message).toBe('Book not found');
-        expect(result.error.statusCode).toBe(HttpStatus.NOT_FOUND);
-      }
+      expectNotFoundError(result);
     });
 
     it('should return error when repository returns no data', async () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         copyright: '© 2025',
         reason: 'Copyright update needed',
-      });
+      }, mockContext);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockBookRepository.getById.mockResolvedValue(repoOk(null as any));
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-      if (isCommandFail(result)) {
-        expect(result.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
-        expect(result.error.message).toBe('Book not found');
-        expect(result.error.statusCode).toBe(HttpStatus.NOT_FOUND);
-      }
+      expectNotFoundError(result);
     });
 
     it('should return error when book is not published', async () => {
@@ -288,83 +277,62 @@ describe('UpdatePublicationCommandHandler', () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         copyright: '© 2025',
         reason: 'Copyright update needed',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(unpublishedBook));
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-      if (isCommandFail(result)) {
-        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
-        expect(result.error.message).toContain('Cannot update publication information');
-        expect(result.error.message).toContain('not been published yet');
-        expect(result.error.statusCode).toBe(HttpStatus.BAD_REQUEST);
-      }
+      expectValidationError(result, ['Cannot update publication information', 'not been published yet']);
     });
 
     it('should return error when ISBN check fails', async () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn13: '9780987654321' },
         reason: 'ISBN correction',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.isbnExists.mockResolvedValue(repoFail('Database error', 500));
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-      if (isCommandFail(result)) {
-        expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
-        expect(result.error.message).toBe('Database error');
-        expect(result.error.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
-      }
+      expectDatabaseError(result, 'Database error');
     });
 
     it('should return error when ISBN already exists', async () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn13: '9780987654321' },
         reason: 'ISBN correction',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.isbnExists.mockResolvedValue(repoOk(true));
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-      if (isCommandFail(result)) {
-        expect(result.error.code).toBe(ErrorCodes.ISBN_CONFLICT);
-        expect(result.error.message).toContain('ISBN 9780987654321 is already assigned to another book');
-        expect(result.error.statusCode).toBe(HttpStatus.CONFLICT);
-      }
+      expectConflictError(result, 'ISBN 9780987654321 is already assigned to another book');
     });
 
     it('should return error when update fails', async () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         copyright: '© 2025',
         reason: 'Copyright correction needed',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(repoFail('Database error', 500));
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-      if (isCommandFail(result)) {
-        expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
-        expect(result.error.message).toBe('Database error');
-        expect(result.error.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
-      }
+      expectDatabaseError(result, 'Database error');
     });
 
     it('should return error when update returns no data', async () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         copyright: '© 2025',
         reason: 'Copyright correction needed',
-      });
+      }, mockContext);
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -372,28 +340,18 @@ describe('UpdatePublicationCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-      if (isCommandFail(result)) {
-        expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
-        expect(result.error.message).toBe('Failed to update publication information');
-        expect(result.error.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
-      }
+      expectDatabaseError(result, 'Failed to update publication information');
     });
 
     it('should return error when reason is missing', async () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         copyright: '© 2025',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+      } as any, mockContext);
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-      if (isCommandFail(result)) {
-        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
-        expect(result.error.message).toContain('Reason is required');
-        expect(result.error.statusCode).toBe(HttpStatus.BAD_REQUEST);
-      }
+      expectValidationError(result, 'Reason is required');
     });
   });
 });

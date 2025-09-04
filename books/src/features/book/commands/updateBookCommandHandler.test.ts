@@ -1,8 +1,10 @@
 import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
+import {
+  expectCommandSuccess,
+  expectValidationError,
+  expectDatabaseError,
+} from '_test_/helpers/commandAssertions';
 import { mock, mockReset } from 'jest-mock-extended';
-
-import { isCommandFail, isCommandOk } from '@libs/cqrs/commandResult';
-import { ErrorCodes } from '@libs/cqrs/errorCodes';
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { Book } from '@data/entities/book.entity';
@@ -57,7 +59,7 @@ describe('UpdateBookCommandHandler', () => {
     createdAt: new Date('2024-01-01'),
     createdBy: 'test-user',
     updatedAt: new Date('2024-12-01'),
-    updatedBy: 'system',
+    updatedBy: 'test-user-id',
     isDeleted: false,
     version: 2,
   };
@@ -73,15 +75,14 @@ describe('UpdateBookCommandHandler', () => {
       const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      mockBookRepository.getById.mockResolvedValue(repoOk(updatedBook));
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
 
       const result = await sut.handle(command);
 
-      expect(isCommandOk(result)).toBe(true);
-
-      if (isCommandOk(result)) {
-        expect(result.data).toEqual(updatedBook);
-      }
+      expectCommandSuccess(result, (data) => {
+        expect(data).toEqual(updatedBook);
+      });
 
       expect(mockValidator.validate).toHaveBeenCalledWith(validUpdateDto);
       expect(mockBookRepository.update).toHaveBeenCalledWith(
@@ -121,6 +122,7 @@ describe('UpdateBookCommandHandler', () => {
       const command = new UpdateBookCommand(dtoWithMultipleAuthors, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      mockBookRepository.getById.mockResolvedValue(repoOk(updatedBook));
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
 
       await sut.handle(command);
@@ -153,6 +155,7 @@ describe('UpdateBookCommandHandler', () => {
       const command = new UpdateBookCommand(dtoWithAuthorDetails, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      mockBookRepository.getById.mockResolvedValue(repoOk(updatedBook));
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
 
       await sut.handle(command);
@@ -173,6 +176,7 @@ describe('UpdateBookCommandHandler', () => {
       const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      mockBookRepository.getById.mockResolvedValue(repoOk(updatedBook));
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
 
       await sut.handle(command);
@@ -185,6 +189,7 @@ describe('UpdateBookCommandHandler', () => {
       const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      mockBookRepository.getById.mockResolvedValue(repoOk(updatedBook));
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
 
       await sut.handle(command);
@@ -204,15 +209,14 @@ describe('UpdateBookCommandHandler', () => {
       const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      mockBookRepository.getById.mockResolvedValue(repoOk(updatedBook));
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
 
       const result = await sut.handle(command);
 
-      expect(isCommandOk(result)).toBe(true);
-
-      if (isCommandOk(result)) {
-        expect(result.data).toEqual(updatedBook);
-      }
+      expectCommandSuccess(result, (data) => {
+        expect(data).toEqual(updatedBook);
+      });
     });
 
     it('should return CommandResult with failure when validation fails', async () => {
@@ -225,13 +229,7 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-
-      if (isCommandFail(result)) {
-        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
-        expect(result.error.message).toBe('Validation error: Book name is required');
-      }
-
+      expectValidationError(result, 'Book name is required');
       expect(mockBookRepository.update).not.toHaveBeenCalled();
     });
 
@@ -245,11 +243,7 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-
-      if (isCommandFail(result)) {
-        expect(result.error.message).toBe('Validation error: Author ID must be a valid GUID');
-      }
+      expectValidationError(result, 'Author ID must be a valid GUID');
     });
 
     it('should not call repository when validation fails', async () => {
@@ -269,47 +263,38 @@ describe('UpdateBookCommandHandler', () => {
       const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      mockBookRepository.getById.mockResolvedValue(repoOk(updatedBook));
       mockBookRepository.update.mockResolvedValue(repoFail('Database connection failed', 500));
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-
-      if (isCommandFail(result)) {
-        expect(result.error.message).toBe('Database connection failed');
-      }
+      expectDatabaseError(result, 'Database connection failed');
     });
 
     it('should return CommandResult with error when repository returns no data', async () => {
       const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      mockBookRepository.getById.mockResolvedValue(repoOk(updatedBook));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockBookRepository.update.mockResolvedValue(repoOk(null as any));
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-
-      if (isCommandFail(result)) {
-        expect(result.error.message).toBe('Unknown error updating book');
-      }
+      expectDatabaseError(result, 'Unknown error updating book');
     });
 
     it('should return CommandResult with error when repository returns unsuccessful result with no error message', async () => {
       const command = new UpdateBookCommand(validUpdateDto, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      mockBookRepository.getById.mockResolvedValue(repoOk(updatedBook));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockBookRepository.update.mockResolvedValue(repoFail(null as any, 500));
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-
-      if (isCommandFail(result)) {
-        expect(result.error.message).toBe('Unknown error updating book');
-      }
+      expectDatabaseError(result, 'Unknown error updating book');
     });
 
     it('should handle validation error for missing book ID', async () => {
@@ -322,11 +307,7 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-
-      if (isCommandFail(result)) {
-        expect(result.error.message).toContain('Book ID is required');
-      }
+      expectValidationError(result, 'Book ID is required');
     });
 
     it('should handle validation error for invalid book ID format', async () => {
@@ -339,11 +320,7 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-
-      if (isCommandFail(result)) {
-        expect(result.error.message).toContain('Book ID must be a valid guid');
-      }
+      expectValidationError(result, 'Book ID must be a valid guid');
     });
 
     it('should handle validation error for missing authors', async () => {
@@ -356,11 +333,7 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-
-      if (isCommandFail(result)) {
-        expect(result.error.message).toContain('At least one author is required');
-      }
+      expectValidationError(result, 'At least one author is required');
     });
 
     it('should handle validation error for author name too short', async () => {
@@ -373,11 +346,7 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-
-      if (isCommandFail(result)) {
-        expect(result.error.message).toContain('First name must be at least 2 characters');
-      }
+      expectValidationError(result, 'First name must be at least 2 characters');
     });
 
     it('should handle validation error for invalid author order', async () => {
@@ -390,11 +359,7 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-
-      if (isCommandFail(result)) {
-        expect(result.error.message).toContain('Order must be at least 1');
-      }
+      expectValidationError(result, 'Order must be at least 1');
     });
 
     it('should handle book not found from validator', async () => {
@@ -407,11 +372,7 @@ describe('UpdateBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(isCommandFail(result)).toBe(true);
-
-      if (isCommandFail(result)) {
-        expect(result.error.message).toContain('does not exist');
-      }
+      expectValidationError(result, 'does not exist');
     });
 
     it('should preserve author order in mapped book', async () => {
@@ -442,6 +403,7 @@ describe('UpdateBookCommandHandler', () => {
       const command = new UpdateBookCommand(dtoWithOrderedAuthors, mockContext);
 
       mockValidator.validate.mockResolvedValue({ valid: true });
+      mockBookRepository.getById.mockResolvedValue(repoOk(updatedBook));
       mockBookRepository.update.mockResolvedValue(repoOk(updatedBook));
 
       await sut.handle(command);

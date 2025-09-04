@@ -1,3 +1,4 @@
+import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
 import {
   expectSuccess,
   expectNotFound,
@@ -29,6 +30,7 @@ describe('BookClassifyController', () => {
   const mockClassifyBookCommandHandler = mock<ICommandHandler<ClassifyBookCommand, Book>>();
   const mockUpdateClassificationCommandHandler = mock<ICommandHandler<UpdateClassificationCommand, Book>>();
   const mockLogger = mock<ILogger>();
+  const mockContext = buildMockExecutionContext().build();
 
   let sut: BookClassifyController;
 
@@ -90,10 +92,10 @@ describe('BookClassifyController', () => {
       const req = createMockClassifyRequest({ id: bookId }, classifyBookDto);
       const res = httpMocks.createResponse();
 
-      await sut.classifyBook(req, res);
+      await sut.classifyBook(req, res, mockContext);
 
       expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(
-        new ClassifyBookCommand(bookId, classifyBookDto),
+        new ClassifyBookCommand(bookId, classifyBookDto, mockContext),
       );
       expectSuccess(res, (data) => {
         const bookData = data as Book;
@@ -119,9 +121,9 @@ describe('BookClassifyController', () => {
       const req = createMockClassifyRequest({ id: bookId }, dto);
       const res = httpMocks.createResponse();
 
-      await sut.classifyBook(req, res);
+      await sut.classifyBook(req, res, mockContext);
 
-      expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(new ClassifyBookCommand(bookId, dto));
+      expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(new ClassifyBookCommand(bookId, dto, mockContext));
       expectSuccess(res, (data) => {
         const bookData = data as Book;
         expect(bookData.libraryClassification?.deweyDecimal).toBe('813.6');
@@ -135,10 +137,10 @@ describe('BookClassifyController', () => {
       const req = createMockClassifyRequest({ id: bookId }, classifyBookDto);
       const res = httpMocks.createResponse();
 
-      await sut.classifyBook(req, res);
+      await sut.classifyBook(req, res, mockContext);
 
       expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(
-        new ClassifyBookCommand(bookId, classifyBookDto),
+        new ClassifyBookCommand(bookId, classifyBookDto, mockContext),
       );
       expectNotFound(res, 'Book not found');
     });
@@ -150,10 +152,10 @@ describe('BookClassifyController', () => {
       const req = createMockClassifyRequest({ id: bookId }, classifyBookDto);
       const res = httpMocks.createResponse();
 
-      await sut.classifyBook(req, res);
+      await sut.classifyBook(req, res, mockContext);
 
       expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(
-        new ClassifyBookCommand(bookId, classifyBookDto),
+        new ClassifyBookCommand(bookId, classifyBookDto, mockContext),
       );
       expectInternalServerError(res, 'Database connection failed');
     });
@@ -169,7 +171,7 @@ describe('BookClassifyController', () => {
       const req = createMockClassifyRequest({ id: bookId }, classifyBookDto);
       const res = httpMocks.createResponse();
 
-      await sut.classifyBook(req, res);
+      await sut.classifyBook(req, res, mockContext);
 
       expectBadRequest(res, 'At least one classification field');
     });
@@ -207,10 +209,10 @@ describe('BookClassifyController', () => {
       const req = createMockUpdateRequest({ id: bookId }, updateClassificationDto);
       const res = httpMocks.createResponse();
 
-      await sut.updateClassification(req, res);
+      await sut.updateClassification(req, res, mockContext);
 
       expect(mockUpdateClassificationCommandHandler.handle).toHaveBeenCalledWith(
-        new UpdateClassificationCommand(bookId, updateClassificationDto),
+        new UpdateClassificationCommand(bookId, updateClassificationDto, mockContext),
       );
       expectSuccess(res, (data) => {
         const bookData = data as Book;
@@ -238,10 +240,10 @@ describe('BookClassifyController', () => {
       const req = createMockUpdateRequest({ id: bookId }, dto);
       const res = httpMocks.createResponse();
 
-      await sut.updateClassification(req, res);
+      await sut.updateClassification(req, res, mockContext);
 
       expect(mockUpdateClassificationCommandHandler.handle).toHaveBeenCalledWith(
-        new UpdateClassificationCommand(bookId, dto),
+        new UpdateClassificationCommand(bookId, dto, mockContext),
       );
       expectSuccess(res, (data) => {
         const bookData = data as Book;
@@ -263,10 +265,10 @@ describe('BookClassifyController', () => {
       const req = createMockUpdateRequest({ id: bookId }, dto);
       const res = httpMocks.createResponse();
 
-      await sut.updateClassification(req, res);
+      await sut.updateClassification(req, res, mockContext);
 
       expect(mockUpdateClassificationCommandHandler.handle).toHaveBeenCalledWith(
-        new UpdateClassificationCommand(bookId, dto),
+        new UpdateClassificationCommand(bookId, dto, mockContext),
       );
       expectSuccess(res, (data) => {
         const bookData = data as Book;
@@ -281,10 +283,10 @@ describe('BookClassifyController', () => {
       const req = createMockUpdateRequest({ id: bookId }, updateClassificationDto);
       const res = httpMocks.createResponse();
 
-      await sut.updateClassification(req, res);
+      await sut.updateClassification(req, res, mockContext);
 
       expect(mockUpdateClassificationCommandHandler.handle).toHaveBeenCalledWith(
-        new UpdateClassificationCommand(bookId, updateClassificationDto),
+        new UpdateClassificationCommand(bookId, updateClassificationDto, mockContext),
       );
       expectNotFound(res, 'Book not found');
     });
@@ -296,10 +298,10 @@ describe('BookClassifyController', () => {
       const req = createMockUpdateRequest({ id: bookId }, updateClassificationDto);
       const res = httpMocks.createResponse();
 
-      await sut.updateClassification(req, res);
+      await sut.updateClassification(req, res, mockContext);
 
       expect(mockUpdateClassificationCommandHandler.handle).toHaveBeenCalledWith(
-        new UpdateClassificationCommand(bookId, updateClassificationDto),
+        new UpdateClassificationCommand(bookId, updateClassificationDto, mockContext),
       );
       expectInternalServerError(res, 'Database connection failed');
     });
@@ -315,7 +317,7 @@ describe('BookClassifyController', () => {
       const req = createMockUpdateRequest({ id: bookId }, updateClassificationDto);
       const res = httpMocks.createResponse();
 
-      await sut.updateClassification(req, res);
+      await sut.updateClassification(req, res, mockContext);
 
       expectBadRequest(res, 'At least one classification field must be provided');
     });

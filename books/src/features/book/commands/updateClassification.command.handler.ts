@@ -52,7 +52,8 @@ export class UpdateClassificationCommandHandler implements ICommandHandler<Updat
         : book.libraryClassification?.oclcNumber;
 
     // 4. Apply classification updates
-    const now = new Date();
+    const timestamp = command.context.timestamp;
+    const userId = command.context.userId ?? 'system';
     const updatedBook: Book = {
       ...book,
       ...(dewey || loc || oclc
@@ -64,8 +65,8 @@ export class UpdateClassificationCommandHandler implements ICommandHandler<Updat
             },
           }
         : {}),
-      updatedAt: now,
-      updatedBy: 'system', // TODO: Get from context/auth
+      updatedAt: timestamp,
+      updatedBy: userId,
       version: book.version + 1,
     };
 

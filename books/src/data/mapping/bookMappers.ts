@@ -31,22 +31,17 @@ export function mapCreateDtoToBook(newId: string, dto: CreateBookDto, context: E
   };
 }
 
-export function mapUpdateDtoToBook(dto: UpdateBookDto, context: ExecutionContext): Book {
+export function mapUpdateDtoToBook(existingBook: Book, dto: UpdateBookDto, context: ExecutionContext): Book {
   const timestamp = context.timestamp;
   const userId = context.userId ?? 'system';
 
   return {
-    id: dto.id,
-    bookId: dto.id,
-    entityType: BOOK_ENTITY_TYPE,
+    ...existingBook,
     name: dto.name,
     authors: Array.isArray(dto.authors) ? dto.authors.map(mapToBookAuthor) : [],
-    createdAt: new Date('2024-01-01'), // Keep original createdAt for updates
-    createdBy: 'test-user', // Keep original createdBy for updates
     updatedAt: timestamp,
     updatedBy: userId,
-    isDeleted: false,
-    version: 1,
+    version: existingBook.version + 1,
   };
 }
 

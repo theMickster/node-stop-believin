@@ -57,8 +57,9 @@ export class PublishBookCommandHandler implements ICommandHandler<PublishBookCom
     }
 
     // Apply publication data
-    const now = new Date();
-    const publishedDate = validationResult.value.publishedDate || now;
+    const timestamp = command.context.timestamp;
+    const userId = command.context.userId ?? 'system';
+    const publishedDate = validationResult.value.publishedDate || timestamp;
     const firstPublishedDate = validationResult.value.firstPublishedDate || publishedDate;
 
     const publishedBook: Book = {
@@ -70,8 +71,8 @@ export class PublishBookCommandHandler implements ICommandHandler<PublishBookCom
       edition: validationResult.value.edition || '1st Edition',
       ...(validationResult.value.bisacCodes && { bisacCodes: validationResult.value.bisacCodes }),
       ...(validationResult.value.thema && { thema: validationResult.value.thema }),
-      updatedAt: now,
-      updatedBy: 'system',
+      updatedAt: timestamp,
+      updatedBy: userId,
       version: book.version + 1,
     };
 

@@ -1,9 +1,11 @@
 import { buildBookRepoMock } from '_test_/builders/bookRepositoryMockBuilder';
 import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
+import {
+  expectCommandSuccess,
+  expectValidationError,
+  expectDatabaseError,
+} from '_test_/helpers/commandAssertions';
 import { mock, mockReset } from 'jest-mock-extended';
-
-import { isCommandFail, isCommandOk } from '@libs/cqrs/commandResult';
-import { ErrorCodes } from '@libs/cqrs/errorCodes';
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { BookRepository } from '@data/repos/book.repository';
@@ -55,11 +57,9 @@ describe('CreateBookCommandHandler', () => {
     const result = await sut.handle(cmd);
 
     expect(mockRepo.create).toHaveBeenCalled();
-    expect(isCommandOk(result)).toBe(true);
-
-    if (isCommandOk(result)) {
-      expect(result.data).toEqual(fakeBook);
-    }
+    expectCommandSuccess(result, (data) => {
+      expect(data).toEqual(fakeBook);
+    });
   });
 
   it('should return CommandResult with error when validation fails', async () => {
@@ -72,12 +72,7 @@ describe('CreateBookCommandHandler', () => {
     const result = await sut.handle(cmd);
 
     expect(mockRepo.create).not.toHaveBeenCalled();
-    expect(isCommandFail(result)).toBe(true);
-
-    if (isCommandFail(result)) {
-      expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
-      expect(result.error.message).toContain('Book name is required');
-    }
+    expectValidationError(result, 'Book name is required');
   });
 
   it('should return CommandResult with error when repository returns a failure', async () => {
@@ -91,12 +86,7 @@ describe('CreateBookCommandHandler', () => {
     const result = await sut.handle(cmd);
 
     expect(mockRepo.create).toHaveBeenCalled();
-    expect(isCommandFail(result)).toBe(true);
-
-    if (isCommandFail(result)) {
-      expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
-      expect(result.error.message).toBe('Cosmos DB is down');
-    }
+    expectDatabaseError(result, 'Cosmos DB is down');
   });
 
   it('should return CommandResult with generic error when repo fails without error text', async () => {
@@ -109,10 +99,6 @@ describe('CreateBookCommandHandler', () => {
 
     const result = await sut.handle(cmd);
 
-    expect(isCommandFail(result)).toBe(true);
-
-    if (isCommandFail(result)) {
-      expect(result.error.message).toBe('Unknown error creating book');
-    }
+    expectDatabaseError(result, 'Unknown error creating book');
   });
 });
