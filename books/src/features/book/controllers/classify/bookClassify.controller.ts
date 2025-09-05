@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
 
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
-import { isCommandFail } from '@libs/cqrs/commandResult';
 import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import {
   ExecutionContext as ExecutionContextDecorator,
@@ -10,8 +9,8 @@ import {
   Put,
   RequireRoles,
 } from '@libs/decorators/route.decorators';
+import { CommandResponseHelper } from '@libs/http/commandResponseHelper';
 import TYPES from '@libs/ioc.types';
-import { ILogger } from '@libs/logging/logger.interface';
 
 import { ExecutionContext } from '@middleware/requestContext';
 
@@ -31,7 +30,6 @@ export class BookClassifyController {
     private readonly classifyBookCommandHandler: ICommandHandler<ClassifyBookCommand, Book>,
     @inject(TYPES.UpdateClassificationCommandHandler)
     private readonly updateClassificationCommandHandler: ICommandHandler<UpdateClassificationCommand, Book>,
-    @inject(TYPES.Logger) private readonly logger: ILogger,
   ) {}
 
   @Post('/:id/classify')
@@ -45,22 +43,9 @@ export class BookClassifyController {
     const command = new ClassifyBookCommand(bookId, req.body, context);
     const result = await this.classifyBookCommandHandler.handle(command);
 
-    if (isCommandFail(result)) {
-      this.logger.error('Failed to classify book', {
-        code: result.error.code,
-        message: result.error.message,
-        bookId,
-      });
-      res.status(result.error.statusCode).json({
-        error: {
-          code: result.error.code,
-          message: result.error.message,
-        },
-      });
-      return;
-    }
-
-    res.status(HttpStatus.OK).json(result.data);
+    CommandResponseHelper.handleOkResult(res, result, (data) => {
+      res.status(HttpStatus.OK).json(data);
+    });
   }
 
   @Put('/:id/classify')
@@ -74,21 +59,8 @@ export class BookClassifyController {
     const command = new UpdateClassificationCommand(bookId, req.body, context);
     const result = await this.updateClassificationCommandHandler.handle(command);
 
-    if (isCommandFail(result)) {
-      this.logger.error('Failed to update classification', {
-        code: result.error.code,
-        message: result.error.message,
-        bookId,
-      });
-      res.status(result.error.statusCode).json({
-        error: {
-          code: result.error.code,
-          message: result.error.message,
-        },
-      });
-      return;
-    }
-
-    res.status(HttpStatus.OK).json(result.data);
+    CommandResponseHelper.handleOkResult(res, result, (data) => {
+      res.status(HttpStatus.OK).json(data);
+    });
   }
 }

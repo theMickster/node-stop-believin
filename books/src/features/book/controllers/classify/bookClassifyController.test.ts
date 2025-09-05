@@ -21,7 +21,6 @@ import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { commandOk, commandFail } from '@libs/cqrs/commandResult';
 import { ErrorCodes } from '@libs/cqrs/errorCodes';
 import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
-import { ILogger } from '@libs/logging/logger.interface';
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { Book } from '@data/entities/book.entity';
@@ -35,7 +34,6 @@ import { UpdateClassificationDto } from '@features/book/models/updateClassificat
 describe('BookClassifyController', () => {
   const mockClassifyBookCommandHandler = mock<ICommandHandler<ClassifyBookCommand, Book>>();
   const mockUpdateClassificationCommandHandler = mock<ICommandHandler<UpdateClassificationCommand, Book>>();
-  const mockLogger = mock<ILogger>();
   const mockContext = buildMockExecutionContext().build();
 
   let sut: BookClassifyController;
@@ -57,12 +55,10 @@ describe('BookClassifyController', () => {
   beforeEach(() => {
     mockReset(mockClassifyBookCommandHandler);
     mockReset(mockUpdateClassificationCommandHandler);
-    mockReset(mockLogger);
 
     sut = new BookClassifyController(
       mockClassifyBookCommandHandler,
       mockUpdateClassificationCommandHandler,
-      mockLogger,
     );
   });
 

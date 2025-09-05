@@ -2,11 +2,9 @@ import { Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
 
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
-import { isCommandFail } from '@libs/cqrs/commandResult';
 import { ErrorCodes } from '@libs/cqrs/errorCodes';
 import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
-import { isQueryFail } from '@libs/cqrs/queryResult';
 import { LogOperation } from '@libs/decorators/logging.decorators';
 import {
   Get,
@@ -16,6 +14,9 @@ import {
   RequireRoles,
   ExecutionContext as ExecutionContextDecorator,
 } from '@libs/decorators/route.decorators';
+import { ApiResponseMessages } from '@libs/http/apiResponseMessages';
+import { CommandResponseHelper } from '@libs/http/commandResponseHelper';
+import { QueryResponseHelper } from '@libs/http/queryResponseHelper';
 import TYPES from '@libs/ioc.types';
 import { ILogger } from '@libs/logging/logger.interface';
 
@@ -52,21 +53,11 @@ export class BookController {
   @Get('/')
   @RequireRoles(authConfig.roles.admin, authConfig.roles.reader)
   @LogOperation('GetBooks')
-  async getBooks(req: Request, res: Response): Promise<void> {
+  async getBooks(_req: Request, res: Response): Promise<void> {
     const query = new ReadBookListQuery();
     const result = await this.readBookListHandler.handle(query);
 
-    if (isQueryFail(result)) {
-      res.status(result.error.statusCode).json({
-        error: {
-          code: result.error.code,
-          message: result.error.message,
-        },
-      });
-      return;
-    }
-
-    res.json(result.data);
+    QueryResponseHelper.handleJsonResult(res, result);
   }
 
   @Get('/:id')
@@ -77,27 +68,15 @@ export class BookController {
     const query = new ReadBookQuery(id);
     const result = await this.readBookHandler.handle(query);
 
-    if (isQueryFail(result)) {
-      res.status(result.error.statusCode).json({
-        error: {
-          code: result.error.code,
-          message: result.error.message,
-        },
-      });
-      return;
-    }
-
-    if (result.data === null) {
-      res.status(HttpStatus.NOT_FOUND).json({
-        error: {
-          code: ErrorCodes.BOOK_NOT_FOUND,
-          message: 'Book not found',
-        },
-      });
-      return;
-    }
-
-    res.json(result.data);
+    QueryResponseHelper.handleNullableResult(
+      res,
+      result,
+      ErrorCodes.BOOK_NOT_FOUND,
+      ApiResponseMessages.BOOK_NOT_FOUND,
+      (data) => {
+        res.json(data);
+      },
+    );
   }
 
   @Post('/')
@@ -111,18 +90,9 @@ export class BookController {
     const command = new CreateBookCommand(req.body, context);
     const result = await this.createBookCommandHandler.handle(command);
 
-    if (isCommandFail(result)) {
-      res.status(result.error.statusCode).json({
-        error: {
-          code: result.error.code,
-          message: result.error.message,
-          field: result.error.field,
-        },
-      });
-      return;
-    }
-
-    res.status(HttpStatus.CREATED).json(result.data);
+    CommandResponseHelper.handleCreatedResult(res, result, (data) => {
+      res.status(HttpStatus.CREATED).json(data);
+    });
   }
 
   @Put('/:id')
@@ -132,42 +102,19 @@ export class BookController {
     const command = new UpdateBookCommand(req.body, context);
     const result = await this.updateBookCommandHandler.handle(command);
 
-    if (isCommandFail(result)) {
-      res.status(result.error.statusCode).json({
-        error: {
-          code: result.error.code,
-          message: result.error.message,
-          field: result.error.field,
-        },
-      });
-      return;
-    }
-
-    res.status(HttpStatus.OK).json(result.data);
+    CommandResponseHelper.handleOkResult(res, result, (data) => {
+      res.status(HttpStatus.OK).json(data);
+    });
   }
 
   @Delete('/:id')
   @RequireRoles(authConfig.roles.admin)
   @LogOperation('DeleteBook')
-  async deleteBook(
-    req: Request,
-    res: Response,
-    @ExecutionContextDecorator() context: ExecutionContext,
-  ): Promise<void> {
+  async deleteBook(req: Request, res: Response, @ExecutionContextDecorator() context: ExecutionContext): Promise<void> {
     const id = req.params.id;
     const command = new DeleteBookCommand(id, context);
     const result = await this.deleteBookCommandHandler.handle(command);
 
-    if (isCommandFail(result)) {
-      res.status(result.error.statusCode).json({
-        error: {
-          code: result.error.code,
-          message: result.error.message,
-        },
-      });
-      return;
-    }
-
-    res.status(HttpStatus.NO_CONTENT).send();
+    CommandResponseHelper.handleNoContentResult(res, result);
   }
 }

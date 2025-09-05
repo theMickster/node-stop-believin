@@ -89,7 +89,7 @@ describe('AuthorController', () => {
       await sut.getAuthors(req, res);
 
       expect(mockReadAuthorListHandler.handle).toHaveBeenCalledWith(new ReadAuthorListQuery());
-      expectInternalServerError(res, 'Failed to list authors');
+      expectInternalServerError(res, 'Whoops! There was a Cosmos Error!');
     });
   });
 
@@ -145,7 +145,7 @@ describe('AuthorController', () => {
       await sut.getAuthorById(req, res);
 
       expect(mockReadAuthorHandler.handle).toHaveBeenCalledWith(new ReadAuthorQuery(authorId));
-      expectInternalServerError(res, 'Failed to retrieve author');
+      expectInternalServerError(res, 'Whoops! There was a Cosmos Error!');
     });
   });
 
