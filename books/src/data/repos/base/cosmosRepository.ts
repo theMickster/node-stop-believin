@@ -1,5 +1,6 @@
 import { Container as CosmosContainer, ItemResponse, PartitionKey, SqlParameter } from '@azure/cosmos';
 
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { isErrorWithCode } from '@libs/guards/errorGuards';
 
 import { BaseEntity, PartitionedEntity } from '@data/entities/base/entity-traits';
@@ -37,7 +38,7 @@ export abstract class CosmosRepository<T extends BaseEntity & PartitionedEntity>
       const { resources } = await this.container.items.query<T>(querySpec).fetchAll();
       return repoOk(resources);
     } catch {
-      return repoFail(`Failed to retrieve ${this.entityName}s from the Cosmos DB.`, 500);
+      return repoFail(`Failed to retrieve ${this.entityName}s from the Cosmos DB.`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -52,15 +53,15 @@ export abstract class CosmosRepository<T extends BaseEntity & PartitionedEntity>
       const response: ItemResponse<T> = await this.container.item(id, pk).read<T>();
 
       if (!response.resource) {
-        return repoFail(`${this.capitalize(this.entityName)} not found`, 404);
+        return repoFail(`${this.capitalize(this.entityName)} not found`, HttpStatus.NOT_FOUND);
       }
 
       return repoOk(response.resource);
     } catch (err: unknown) {
       if (this.is404Error(err)) {
-        return repoFail(`${this.capitalize(this.entityName)} not found`, 404);
+        return repoFail(`${this.capitalize(this.entityName)} not found`, HttpStatus.NOT_FOUND);
       }
-      return repoFail(`Failed to retrieve ${this.entityName}`, 500);
+      return repoFail(`Failed to retrieve ${this.entityName}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -73,12 +74,12 @@ export abstract class CosmosRepository<T extends BaseEntity & PartitionedEntity>
       const { resource: createdItem } = await this.container.items.create(entity);
 
       if (!createdItem) {
-        return repoFail(`Failed to create ${this.entityName}`, 500);
+        return repoFail(`Failed to create ${this.entityName}`, HttpStatus.INTERNAL_SERVER_ERROR);
       }
 
       return repoOk(createdItem);
     } catch {
-      return repoFail(`Failed to create ${this.entityName}`, 500);
+      return repoFail(`Failed to create ${this.entityName}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -93,15 +94,15 @@ export abstract class CosmosRepository<T extends BaseEntity & PartitionedEntity>
       const { resource: updatedItem } = await this.container.item(entity.id, pk).replace(entity);
 
       if (!updatedItem) {
-        return repoFail(`Failed to update ${this.entityName}`, 500);
+        return repoFail(`Failed to update ${this.entityName}`, HttpStatus.INTERNAL_SERVER_ERROR);
       }
 
       return repoOk(updatedItem);
     } catch (err: unknown) {
       if (this.is404Error(err)) {
-        return repoFail(`${this.capitalize(this.entityName)} not found`, 404);
+        return repoFail(`${this.capitalize(this.entityName)} not found`, HttpStatus.NOT_FOUND);
       }
-      return repoFail(`Failed to update ${this.entityName}`, 500);
+      return repoFail(`Failed to update ${this.entityName}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -117,9 +118,9 @@ export abstract class CosmosRepository<T extends BaseEntity & PartitionedEntity>
       return repoOk(undefined);
     } catch (err: unknown) {
       if (this.is404Error(err)) {
-        return repoFail(`${this.capitalize(this.entityName)} not found`, 404);
+        return repoFail(`${this.capitalize(this.entityName)} not found`, HttpStatus.NOT_FOUND);
       }
-      return repoFail(`Failed to delete ${this.entityName}`, 500);
+      return repoFail(`Failed to delete ${this.entityName}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -127,7 +128,10 @@ export abstract class CosmosRepository<T extends BaseEntity & PartitionedEntity>
    * Check if error is a 404 Not Found error
    */
   protected is404Error(err: unknown): boolean {
-    return isErrorWithCode(err) && (err.code === 404 || (err as { statusCode?: number }).statusCode === 404);
+    return (
+      isErrorWithCode(err) &&
+      (err.code === HttpStatus.NOT_FOUND || (err as { statusCode?: number }).statusCode === HttpStatus.NOT_FOUND)
+    );
   }
 
   /**
@@ -141,16 +145,13 @@ export abstract class CosmosRepository<T extends BaseEntity & PartitionedEntity>
    * Execute a custom query
    * Useful for specialized queries in child repositories
    */
-  protected async executeQuery<TResult = T>(
-    query: string,
-    parameters: SqlParameter[],
-  ): Promise<RepoResult<TResult[]>> {
+  protected async executeQuery<TResult = T>(query: string, parameters: SqlParameter[]): Promise<RepoResult<TResult[]>> {
     try {
       const querySpec = { query, parameters };
       const { resources } = await this.container.items.query<TResult>(querySpec).fetchAll();
       return repoOk(resources);
     } catch {
-      return repoFail(`Failed to execute query on ${this.entityName}`, 500);
+      return repoFail(`Failed to execute query on ${this.entityName}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
