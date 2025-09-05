@@ -1,6 +1,6 @@
 import { fakeBooks } from '@fixtures/books';
-import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
-import { mockRequestWithParams, mockRequestWithBody, mockEmptyRequest } from '_test_/builders/mockRequestBuilder';
+import { buildMockExecutionContext } from '@tests/builders/executionContextMockBuilder';
+import { mockRequestWithParams, mockRequestWithBody, mockEmptyRequest } from '@tests/builders/mockRequestBuilder';
 import {
   expectSuccess,
   expectCreated,
@@ -8,13 +8,14 @@ import {
   expectInternalServerError,
   expectNotFound,
   expectLoggerError,
-} from '_test_/helpers/controllerAssertions';
+} from '@tests/helpers/controllerAssertions';
 import { mock, mockReset } from 'jest-mock-extended';
 import httpMocks from 'node-mocks-http';
 
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { commandOk, commandFail } from '@libs/cqrs/commandResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import { queryOk, queryFail } from '@libs/cqrs/queryResult';
 import { ILogger } from '@libs/logging/logger.interface';
@@ -30,11 +31,6 @@ import { CreateBookDto } from '@features/book/models/createBookDto';
 import { UpdateBookDto } from '@features/book/models/updateBookDto';
 import { ReadBookQuery } from '@features/book/queries/readBook.query';
 import { ReadBookListQuery } from '@features/book/queries/readBookList.query';
-
-
-
-
-
 
 describe('BookController', () => {
   const mockReadBookListHandler = mock<IQueryHandler<ReadBookListQuery, Book[]>>();
@@ -189,7 +185,9 @@ describe('BookController', () => {
 
       await sut.createBook(req, res, mockContext);
 
-      expect(mockCreateBookCommandHandler.handle).toHaveBeenCalledWith(new CreateBookCommand(createBookDto, mockContext));
+      expect(mockCreateBookCommandHandler.handle).toHaveBeenCalledWith(
+        new CreateBookCommand(createBookDto, mockContext),
+      );
       expectCreated(res, (data) => {
         const bookData = data as Book & { createdAt: string; updatedAt: string };
         expect(bookData.createdAt).toBe(createdBook.createdAt.toISOString());
@@ -213,7 +211,9 @@ describe('BookController', () => {
 
       await sut.createBook(req, res, mockContext);
 
-      expect(mockCreateBookCommandHandler.handle).toHaveBeenCalledWith(new CreateBookCommand(createBookDto, mockContext));
+      expect(mockCreateBookCommandHandler.handle).toHaveBeenCalledWith(
+        new CreateBookCommand(createBookDto, mockContext),
+      );
       expectInternalServerError(res);
       expectLoggerError(mockLogger, 'Operation failed', (context) => {
         const ctx = context as { statusCode: number; duration: number };
@@ -292,7 +292,9 @@ describe('BookController', () => {
 
       await sut.updateBook(req, res, mockContext);
 
-      expect(mockUpdateBookCommandHandler.handle).toHaveBeenCalledWith(new UpdateBookCommand(updateBookDto, mockContext));
+      expect(mockUpdateBookCommandHandler.handle).toHaveBeenCalledWith(
+        new UpdateBookCommand(updateBookDto, mockContext),
+      );
       expectSuccess(res);
     });
 

@@ -3,7 +3,8 @@ import { v4 } from 'uuid';
 
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { CommandResult, commandOk, commandFail } from '@libs/cqrs/commandResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import TYPES from '@libs/ioc.types';
 
 import { Book } from '@data/entities/book.entity';

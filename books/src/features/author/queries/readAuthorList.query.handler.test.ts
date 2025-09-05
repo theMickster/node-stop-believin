@@ -1,6 +1,7 @@
 import { fakeAuthors } from '@fixtures/authors';
 
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { isQueryOk, isQueryFail } from '@libs/cqrs/queryResult';
 
 import { mapAuthorToReadAuthorDto } from '@data/mapping/authorMappers';
@@ -59,7 +60,7 @@ describe('ReadAuthorListQueryHandler', () => {
     mockAuthorRepository.getAll.mockResolvedValue({
       success: false,
       error: 'Database failure',
-      statusCode: 500,
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
     });
 
     const result = await sut.handle({});
@@ -76,7 +77,7 @@ describe('ReadAuthorListQueryHandler', () => {
   it('should return generic error when repository result has no error message', async () => {
     mockAuthorRepository.getAll.mockResolvedValue({
       success: false,
-      statusCode: 500,
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
     });
 
     const result = await sut.handle({});

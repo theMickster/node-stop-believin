@@ -1,14 +1,18 @@
 import { Container as CosmosContainer } from '@azure/cosmos';
 import { fakeCosmicBooks } from '@fixtures/books';
-import { buildCosmosContainerMock } from '_test_/builders/cosmosContainerMockBuilder';
+import { buildCosmosContainerMock } from '@tests/builders/cosmosContainerMockBuilder';
+import {
+  TEST_DATE_START_OF_2024,
+  TEST_USER_NAME,
+  TEST_ISBN_13,
+  ERROR_BOOK_NOT_FOUND,
+} from '@tests/helpers/resuableConstants';
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { Book } from '@data/entities/book.entity';
 import { repoOk } from '@data/libs/repoResult';
 
 import { BookRepository } from './book.repository';
-
-
 
 describe('BookRepository', () => {
   let sut: BookRepository;
@@ -24,10 +28,10 @@ describe('BookRepository', () => {
       name: 'Test Book',
       entityType: ENTITY_TYPES.BOOK,
       authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname', order: 1 }],
-      createdAt: new Date('2024-01-01'),
-      createdBy: 'test-user',
-      updatedAt: new Date('2024-01-01'),
-      updatedBy: 'test-user',
+      createdAt: TEST_DATE_START_OF_2024,
+      createdBy: TEST_USER_NAME,
+      updatedAt: TEST_DATE_START_OF_2024,
+      updatedBy: TEST_USER_NAME,
       isDeleted: false,
       version: 1,
     };
@@ -91,7 +95,7 @@ describe('BookRepository', () => {
       const result = await sut.getById('non-existent-id');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Book not found');
+      expect(result.error).toBe(ERROR_BOOK_NOT_FOUND);
     });
 
     it('should return fail result when Cosmos DB throws 404 error', async () => {
@@ -101,7 +105,7 @@ describe('BookRepository', () => {
       const result = await sut.getById('non-existent-id');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Book not found');
+      expect(result.error).toBe(ERROR_BOOK_NOT_FOUND);
     });
 
     it('should return fail result when Cosmos DB throws general error', async () => {
@@ -184,7 +188,7 @@ describe('BookRepository', () => {
       const result = await sut.update(testBook);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Book not found');
+      expect(result.error).toBe(ERROR_BOOK_NOT_FOUND);
     });
   });
 
@@ -206,7 +210,7 @@ describe('BookRepository', () => {
       const result = await sut.delete('book-id-123');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Book not found');
+      expect(result.error).toBe(ERROR_BOOK_NOT_FOUND);
     });
 
     it('should return fail result on unknown error', async () => {
@@ -223,7 +227,7 @@ describe('BookRepository', () => {
   describe('isbnExists', () => {
     describe('when ISBN exists in database', () => {
       it('should return true when ISBN-13 matches', async () => {
-        const isbn = { isbn13: '9781234567890' };
+        const isbn = { isbn13: TEST_ISBN_13 };
         const fetchAllMock = jest.fn().mockResolvedValue({ resources: [1] });
         (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
 
@@ -235,7 +239,7 @@ describe('BookRepository', () => {
           query: expect.stringContaining('SELECT VALUE COUNT(1)'),
           parameters: expect.arrayContaining([
             { name: '@entityType', value: ENTITY_TYPES.BOOK },
-            { name: '@isbn13', value: '9781234567890' },
+            { name: '@isbn13', value: TEST_ISBN_13 },
           ]),
         });
       });
@@ -252,7 +256,7 @@ describe('BookRepository', () => {
       });
 
       it('should return true when both ISBN-10 and ISBN-13 are provided', async () => {
-        const isbn = { isbn10: '1234567890', isbn13: '9781234567890' };
+        const isbn = { isbn10: '1234567890', isbn13: TEST_ISBN_13 };
         const fetchAllMock = jest.fn().mockResolvedValue({ resources: [1] });
         (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
 
@@ -289,7 +293,7 @@ describe('BookRepository', () => {
 
     describe('when excluding a specific book ID', () => {
       it('should return false when ISBN belongs only to excluded book', async () => {
-        const isbn = { isbn13: '9781234567890' };
+        const isbn = { isbn13: TEST_ISBN_13 };
         const excludeBookId = 'book-123';
         const fetchAllMock = jest.fn().mockResolvedValue({ resources: [0] });
         (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
@@ -308,7 +312,7 @@ describe('BookRepository', () => {
       });
 
       it('should return true when ISBN belongs to another book besides excluded one', async () => {
-        const isbn = { isbn13: '9781234567890' };
+        const isbn = { isbn13: TEST_ISBN_13 };
         const excludeBookId = 'book-123';
         const fetchAllMock = jest.fn().mockResolvedValue({ resources: [1] });
         (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
@@ -320,7 +324,7 @@ describe('BookRepository', () => {
       });
 
       it('should include exclusion clause in query when excludeBookId is provided', async () => {
-        const isbn = { isbn13: '9781234567890' };
+        const isbn = { isbn13: TEST_ISBN_13 };
         const excludeBookId = 'book-456';
         const fetchAllMock = jest.fn().mockResolvedValue({ resources: [0] });
         (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
@@ -333,7 +337,7 @@ describe('BookRepository', () => {
       });
 
       it('should not include exclusion clause when excludeBookId is not provided', async () => {
-        const isbn = { isbn13: '9781234567890' };
+        const isbn = { isbn13: TEST_ISBN_13 };
         const fetchAllMock = jest.fn().mockResolvedValue({ resources: [0] });
         (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
 
@@ -347,7 +351,7 @@ describe('BookRepository', () => {
 
     describe('when query fails', () => {
       it('should return failure result with appropriate error message', async () => {
-        const isbn = { isbn13: '9781234567890' };
+        const isbn = { isbn13: TEST_ISBN_13 };
         const fetchAllMock = jest.fn().mockRejectedValue(new Error('Database error'));
         (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
 

@@ -1,9 +1,6 @@
-import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
-import {
-  expectCommandSuccess,
-  expectValidationError,
-  expectDatabaseError,
-} from '_test_/helpers/commandAssertions';
+import { buildMockExecutionContext } from '@tests/builders/executionContextMockBuilder';
+import { expectCommandSuccess, expectValidationError, expectDatabaseError } from '@tests/helpers/commandAssertions';
+import { TEST_UUID, TEST_USER_ID, TEST_USER_NAME, TEST_DATE_START_OF_2024 } from '@tests/helpers/resuableConstants';
 import { mock, mockReset } from 'jest-mock-extended';
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
@@ -18,20 +15,14 @@ import { UpdateBookValidator } from '../validators/updateBook.validator';
 import { UpdateBookCommand } from './updateBook.command';
 import { UpdateBookCommandHandler } from './updateBook.command.handler';
 
-
-
-
 describe('UpdateBookCommandHandler', () => {
   const mockBookRepository = mock<BookRepository>();
   const mockValidator = mock<UpdateBookValidator>();
-  const mockContext = buildMockExecutionContext()
-    .withUserId('system')
-    .withTimestamp(new Date('2024-12-01'))
-    .build();
+  const mockContext = buildMockExecutionContext().withUserId('system').withTimestamp(new Date('2024-12-01')).build();
   let sut: UpdateBookCommandHandler;
 
   const validUpdateDto: UpdateBookDto = {
-    id: '123e4567-e89b-12d3-a456-426614174000',
+    id: TEST_UUID,
     name: 'Updated Book Title',
     authors: [
       {
@@ -44,8 +35,8 @@ describe('UpdateBookCommandHandler', () => {
   };
 
   const updatedBook: Book = {
-    id: '123e4567-e89b-12d3-a456-426614174000',
-    bookId: '123e4567-e89b-12d3-a456-426614174000',
+    id: TEST_UUID,
+    bookId: TEST_UUID,
     entityType: ENTITY_TYPES.BOOK,
     name: 'Updated Book Title',
     authors: [
@@ -56,10 +47,10 @@ describe('UpdateBookCommandHandler', () => {
         order: 1,
       },
     ],
-    createdAt: new Date('2024-01-01'),
-    createdBy: 'test-user',
+    createdAt: TEST_DATE_START_OF_2024,
+    createdBy: TEST_USER_NAME,
     updatedAt: new Date('2024-12-01'),
-    updatedBy: 'test-user-id',
+    updatedBy: TEST_USER_ID,
     isDeleted: false,
     version: 2,
   };
@@ -367,7 +358,7 @@ describe('UpdateBookCommandHandler', () => {
 
       mockValidator.validate.mockResolvedValue({
         valid: false,
-        error: new Error('Validation error: Book with ID 123e4567-e89b-12d3-a456-426614174000 does not exist'),
+        error: new Error(`Validation error: Book with ID ${TEST_UUID} does not exist`),
       });
 
       const result = await sut.handle(command);

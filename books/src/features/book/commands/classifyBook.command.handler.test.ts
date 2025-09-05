@@ -1,12 +1,21 @@
-import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
+import { buildMockExecutionContext } from '@tests/builders/executionContextMockBuilder';
 import {
   expectCommandSuccess,
   expectValidationError,
   expectNotFoundError,
   expectDatabaseError,
-} from '_test_/helpers/commandAssertions';
+} from '@tests/helpers/commandAssertions';
+import {
+  TEST_UUID,
+  TEST_USER_NAME,
+  TEST_DATE_START_OF_2024,
+  TEST_DEWEY_DECIMAL,
+  TEST_LIBRARY_OF_CONGRESS,
+  TEST_OCLC_NUMBER,
+} from '@tests/helpers/resuableConstants';
 import { mock, mockReset } from 'jest-mock-extended';
 
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { Book } from '@data/entities/book.entity';
@@ -16,22 +25,21 @@ import { BookRepository } from '@data/repos/book.repository';
 import { ClassifyBookCommand } from './classifyBook.command';
 import { ClassifyBookCommandHandler } from './classifyBook.command.handler';
 
-
 describe('ClassifyBookCommandHandler', () => {
   const mockBookRepository = mock<BookRepository>();
   let sut: ClassifyBookCommandHandler;
   const mockContext = buildMockExecutionContext().build();
 
   const testBook: Book = {
-    id: '123e4567-e89b-12d3-a456-426614174000',
-    bookId: '123e4567-e89b-12d3-a456-426614174000',
+    id: TEST_UUID,
+    bookId: TEST_UUID,
     entityType: ENTITY_TYPES.BOOK,
     name: 'Test Book',
     authors: [{ authorId: '456', firstName: 'Jane', lastName: 'Doe', order: 1 }],
-    createdAt: new Date('2024-01-01'),
-    createdBy: 'test-user',
-    updatedAt: new Date('2024-01-01'),
-    updatedBy: 'test-user',
+    createdAt: TEST_DATE_START_OF_2024,
+    createdBy: TEST_USER_NAME,
+    updatedAt: TEST_DATE_START_OF_2024,
+    updatedBy: TEST_USER_NAME,
     isDeleted: false,
     version: 1,
   };
@@ -43,20 +51,24 @@ describe('ClassifyBookCommandHandler', () => {
 
   describe('handle', () => {
     it('should classify book with all classification fields', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        deweyDecimal: '813.6',
-        libraryOfCongressNumber: 'PZ7.R79835',
-        oclcNumber: '123456789',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        TEST_UUID,
+        {
+          deweyDecimal: TEST_DEWEY_DECIMAL,
+          libraryOfCongressNumber: TEST_LIBRARY_OF_CONGRESS,
+          oclcNumber: TEST_OCLC_NUMBER,
+        },
+        mockContext,
+      );
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(
         repoOk({
           ...testBook,
           libraryClassification: {
-            deweyDecimal: '813.6',
-            libraryOfCongressNumber: 'PZ7.R79835',
-            oclcNumber: '123456789',
+            deweyDecimal: TEST_DEWEY_DECIMAL,
+            libraryOfCongressNumber: TEST_LIBRARY_OF_CONGRESS,
+            oclcNumber: TEST_OCLC_NUMBER,
           },
           version: 2,
         }),
@@ -66,17 +78,17 @@ describe('ClassifyBookCommandHandler', () => {
 
       expectCommandSuccess(result, (data) => {
         expect(data.libraryClassification).toEqual({
-          deweyDecimal: '813.6',
-          libraryOfCongressNumber: 'PZ7.R79835',
-          oclcNumber: '123456789',
+          deweyDecimal: TEST_DEWEY_DECIMAL,
+          libraryOfCongressNumber: TEST_LIBRARY_OF_CONGRESS,
+          oclcNumber: TEST_OCLC_NUMBER,
         });
       });
       expect(mockBookRepository.update).toHaveBeenCalledWith(
         expect.objectContaining({
           libraryClassification: {
-            deweyDecimal: '813.6',
-            libraryOfCongressNumber: 'PZ7.R79835',
-            oclcNumber: '123456789',
+            deweyDecimal: TEST_DEWEY_DECIMAL,
+            libraryOfCongressNumber: TEST_LIBRARY_OF_CONGRESS,
+            oclcNumber: TEST_OCLC_NUMBER,
           },
           version: 2,
         }),
@@ -84,16 +96,20 @@ describe('ClassifyBookCommandHandler', () => {
     });
 
     it('should classify book with only Dewey Decimal', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        deweyDecimal: '813.6',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        TEST_UUID,
+        {
+          deweyDecimal: TEST_DEWEY_DECIMAL,
+        },
+        mockContext,
+      );
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(
         repoOk({
           ...testBook,
           libraryClassification: {
-            deweyDecimal: '813.6',
+            deweyDecimal: TEST_DEWEY_DECIMAL,
           },
           version: 2,
         }),
@@ -103,22 +119,26 @@ describe('ClassifyBookCommandHandler', () => {
 
       expectCommandSuccess(result, (data) => {
         expect(data.libraryClassification).toEqual({
-          deweyDecimal: '813.6',
+          deweyDecimal: TEST_DEWEY_DECIMAL,
         });
       });
     });
 
     it('should classify book with only Library of Congress number', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        libraryOfCongressNumber: 'PZ7.R79835',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        TEST_UUID,
+        {
+          libraryOfCongressNumber: TEST_LIBRARY_OF_CONGRESS,
+        },
+        mockContext,
+      );
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(
         repoOk({
           ...testBook,
           libraryClassification: {
-            libraryOfCongressNumber: 'PZ7.R79835',
+            libraryOfCongressNumber: TEST_LIBRARY_OF_CONGRESS,
           },
           version: 2,
         }),
@@ -128,22 +148,26 @@ describe('ClassifyBookCommandHandler', () => {
 
       expectCommandSuccess(result, (data) => {
         expect(data.libraryClassification).toEqual({
-          libraryOfCongressNumber: 'PZ7.R79835',
+          libraryOfCongressNumber: TEST_LIBRARY_OF_CONGRESS,
         });
       });
     });
 
     it('should classify book with only OCLC number', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        oclcNumber: '123456789',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        TEST_UUID,
+        {
+          oclcNumber: TEST_OCLC_NUMBER,
+        },
+        mockContext,
+      );
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(
         repoOk({
           ...testBook,
           libraryClassification: {
-            oclcNumber: '123456789',
+            oclcNumber: TEST_OCLC_NUMBER,
           },
           version: 2,
         }),
@@ -153,15 +177,19 @@ describe('ClassifyBookCommandHandler', () => {
 
       expectCommandSuccess(result, (data) => {
         expect(data.libraryClassification).toEqual({
-          oclcNumber: '123456789',
+          oclcNumber: TEST_OCLC_NUMBER,
         });
       });
     });
 
     it('should increment book version', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        deweyDecimal: '813.6',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        '123e4567-e89b-12d3-a456-426614174000',
+        {
+          deweyDecimal: '813.6',
+        },
+        mockContext,
+      );
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(
@@ -182,9 +210,13 @@ describe('ClassifyBookCommandHandler', () => {
     });
 
     it('should update book metadata', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        deweyDecimal: '813.6',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        '123e4567-e89b-12d3-a456-426614174000',
+        {
+          deweyDecimal: '813.6',
+        },
+        mockContext,
+      );
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(repoOk({ ...testBook, version: 2 }));
@@ -208,11 +240,15 @@ describe('ClassifyBookCommandHandler', () => {
     });
 
     it('should return error when book not found', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        deweyDecimal: '813.6',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        '123e4567-e89b-12d3-a456-426614174000',
+        {
+          deweyDecimal: '813.6',
+        },
+        mockContext,
+      );
 
-      mockBookRepository.getById.mockResolvedValue(repoFail('Book not found', 404));
+      mockBookRepository.getById.mockResolvedValue(repoFail('Book not found', HttpStatus.NOT_FOUND));
 
       const result = await sut.handle(command);
 
@@ -220,9 +256,13 @@ describe('ClassifyBookCommandHandler', () => {
     });
 
     it('should return error when repository returns no data', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        deweyDecimal: '813.6',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        '123e4567-e89b-12d3-a456-426614174000',
+        {
+          deweyDecimal: '813.6',
+        },
+        mockContext,
+      );
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockBookRepository.getById.mockResolvedValue(repoOk(null as any));
@@ -233,12 +273,16 @@ describe('ClassifyBookCommandHandler', () => {
     });
 
     it('should return error when update fails', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        deweyDecimal: '813.6',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        '123e4567-e89b-12d3-a456-426614174000',
+        {
+          deweyDecimal: '813.6',
+        },
+        mockContext,
+      );
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
-      mockBookRepository.update.mockResolvedValue(repoFail('Database error', 500));
+      mockBookRepository.update.mockResolvedValue(repoFail('Database error', HttpStatus.INTERNAL_SERVER_ERROR));
 
       const result = await sut.handle(command);
 
@@ -246,9 +290,13 @@ describe('ClassifyBookCommandHandler', () => {
     });
 
     it('should return error when update returns no data', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        deweyDecimal: '813.6',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        '123e4567-e89b-12d3-a456-426614174000',
+        {
+          deweyDecimal: '813.6',
+        },
+        mockContext,
+      );
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -260,9 +308,13 @@ describe('ClassifyBookCommandHandler', () => {
     });
 
     it('should return error with invalid Dewey Decimal format', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        deweyDecimal: '81.3',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        '123e4567-e89b-12d3-a456-426614174000',
+        {
+          deweyDecimal: '81.3',
+        },
+        mockContext,
+      );
 
       const result = await sut.handle(command);
 
@@ -270,9 +322,13 @@ describe('ClassifyBookCommandHandler', () => {
     });
 
     it('should return error with invalid OCLC number', async () => {
-      const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {
-        oclcNumber: '123-456',
-      }, mockContext);
+      const command = new ClassifyBookCommand(
+        '123e4567-e89b-12d3-a456-426614174000',
+        {
+          oclcNumber: '123-456',
+        },
+        mockContext,
+      );
 
       const result = await sut.handle(command);
 

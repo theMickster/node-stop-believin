@@ -1,6 +1,7 @@
 import { fakeAuthors } from '@fixtures/authors';
 
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { isQueryOk, isQueryFail } from '@libs/cqrs/queryResult';
 
 import { Author } from '@data/entities/author.entity';
@@ -54,7 +55,7 @@ describe('ReadAuthorQueryHandler', () => {
       success: false,
       data: null,
       error: 'Author not found',
-      statusCode: 404,
+      statusCode: HttpStatus.NOT_FOUND,
     };
     mockAuthorRepository.getById.mockResolvedValue(notFoundResult);
 
@@ -68,7 +69,7 @@ describe('ReadAuthorQueryHandler', () => {
   });
 
   it('should return error if repository fails without message', async () => {
-    mockAuthorRepository.getById.mockResolvedValue({ success: false, data: null, error: null, statusCode: 500 });
+    mockAuthorRepository.getById.mockResolvedValue({ success: false, data: null, error: null, statusCode: HttpStatus.INTERNAL_SERVER_ERROR });
 
     const result = await sut.handle(query);
 

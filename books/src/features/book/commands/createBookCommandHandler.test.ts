@@ -1,11 +1,9 @@
-import { buildBookRepoMock } from '_test_/builders/bookRepositoryMockBuilder';
-import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
-import {
-  expectCommandSuccess,
-  expectValidationError,
-  expectDatabaseError,
-} from '_test_/helpers/commandAssertions';
+import { buildBookRepoMock } from '@tests/builders/bookRepositoryMockBuilder';
+import { buildMockExecutionContext } from '@tests/builders/executionContextMockBuilder';
+import { expectCommandSuccess, expectValidationError, expectDatabaseError } from '@tests/helpers/commandAssertions';
 import { mock, mockReset } from 'jest-mock-extended';
+
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { BookRepository } from '@data/repos/book.repository';
@@ -14,7 +12,6 @@ import { Book } from '../../../data/entities/book.entity';
 
 import { CreateBookCommand } from './createBook.command';
 import { CreateBookCommandHandler } from './createBook.command.handler';
-
 
 describe('CreateBookCommandHandler', () => {
   const mockRepo = mock<BookRepository>();
@@ -81,7 +78,7 @@ describe('CreateBookCommandHandler', () => {
       authors: [{ authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 }],
     };
     const cmd = new CreateBookCommand(dto, mockContext);
-    buildBookRepoMock(mockRepo).createFails('Cosmos DB is down', 500);
+    buildBookRepoMock(mockRepo).createFails('Cosmos DB is down', HttpStatus.INTERNAL_SERVER_ERROR);
 
     const result = await sut.handle(cmd);
 
@@ -95,7 +92,7 @@ describe('CreateBookCommandHandler', () => {
       authors: [{ authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 }],
     };
     const cmd = new CreateBookCommand(dto, mockContext);
-    mockRepo.create.mockResolvedValue({ success: false, statusCode: 500 });
+    mockRepo.create.mockResolvedValue({ success: false, statusCode: HttpStatus.INTERNAL_SERVER_ERROR });
 
     const result = await sut.handle(cmd);
 

@@ -1,6 +1,6 @@
 import { createBaseBook, withVersion } from '@fixtures/book.fixtures';
-import { buildBookRepoMock } from '_test_/builders/bookRepositoryMockBuilder';
-import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
+import { buildBookRepoMock } from '@tests/builders/bookRepositoryMockBuilder';
+import { buildMockExecutionContext } from '@tests/builders/executionContextMockBuilder';
 import {
   expectCommandSuccess,
   expectValidationError,
@@ -8,11 +8,17 @@ import {
   expectNotFoundError,
   expectDatabaseError,
   expectConflictError,
-} from '_test_/helpers/commandAssertions';
+} from '@tests/helpers/commandAssertions';
+import {
+  TEST_ISBN_13,
+  TEST_USER_ID,
+  ERROR_BOOK_NOT_FOUND,
+  ERROR_DATABASE_ERROR,
+} from '@tests/helpers/resuableConstants';
 import { mock, mockReset } from 'jest-mock-extended';
 
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
-
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 
 import { BookRepository } from '@data/repos/book.repository';
 
@@ -33,20 +39,24 @@ describe('PublishBookCommandHandler', () => {
 
   describe('handle - success scenarios', () => {
     it('should publish book with all fields', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn13: '9781234567890' },
-        publishedDate: new Date('2025-01-15'),
-        firstPublishedDate: new Date('2025-01-15'),
-        copyright: '© 2025 Test Publisher',
-        edition: '2nd Edition',
-        bisacCodes: ['JUV037000', 'FIC009000'],
-        thema: ['YFB', 'YFD'],
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn13: TEST_ISBN_13 },
+          publishedDate: new Date('2025-01-15'),
+          firstPublishedDate: new Date('2025-01-15'),
+          copyright: '© 2025 Test Publisher',
+          edition: '2nd Edition',
+          bisacCodes: ['JUV037000', 'FIC009000'],
+          thema: ['YFB', 'YFD'],
+        },
+        mockContext,
+      );
 
       const updatedBook = withVersion(
         {
           ...testBook,
-          isbn: { isbn13: '9781234567890' },
+          isbn: { isbn13: TEST_ISBN_13 },
           publishedDate: new Date('2025-01-15'),
           firstPublishedDate: new Date('2025-01-15'),
           copyright: '© 2025 Test Publisher',
@@ -62,7 +72,7 @@ describe('PublishBookCommandHandler', () => {
       const result = await sut.handle(command);
 
       expectCommandSuccess(result, (data) => {
-        expect(data.isbn).toEqual({ isbn13: '9781234567890' });
+        expect(data.isbn).toEqual({ isbn13: TEST_ISBN_13 });
         expect(data.publishedDate).toEqual(new Date('2025-01-15'));
         expect(data.copyright).toBe('© 2025 Test Publisher');
         expect(data.edition).toBe('2nd Edition');
@@ -72,14 +82,18 @@ describe('PublishBookCommandHandler', () => {
     });
 
     it('should publish book with only required ISBN field', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn13: '9781234567890' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn13: TEST_ISBN_13 },
+        },
+        mockContext,
+      );
 
       const updatedBook = withVersion(
         {
           ...testBook,
-          isbn: { isbn13: '9781234567890' },
+          isbn: { isbn13: TEST_ISBN_13 },
           publishedDate: expect.any(Date),
           firstPublishedDate: expect.any(Date),
           edition: '1st Edition',
@@ -92,15 +106,19 @@ describe('PublishBookCommandHandler', () => {
       const result = await sut.handle(command);
 
       expectCommandSuccess(result, (data) => {
-        expect(data.isbn).toEqual({ isbn13: '9781234567890' });
+        expect(data.isbn).toEqual({ isbn13: TEST_ISBN_13 });
         expect(data.edition).toBe('1st Edition');
       });
     });
 
     it('should use current date when publishedDate not provided', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn13: '9781234567890' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn13: TEST_ISBN_13 },
+        },
+        mockContext,
+      );
 
       buildBookRepoMock(mockBookRepository).setupHappyPath(testBook, withVersion(testBook, 2));
 
@@ -116,10 +134,14 @@ describe('PublishBookCommandHandler', () => {
 
     it('should use publishedDate for firstPublishedDate when not provided', async () => {
       const publishedDate = new Date('2025-01-15');
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn13: '9781234567890' },
-        publishedDate,
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn13: TEST_ISBN_13 },
+          publishedDate,
+        },
+        mockContext,
+      );
 
       buildBookRepoMock(mockBookRepository).setupHappyPath(testBook, withVersion(testBook, 2));
 
@@ -134,9 +156,13 @@ describe('PublishBookCommandHandler', () => {
     });
 
     it('should default to 1st Edition when edition not provided', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn13: '9781234567890' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn13: TEST_ISBN_13 },
+        },
+        mockContext,
+      );
 
       buildBookRepoMock(mockBookRepository).setupHappyPath(testBook, withVersion(testBook, 2));
 
@@ -150,9 +176,13 @@ describe('PublishBookCommandHandler', () => {
     });
 
     it('should publish with ISBN-10', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn10: '1234567890' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn10: '1234567890' },
+        },
+        mockContext,
+      );
 
       const updatedBook = withVersion(
         {
@@ -172,14 +202,18 @@ describe('PublishBookCommandHandler', () => {
     });
 
     it('should publish with both ISBN-10 and ISBN-13', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn10: '1234567890', isbn13: '9781234567890' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn10: '1234567890', isbn13: TEST_ISBN_13 },
+        },
+        mockContext,
+      );
 
       const updatedBook = withVersion(
         {
           ...testBook,
-          isbn: { isbn10: '1234567890', isbn13: '9781234567890' },
+          isbn: { isbn10: '1234567890', isbn13: TEST_ISBN_13 },
         },
         2,
       );
@@ -189,14 +223,18 @@ describe('PublishBookCommandHandler', () => {
       const result = await sut.handle(command);
 
       expectCommandSuccess(result, (data) => {
-        expect(data.isbn).toEqual({ isbn10: '1234567890', isbn13: '9781234567890' });
+        expect(data.isbn).toEqual({ isbn10: '1234567890', isbn13: TEST_ISBN_13 });
       });
     });
 
     it('should increment book version', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn13: '9781234567890' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn13: TEST_ISBN_13 },
+        },
+        mockContext,
+      );
 
       buildBookRepoMock(mockBookRepository).setupHappyPath(testBook, withVersion(testBook, 2));
 
@@ -210,9 +248,13 @@ describe('PublishBookCommandHandler', () => {
     });
 
     it('should update book metadata', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn13: '9781234567890' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn13: TEST_ISBN_13 },
+        },
+        mockContext,
+      );
 
       buildBookRepoMock(mockBookRepository).setupHappyPath(testBook, withVersion(testBook, 2));
 
@@ -220,7 +262,7 @@ describe('PublishBookCommandHandler', () => {
 
       expect(mockBookRepository.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          updatedBy: 'test-user-id',
+          updatedBy: TEST_USER_ID,
           updatedAt: expect.any(Date),
         }),
       );
@@ -238,9 +280,13 @@ describe('PublishBookCommandHandler', () => {
     });
 
     it('should return error with invalid ISBN-13 format', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn13: '978123456789' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn13: '978123456789' },
+        },
+        mockContext,
+      );
 
       const result = await sut.handle(command);
 
@@ -248,9 +294,13 @@ describe('PublishBookCommandHandler', () => {
     });
 
     it('should return error with invalid ISBN-10 format', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn10: '123456789' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn10: '123456789' },
+        },
+        mockContext,
+      );
 
       const result = await sut.handle(command);
 
@@ -264,9 +314,13 @@ describe('PublishBookCommandHandler', () => {
         publishedDate: new Date('2024-12-01'),
       });
 
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn13: '9781234567890' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn13: TEST_ISBN_13 },
+        },
+        mockContext,
+      );
 
       buildBookRepoMock(mockBookRepository).getByIdReturns(publishedBook);
 
@@ -279,9 +333,13 @@ describe('PublishBookCommandHandler', () => {
     });
 
     it('should return error when ISBN already exists with ISBN-13', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn13: '9781234567890' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn13: TEST_ISBN_13 },
+        },
+        mockContext,
+      );
 
       buildBookRepoMock(mockBookRepository).getByIdReturns(testBook).isbnExistsReturns(true);
 
@@ -291,9 +349,13 @@ describe('PublishBookCommandHandler', () => {
     });
 
     it('should return error when ISBN already exists with ISBN-10', async () => {
-      const command = new PublishBookCommand(testBook.bookId, {
-        isbn: { isbn10: '1234567890' },
-      }, mockContext);
+      const command = new PublishBookCommand(
+        testBook.bookId,
+        {
+          isbn: { isbn10: '1234567890' },
+        },
+        mockContext,
+      );
 
       buildBookRepoMock(mockBookRepository).getByIdReturns(testBook).isbnExistsReturns(true);
 
@@ -304,16 +366,20 @@ describe('PublishBookCommandHandler', () => {
   });
 
   describe('handle - repository errors', () => {
-    const validCommand = new PublishBookCommand(testBook.bookId, {
-      isbn: { isbn13: '9781234567890' },
-    }, mockContext);
+    const validCommand = new PublishBookCommand(
+      testBook.bookId,
+      {
+        isbn: { isbn13: TEST_ISBN_13 },
+      },
+      mockContext,
+    );
 
     it('should return error when book not found', async () => {
-      buildBookRepoMock(mockBookRepository).getByIdFails('Book not found', 404);
+      buildBookRepoMock(mockBookRepository).getByIdFails(ERROR_BOOK_NOT_FOUND, HttpStatus.NOT_FOUND);
 
       const result = await sut.handle(validCommand);
 
-      expectNotFoundError(result, 'Book not found');
+      expectNotFoundError(result, ERROR_BOOK_NOT_FOUND);
     });
 
     it('should return error when repository returns no data', async () => {
@@ -321,26 +387,28 @@ describe('PublishBookCommandHandler', () => {
 
       const result = await sut.handle(validCommand);
 
-      expectNotFoundError(result, 'Book not found');
+      expectNotFoundError(result, ERROR_BOOK_NOT_FOUND);
     });
 
     it('should return error when ISBN check fails', async () => {
-      buildBookRepoMock(mockBookRepository).getByIdReturns(testBook).isbnExistsFails('Database error', 500);
+      buildBookRepoMock(mockBookRepository)
+        .getByIdReturns(testBook)
+        .isbnExistsFails(ERROR_DATABASE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
 
       const result = await sut.handle(validCommand);
 
-      expectDatabaseError(result, 'Database error');
+      expectDatabaseError(result, ERROR_DATABASE_ERROR);
     });
 
     it('should return error when update fails', async () => {
       buildBookRepoMock(mockBookRepository)
         .getByIdReturns(testBook)
         .isbnExistsReturns(false)
-        .updateFails('Database error', 500);
+        .updateFails(ERROR_DATABASE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
 
       const result = await sut.handle(validCommand);
 
-      expectDatabaseError(result, 'Database error');
+      expectDatabaseError(result, ERROR_DATABASE_ERROR);
     });
 
     it('should return error when update returns no data', async () => {

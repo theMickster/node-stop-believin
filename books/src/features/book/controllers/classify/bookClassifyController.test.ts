@@ -1,30 +1,36 @@
-import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
+import { buildMockExecutionContext } from '@tests/builders/executionContextMockBuilder';
 import {
   expectSuccess,
   expectNotFound,
   expectInternalServerError,
   expectBadRequest,
-} from '_test_/helpers/controllerAssertions';
+} from '@tests/helpers/controllerAssertions';
+import {
+  TEST_DEWEY_DECIMAL,
+  TEST_LIBRARY_OF_CONGRESS,
+  TEST_OCLC_NUMBER,
+  TEST_DATE_START_OF_2024,
+  TEST_USER_NAME,
+  ERROR_BOOK_NOT_FOUND,
+} from '@tests/helpers/resuableConstants';
 import { Request } from 'express';
 import { mock, mockReset } from 'jest-mock-extended';
 import httpMocks from 'node-mocks-http';
 
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { commandOk, commandFail } from '@libs/cqrs/commandResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { ILogger } from '@libs/logging/logger.interface';
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { Book } from '@data/entities/book.entity';
-
 
 import { ClassifyBookCommand } from '@features/book/commands/classifyBook.command';
 import { UpdateClassificationCommand } from '@features/book/commands/updateClassification.command';
 import { BookClassifyController } from '@features/book/controllers/classify/bookClassify.controller';
 import { ClassifyBookDto } from '@features/book/models/classifyBookDto';
 import { UpdateClassificationDto } from '@features/book/models/updateClassificationDto';
-
-
 
 describe('BookClassifyController', () => {
   const mockClassifyBookCommandHandler = mock<ICommandHandler<ClassifyBookCommand, Book>>();
@@ -63,9 +69,9 @@ describe('BookClassifyController', () => {
   describe('classifyBook', () => {
     const bookId = '41ca7c11-87d8-4d18-b210-74099094ec31';
     const classifyBookDto: ClassifyBookDto = {
-      deweyDecimal: '813.6',
-      libraryOfCongressNumber: 'PZ7.R79835',
-      oclcNumber: '123456789',
+      deweyDecimal: TEST_DEWEY_DECIMAL,
+      libraryOfCongressNumber: TEST_LIBRARY_OF_CONGRESS,
+      oclcNumber: TEST_OCLC_NUMBER,
     };
 
     const classifiedBook: Book = {
@@ -75,12 +81,12 @@ describe('BookClassifyController', () => {
       name: 'Test Book',
       authors: [{ authorId: '123', firstName: 'John', lastName: 'Doe', order: 1 }],
       libraryClassification: {
-        deweyDecimal: '813.6',
-        libraryOfCongressNumber: 'PZ7.R79835',
-        oclcNumber: '123456789',
+        deweyDecimal: TEST_DEWEY_DECIMAL,
+        libraryOfCongressNumber: TEST_LIBRARY_OF_CONGRESS,
+        oclcNumber: TEST_OCLC_NUMBER,
       },
-      createdAt: new Date('2024-01-01'),
-      createdBy: 'test-user',
+      createdAt: TEST_DATE_START_OF_2024,
+      createdBy: TEST_USER_NAME,
       updatedAt: new Date('2025-01-15'),
       updatedBy: 'system',
       isDeleted: false,
@@ -100,21 +106,21 @@ describe('BookClassifyController', () => {
       expectSuccess(res, (data) => {
         const bookData = data as Book;
         expect(bookData.libraryClassification).toEqual({
-          deweyDecimal: '813.6',
-          libraryOfCongressNumber: 'PZ7.R79835',
-          oclcNumber: '123456789',
+          deweyDecimal: TEST_DEWEY_DECIMAL,
+          libraryOfCongressNumber: TEST_LIBRARY_OF_CONGRESS,
+          oclcNumber: TEST_OCLC_NUMBER,
         });
       });
     });
 
     it('should classify with only Dewey Decimal', async () => {
       const dto: ClassifyBookDto = {
-        deweyDecimal: '813.6',
+        deweyDecimal: TEST_DEWEY_DECIMAL,
       };
       const book: Book = {
         ...classifiedBook,
         libraryClassification: {
-          deweyDecimal: '813.6',
+          deweyDecimal: TEST_DEWEY_DECIMAL,
         },
       };
       mockClassifyBookCommandHandler.handle.mockResolvedValue(commandOk(book));
@@ -123,16 +129,18 @@ describe('BookClassifyController', () => {
 
       await sut.classifyBook(req, res, mockContext);
 
-      expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(new ClassifyBookCommand(bookId, dto, mockContext));
+      expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(
+        new ClassifyBookCommand(bookId, dto, mockContext),
+      );
       expectSuccess(res, (data) => {
         const bookData = data as Book;
-        expect(bookData.libraryClassification?.deweyDecimal).toBe('813.6');
+        expect(bookData.libraryClassification?.deweyDecimal).toBe(TEST_DEWEY_DECIMAL);
       });
     });
 
     it('should return 404 when book is not found', async () => {
       mockClassifyBookCommandHandler.handle.mockResolvedValue(
-        commandFail(ErrorCodes.BOOK_NOT_FOUND, 'Book not found', HttpStatus.NOT_FOUND),
+        commandFail(ErrorCodes.BOOK_NOT_FOUND, ERROR_BOOK_NOT_FOUND, HttpStatus.NOT_FOUND),
       );
       const req = createMockClassifyRequest({ id: bookId }, classifyBookDto);
       const res = httpMocks.createResponse();
@@ -142,7 +150,7 @@ describe('BookClassifyController', () => {
       expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(
         new ClassifyBookCommand(bookId, classifyBookDto, mockContext),
       );
-      expectNotFound(res, 'Book not found');
+      expectNotFound(res, ERROR_BOOK_NOT_FOUND);
     });
 
     it('should return 500 on general error', async () => {
@@ -196,8 +204,8 @@ describe('BookClassifyController', () => {
         libraryOfCongressNumber: 'PR6068.O93',
         oclcNumber: '987654321',
       },
-      createdAt: new Date('2024-01-01'),
-      createdBy: 'test-user',
+      createdAt: TEST_DATE_START_OF_2024,
+      createdBy: TEST_USER_NAME,
       updatedAt: new Date('2025-01-20'),
       updatedBy: 'system',
       isDeleted: false,
@@ -278,7 +286,7 @@ describe('BookClassifyController', () => {
 
     it('should return 404 when book is not found', async () => {
       mockUpdateClassificationCommandHandler.handle.mockResolvedValue(
-        commandFail(ErrorCodes.BOOK_NOT_FOUND, 'Book not found', HttpStatus.NOT_FOUND),
+        commandFail(ErrorCodes.BOOK_NOT_FOUND, ERROR_BOOK_NOT_FOUND, HttpStatus.NOT_FOUND),
       );
       const req = createMockUpdateRequest({ id: bookId }, updateClassificationDto);
       const res = httpMocks.createResponse();
@@ -288,7 +296,7 @@ describe('BookClassifyController', () => {
       expect(mockUpdateClassificationCommandHandler.handle).toHaveBeenCalledWith(
         new UpdateClassificationCommand(bookId, updateClassificationDto, mockContext),
       );
-      expectNotFound(res, 'Book not found');
+      expectNotFound(res, ERROR_BOOK_NOT_FOUND);
     });
 
     it('should return 500 on general error', async () => {

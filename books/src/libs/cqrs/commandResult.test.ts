@@ -1,5 +1,6 @@
 import { commandOk, commandFail, isCommandOk, isCommandFail, CommandResult, ErrorDetail } from './commandResult';
-import { ErrorCodes, HttpStatus } from './errorCodes';
+import { ErrorCodes } from './errorCodes';
+import { HttpStatus } from './httpStatusCodes';
 
 describe('commandResult', () => {
   describe('commandOk', () => {

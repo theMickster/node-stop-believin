@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { ITokenPayload } from 'passport-azure-ad';
 
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
+
 import authConfig from '../config/authConfig';
 
 /**
@@ -47,7 +49,7 @@ export function requireRole(requiredRoles: string | string[]) {
     const authInfo = req.authInfo as ITokenPayload;
 
     if (!authInfo) {
-      res.status(401).json({
+      res.status(HttpStatus.UNAUTHORIZED).json({
         error: 'Unauthorized',
         message: 'No authentication information found',
       });
@@ -67,7 +69,7 @@ export function requireRole(requiredRoles: string | string[]) {
     const hasRequiredRole = rolesToCheck.some((role) => userRoles.includes(role));
 
     if (!hasRequiredRole) {
-      res.status(403).json({
+      res.status(HttpStatus.FORBIDDEN).json({
         error: 'Forbidden',
         message: `Insufficient role permissions. Required: ${rolesToCheck.join(' OR ')}`,
         required: rolesToCheck,
@@ -107,7 +109,7 @@ export function getCurrentUser(req: Request, res: Response, next: NextFunction):
   const authInfo = req.authInfo as ITokenPayload;
 
   if (!authInfo) {
-    res.status(401).json({
+    res.status(HttpStatus.UNAUTHORIZED).json({
       error: 'Unauthorized',
       message: 'No authentication information found',
     });

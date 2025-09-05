@@ -1,9 +1,10 @@
-import { buildAuthorRepoMock } from '_test_/builders/authorRepositoryMockBuilder';
-import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
+import { buildAuthorRepoMock } from '@tests/builders/authorRepositoryMockBuilder';
+import { buildMockExecutionContext } from '@tests/builders/executionContextMockBuilder';
 import { mock, mockReset } from 'jest-mock-extended';
 
 import { isCommandFail, isCommandOk } from '@libs/cqrs/commandResult';
 import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 
 import { Author } from '@data/entities/author.entity';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
@@ -12,14 +13,9 @@ import { AuthorRepository } from '@data/repos/author.repository';
 import { CreateAuthorCommand } from './createAuthor.command';
 import { CreateAuthorCommandHandler } from './createAuthor.command.handler';
 
-
-
 describe('CreateAuthorCommandHandler', () => {
   const mockRepo = mock<AuthorRepository>();
-  const mockContext = buildMockExecutionContext()
-    .withUserId('system')
-    .withTimestamp(new Date('2024-01-01'))
-    .build();
+  const mockContext = buildMockExecutionContext().withUserId('system').withTimestamp(new Date('2024-01-01')).build();
   let sut: CreateAuthorCommandHandler;
 
   beforeEach(() => {
@@ -260,7 +256,7 @@ describe('CreateAuthorCommandHandler', () => {
       isVerified: true,
     };
     const cmd = new CreateAuthorCommand(dto, mockContext);
-    buildAuthorRepoMock(mockRepo).createFails('Cosmos DB is down', 500);
+    buildAuthorRepoMock(mockRepo).createFails('Cosmos DB is down', HttpStatus.INTERNAL_SERVER_ERROR);
 
     const result = await sut.handle(cmd);
 
@@ -283,7 +279,7 @@ describe('CreateAuthorCommandHandler', () => {
       isVerified: true,
     };
     const cmd = new CreateAuthorCommand(dto, mockContext);
-    mockRepo.create.mockResolvedValue({ success: false, statusCode: 500 });
+    mockRepo.create.mockResolvedValue({ success: false, statusCode: HttpStatus.INTERNAL_SERVER_ERROR });
 
     const result = await sut.handle(cmd);
 

@@ -2,7 +2,8 @@ import { inject, injectable } from 'inversify';
 
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { CommandResult, commandFail, commandOk } from '@libs/cqrs/commandResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import TYPES from '@libs/ioc.types';
 import { ILogger } from '@libs/logging/logger.interface';
 

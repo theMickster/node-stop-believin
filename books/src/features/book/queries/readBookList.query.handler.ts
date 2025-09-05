@@ -1,6 +1,7 @@
 import { injectable, inject } from 'inversify';
 
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import { QueryResult, queryOk, queryFail } from '@libs/cqrs/queryResult';
 import TYPES from '@libs/ioc.types';

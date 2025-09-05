@@ -3,7 +3,7 @@ import { inject, injectable } from 'inversify';
 
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { isCommandFail } from '@libs/cqrs/commandResult';
-import { HttpStatus } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import { isQueryFail } from '@libs/cqrs/queryResult';
 import { LogOperation, CaptureContext } from '@libs/decorators/logging.decorators';
@@ -65,7 +65,7 @@ export class AuthorController {
     }
 
     if (!result.data) {
-      res.status(404).json({ error: 'Author not found' });
+      res.status(HttpStatus.NOT_FOUND).json({ error: 'Author not found' });
       return;
     }
 

@@ -3,6 +3,7 @@ import { inject, injectable } from 'inversify';
 
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { isCommandFail } from '@libs/cqrs/commandResult';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import {
   ExecutionContext as ExecutionContextDecorator,
   Post,
@@ -59,7 +60,7 @@ export class BookClassifyController {
       return;
     }
 
-    res.status(200).json(result.data);
+    res.status(HttpStatus.OK).json(result.data);
   }
 
   @Put('/:id/classify')
@@ -88,6 +89,6 @@ export class BookClassifyController {
       return;
     }
 
-    res.status(200).json(result.data);
+    res.status(HttpStatus.OK).json(result.data);
   }
 }

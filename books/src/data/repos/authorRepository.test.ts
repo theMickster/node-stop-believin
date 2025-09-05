@@ -1,4 +1,7 @@
 import { Container as CosmosContainer, ItemResponse, Items } from '@azure/cosmos';
+import { TEST_DATE_START_OF_2024, TEST_USER_NAME } from '@tests/helpers/resuableConstants';
+
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 
 import { Author } from '@data/entities/author.entity';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
@@ -19,10 +22,10 @@ describe('AuthorRepository', () => {
     genres: ['Fiction', 'Mystery'],
     status: 'Active',
     isVerified: true,
-    createdAt: new Date('2024-01-01'),
-    createdBy: 'test-user',
-    updatedAt: new Date('2024-01-01'),
-    updatedBy: 'test-user',
+    createdAt: TEST_DATE_START_OF_2024,
+    createdBy: TEST_USER_NAME,
+    updatedAt: TEST_DATE_START_OF_2024,
+    updatedBy: TEST_USER_NAME,
     isDeleted: false,
     version: 1,
   };
@@ -67,7 +70,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Failed to retrieve authors from the Cosmos DB.');
-      expect(result.statusCode).toBe(500);
+      expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
   });
 
@@ -95,7 +98,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Author not found');
-      expect(result.statusCode).toBe(404);
+      expect(result.statusCode).toBe(HttpStatus.NOT_FOUND);
     });
 
     it('should return 404 when error code is 404', async () => {
@@ -108,7 +111,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Author not found');
-      expect(result.statusCode).toBe(404);
+      expect(result.statusCode).toBe(HttpStatus.NOT_FOUND);
     });
 
     it('should return 404 when statusCode is 404', async () => {
@@ -121,7 +124,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Author not found');
-      expect(result.statusCode).toBe(404);
+      expect(result.statusCode).toBe(HttpStatus.NOT_FOUND);
     });
 
     it('should return 500 for other errors', async () => {
@@ -134,7 +137,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Failed to retrieve author');
-      expect(result.statusCode).toBe(500);
+      expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
   });
 
@@ -158,7 +161,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Failed to create author');
-      expect(result.statusCode).toBe(500);
+      expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
 
     it('should return failure when create throws error', async () => {
@@ -169,7 +172,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Failed to create author');
-      expect(result.statusCode).toBe(500);
+      expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
   });
 
@@ -197,7 +200,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Failed to update author');
-      expect(result.statusCode).toBe(500);
+      expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
 
     it('should return 404 when author not found during update', async () => {
@@ -210,7 +213,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Author not found');
-      expect(result.statusCode).toBe(404);
+      expect(result.statusCode).toBe(HttpStatus.NOT_FOUND);
     });
 
     it('should return 500 for other update errors', async () => {
@@ -223,7 +226,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Failed to update author');
-      expect(result.statusCode).toBe(500);
+      expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
   });
 
@@ -251,7 +254,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Author not found');
-      expect(result.statusCode).toBe(404);
+      expect(result.statusCode).toBe(HttpStatus.NOT_FOUND);
     });
 
     it('should return 500 for other delete errors', async () => {
@@ -264,7 +267,7 @@ describe('AuthorRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Failed to delete author');
-      expect(result.statusCode).toBe(500);
+      expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
   });
 });

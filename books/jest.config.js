@@ -15,7 +15,7 @@ module.exports = {
     '^@libs/(.*)$': '<rootDir>/src/libs/$1',
     '^@middleware/(.*)$': '<rootDir>/src/middleware/$1',
     '^@routes/(.*)$': '<rootDir>/src/routes/$1',
-    '^@tests/(.*)$': '<rootDir>/src/__tests__/$1',
+    '^@tests/(.*)$': '<rootDir>/src/_test_/$1',
   },
   transform: {
     '^.+\\.ts$': 'ts-jest',

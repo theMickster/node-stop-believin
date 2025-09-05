@@ -1,10 +1,15 @@
+import {
+  TEST_DATE_START_OF_2024,
+  TEST_USER_NAME,
+  TEST_ISBN_13,
+  TEST_DEWEY_DECIMAL,
+} from '@tests/helpers/resuableConstants';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { Book } from '@data/entities/book.entity';
 
 import { mapBookToReadBookDto } from './bookMappers';
-
 
 describe('mapBookToReadBookDto', () => {
   const baseBook: Book = {
@@ -20,10 +25,10 @@ describe('mapBookToReadBookDto', () => {
         order: 1,
       },
     ],
-    createdAt: new Date('2024-01-01'),
-    createdBy: 'test-user',
-    updatedAt: new Date('2024-01-01'),
-    updatedBy: 'test-user',
+    createdAt: TEST_DATE_START_OF_2024,
+    createdBy: TEST_USER_NAME,
+    updatedAt: TEST_DATE_START_OF_2024,
+    updatedBy: TEST_USER_NAME,
     isDeleted: false,
     version: 1,
   };
@@ -58,7 +63,7 @@ describe('mapBookToReadBookDto', () => {
         ...baseBook,
         isbn: {
           isbn10: '1234567890',
-          isbn13: '9781234567890',
+          isbn13: TEST_ISBN_13,
         },
         publishedDate: new Date('2024-06-01'),
         firstPublishedDate: new Date('2023-01-01'),
@@ -76,7 +81,7 @@ describe('mapBookToReadBookDto', () => {
       expect(result.publicationInfo).toBeDefined();
       expect(result.publicationInfo?.isbn).toEqual({
         isbn10: '1234567890',
-        isbn13: '9781234567890',
+        isbn13: TEST_ISBN_13,
       });
       expect(result.publicationInfo?.publishedDate).toBe('2024-06-01T00:00:00.000Z');
       expect(result.publicationInfo?.firstPublishedDate).toBe('2023-01-01T00:00:00.000Z');
@@ -105,7 +110,7 @@ describe('mapBookToReadBookDto', () => {
       const unpublishedBook: Book = {
         ...baseBook,
         isbn: {
-          isbn13: '9781234567890',
+          isbn13: TEST_ISBN_13,
         },
       };
 
@@ -118,7 +123,7 @@ describe('mapBookToReadBookDto', () => {
       const bookWithIsbn: Book = {
         ...baseBook,
         isbn: {
-          isbn13: '9781234567890',
+          isbn13: TEST_ISBN_13,
         },
       };
 
@@ -126,7 +131,7 @@ describe('mapBookToReadBookDto', () => {
 
       expect(result.publicationInfo).toBeDefined();
       expect(result.publicationInfo?.isbn).toEqual({
-        isbn13: '9781234567890',
+        isbn13: TEST_ISBN_13,
       });
       expect(result.publicationInfo?.isPublished).toBe(false);
     });
@@ -184,7 +189,7 @@ describe('mapBookToReadBookDto', () => {
         bisacCodes: ['FIC022000', 'FIC022020'],
         thema: ['FH', 'FHD'],
         libraryClassification: {
-          deweyDecimal: '813.6',
+          deweyDecimal: TEST_DEWEY_DECIMAL,
           libraryOfCongressNumber: 'PS3614.O3456',
           oclcNumber: '123456789',
         },
@@ -200,7 +205,7 @@ describe('mapBookToReadBookDto', () => {
       expect(result.classificationInfo?.bisacCodes).toEqual(['FIC022000', 'FIC022020']);
       expect(result.classificationInfo?.thema).toEqual(['FH', 'FHD']);
       expect(result.classificationInfo?.libraryClassification).toEqual({
-        deweyDecimal: '813.6',
+        deweyDecimal: TEST_DEWEY_DECIMAL,
         libraryOfCongressNumber: 'PS3614.O3456',
         oclcNumber: '123456789',
       });
@@ -260,7 +265,7 @@ describe('mapBookToReadBookDto', () => {
       const bookWithLibrary: Book = {
         ...baseBook,
         libraryClassification: {
-          deweyDecimal: '813.6',
+          deweyDecimal: TEST_DEWEY_DECIMAL,
         },
       };
 
@@ -268,7 +273,7 @@ describe('mapBookToReadBookDto', () => {
 
       expect(result.classificationInfo).toBeDefined();
       expect(result.classificationInfo?.libraryClassification).toEqual({
-        deweyDecimal: '813.6',
+        deweyDecimal: TEST_DEWEY_DECIMAL,
       });
     });
 
@@ -302,7 +307,7 @@ describe('mapBookToReadBookDto', () => {
       const fullBook: Book = {
         ...baseBook,
         isbn: {
-          isbn13: '9781234567890',
+          isbn13: TEST_ISBN_13,
         },
         publishedDate: new Date('2024-06-01'),
         edition: '1st Edition',

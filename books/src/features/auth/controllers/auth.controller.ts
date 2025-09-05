@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
+
 import authConfig from '../../../config/authConfig';
 
 export class AuthController {
   public getProtectedRoute(req: Request, res: Response): void {
-    res.status(200).json({
+    res.status(HttpStatus.OK).json({
       message: 'This is a protected route',
       user: {
         name: req.authInfo?.name,
@@ -15,14 +17,14 @@ export class AuthController {
   }
 
   public getCurrentUser(req: Request, res: Response): void {
-    res.status(200).json({
+    res.status(HttpStatus.OK).json({
       message: 'Current user information',
       user: req.user,
     });
   }
 
   public getAdminStats(req: Request, res: Response): void {
-    res.status(200).json({
+    res.status(HttpStatus.OK).json({
       message: 'Admin Statistics',
       stats: {
         totalBooks: 42,
@@ -40,7 +42,7 @@ export class AuthController {
   public getRoleCheck(req: Request, res: Response): void {
     const roles = req.authInfo?.roles || [];
 
-    res.status(200).json({
+    res.status(HttpStatus.OK).json({
       message: 'Role Check',
       user: {
         name: req.authInfo?.name,

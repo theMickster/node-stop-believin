@@ -1,5 +1,6 @@
 import { CommandResult, isCommandOk, isCommandFail } from '@libs/cqrs/commandResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 
 /**
  * Assert that a command result is successful and optionally validate the data

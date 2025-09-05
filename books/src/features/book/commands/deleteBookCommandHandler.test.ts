@@ -1,14 +1,9 @@
-import { buildBookRepoMock } from '_test_/builders/bookRepositoryMockBuilder';
-import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
-import {
-  expectCommandSuccess,
-  expectValidationError,
-  expectDatabaseError,
-} from '_test_/helpers/commandAssertions';
+import { buildBookRepoMock } from '@tests/builders/bookRepositoryMockBuilder';
+import { buildMockExecutionContext } from '@tests/builders/executionContextMockBuilder';
+import { expectCommandSuccess, expectValidationError, expectDatabaseError } from '@tests/helpers/commandAssertions';
 import { mock, mockReset } from 'jest-mock-extended';
 
 import { ILogger } from '@libs/logging/logger.interface';
-
 
 import { BookRepository } from '@data/repos/book.repository';
 
@@ -16,7 +11,6 @@ import { DeleteBookValidator } from '../validators/deleteBook.validator';
 
 import { DeleteBookCommand } from './deleteBook.command';
 import { DeleteBookCommandHandler } from './deleteBook.command.handler';
-
 
 describe('DeleteBookCommandHandler', () => {
   const mockRepo = mock<BookRepository>();

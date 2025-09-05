@@ -1,19 +1,20 @@
 import { fakeAuthors } from '@fixtures/authors';
-import { buildMockExecutionContext } from '_test_/builders/executionContextMockBuilder';
-import { mockEmptyRequest, mockRequestWithParams, mockRequestWithBody } from '_test_/builders/mockRequestBuilder';
+import { buildMockExecutionContext } from '@tests/builders/executionContextMockBuilder';
+import { mockEmptyRequest, mockRequestWithParams, mockRequestWithBody } from '@tests/builders/mockRequestBuilder';
 import {
   expectSuccess,
   expectCreated,
   expectNotFound,
   expectInternalServerError,
   expectBadRequest,
-} from '_test_/helpers/controllerAssertions';
+} from '@tests/helpers/controllerAssertions';
 import { mock, mockReset } from 'jest-mock-extended';
 import httpMocks from 'node-mocks-http';
 
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { commandFail, commandOk } from '@libs/cqrs/commandResult';
-import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import { queryFail, queryOk } from '@libs/cqrs/queryResult';
 import { ILogger } from '@libs/logging/logger.interface';
@@ -24,7 +25,6 @@ import { CreateAuthorCommand } from '@features/author/commands/createAuthor.comm
 import { ReadAuthorDto } from '@features/author/models/readAuthorDto';
 import { ReadAuthorQuery } from '@features/author/queries/readAuthor.query';
 import { ReadAuthorListQuery } from '@features/author/queries/readAuthorList.query';
-
 
 import { AuthorController } from './author.controller';
 
