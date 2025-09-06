@@ -16,9 +16,12 @@ import {
 } from '@libs/decorators/route.decorators';
 import { ApiResponseMessages } from '@libs/http/apiResponseMessages';
 import { CommandResponseHelper } from '@libs/http/commandResponseHelper';
+import { parsePaginationParams } from '@libs/http/paginationHelper';
 import { QueryResponseHelper } from '@libs/http/queryResponseHelper';
+import { parseSortParams } from '@libs/http/sortingHelper';
 import TYPES from '@libs/ioc.types';
 import { ILogger } from '@libs/logging/logger.interface';
+import { PaginatedResponse } from '@libs/types/pagination.types';
 
 import { ExecutionContext } from '@middleware/requestContext';
 
@@ -33,12 +36,13 @@ import { CreateBookDto } from '@features/book/models/createBookDto';
 import { ReadBookDto } from '@features/book/models/readBookDto';
 import { ReadBookQuery } from '@features/book/queries/readBook.query';
 import { ReadBookListQuery } from '@features/book/queries/readBookList.query';
+import { BookSortSpecification } from '@features/book/specifications/bookSort.specification';
 
 @injectable()
 export class BookController {
   constructor(
     @inject(TYPES.ReadBookListHandler)
-    private readonly readBookListHandler: IQueryHandler<ReadBookListQuery, ReadBookDto[]>,
+    private readonly readBookListHandler: IQueryHandler<ReadBookListQuery, PaginatedResponse<ReadBookDto>>,
     @inject(TYPES.ReadBookHandler) private readonly readBookHandler: IQueryHandler<ReadBookQuery, ReadBookDto | null>,
     @inject(TYPES.CreateBookCommandHandler)
     private readonly createBookCommandHandler: ICommandHandler<CreateBookCommand, Book>,
@@ -53,8 +57,10 @@ export class BookController {
   @Get('/')
   @RequireRoles(authConfig.roles.admin, authConfig.roles.reader)
   @LogOperation('GetBooks')
-  async getBooks(_req: Request, res: Response): Promise<void> {
-    const query = new ReadBookListQuery();
+  async getBooks(req: Request, res: Response): Promise<void> {
+    const pagination = parsePaginationParams(req);
+    const sortConfig = parseSortParams(req, new BookSortSpecification());
+    const query = new ReadBookListQuery(pagination, sortConfig);
     const result = await this.readBookListHandler.handle(query);
 
     QueryResponseHelper.handleJsonResult(res, result);

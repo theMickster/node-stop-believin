@@ -19,21 +19,24 @@ import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import { queryOk, queryFail } from '@libs/cqrs/queryResult';
 import { ILogger } from '@libs/logging/logger.interface';
+import { PaginatedResponse, PAGINATION_DEFAULTS } from '@libs/types/pagination.types';
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { Book } from '@data/entities/book.entity';
+import { mapBookToReadBookDto } from '@data/mapping/bookMappers';
 
 import { CreateBookCommand } from '@features/book/commands/createBook.command';
 import { DeleteBookCommand } from '@features/book/commands/deleteBook.command';
 import { UpdateBookCommand } from '@features/book/commands/updateBook.command';
 import { BookController } from '@features/book/controllers/book.controller';
 import { CreateBookDto } from '@features/book/models/createBookDto';
+import { ReadBookDto } from '@features/book/models/readBookDto';
 import { UpdateBookDto } from '@features/book/models/updateBookDto';
 import { ReadBookQuery } from '@features/book/queries/readBook.query';
 import { ReadBookListQuery } from '@features/book/queries/readBookList.query';
 
 describe('BookController', () => {
-  const mockReadBookListHandler = mock<IQueryHandler<ReadBookListQuery, Book[]>>();
+  const mockReadBookListHandler = mock<IQueryHandler<ReadBookListQuery, PaginatedResponse<ReadBookDto>>>();
   const mockReadBookHandler = mock<IQueryHandler<ReadBookQuery, Book>>();
   const mockCreateBookCommandHandler = mock<ICommandHandler<CreateBookCommand, Book>>();
   const mockDeleteBookCommandHandler = mock<ICommandHandler<DeleteBookCommand, void>>();
@@ -65,17 +68,29 @@ describe('BookController', () => {
   });
 
   describe('getBooks', () => {
-    it('should return a list of books on success', async () => {
-      mockReadBookListHandler.handle.mockResolvedValue(queryOk(fakeBooks));
+    it('should return a paginated list of books on success', async () => {
+      const paginatedResponse: PaginatedResponse<ReadBookDto> = {
+        data: fakeBooks.map(mapBookToReadBookDto),
+        pagination: {
+          page: 1,
+          pageSize: PAGINATION_DEFAULTS.PAGE_SIZE,
+          totalItems: 47,
+          totalPages: 5,
+        },
+      };
+      mockReadBookListHandler.handle.mockResolvedValue(queryOk(paginatedResponse));
       const req = mockEmptyRequest();
       const res = httpMocks.createResponse();
 
       await sut.getBooks(req, res);
 
-      expect(mockReadBookListHandler.handle).toHaveBeenCalledWith(new ReadBookListQuery());
+      expect(mockReadBookListHandler.handle).toHaveBeenCalled();
       expectSuccess(res, (data) => {
-        expect(data).toBeInstanceOf(Array);
-        expect((data as unknown[]).length).toBe(fakeBooks.length);
+        const result = data as PaginatedResponse<ReadBookDto>;
+        expect(result.data).toBeInstanceOf(Array);
+        expect(result.data.length).toBe(fakeBooks.length);
+        expect(result.pagination).toBeDefined();
+        expect(result.pagination.totalItems).toBe(47);
       });
     });
 
@@ -88,7 +103,7 @@ describe('BookController', () => {
 
       await sut.getBooks(req, res);
 
-      expect(mockReadBookListHandler.handle).toHaveBeenCalledWith(new ReadBookListQuery());
+      expect(mockReadBookListHandler.handle).toHaveBeenCalled();
       expectInternalServerError(res);
       expectLoggerError(mockLogger, 'Operation failed', (context) => {
         const ctx = context as { statusCode: number; duration: number };

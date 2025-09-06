@@ -14,9 +14,12 @@ import {
 } from '@libs/decorators/route.decorators';
 import { ApiResponseMessages } from '@libs/http/apiResponseMessages';
 import { CommandResponseHelper } from '@libs/http/commandResponseHelper';
+import { parsePaginationParams } from '@libs/http/paginationHelper';
 import { QueryResponseHelper } from '@libs/http/queryResponseHelper';
+import { parseSortParams } from '@libs/http/sortingHelper';
 import TYPES from '@libs/ioc.types';
 import { ILogger } from '@libs/logging/logger.interface';
+import { PaginatedResponse } from '@libs/types/pagination.types';
 
 import { ExecutionContext } from '@middleware/requestContext';
 
@@ -29,12 +32,13 @@ import { CreateAuthorDto } from '@features/author/models/createAuthorDto';
 import { ReadAuthorDto } from '@features/author/models/readAuthorDto';
 import { ReadAuthorQuery } from '@features/author/queries/readAuthor.query';
 import { ReadAuthorListQuery } from '@features/author/queries/readAuthorList.query';
+import { AuthorSortSpecification } from '@features/author/specifications/authorSort.specification';
 
 @injectable()
 export class AuthorController {
   constructor(
     @inject(TYPES.ReadAuthorListHandler)
-    private readonly readAuthorListHandler: IQueryHandler<ReadAuthorListQuery, ReadAuthorDto[]>,
+    private readonly readAuthorListHandler: IQueryHandler<ReadAuthorListQuery, PaginatedResponse<ReadAuthorDto>>,
     @inject(TYPES.ReadAuthorHandler)
     private readonly readAuthorHandler: IQueryHandler<ReadAuthorQuery, ReadAuthorDto | null>,
     @inject(TYPES.CreateAuthorCommandHandler)
@@ -46,8 +50,10 @@ export class AuthorController {
   @Get('/')
   @RequireRoles(authConfig.roles.admin, authConfig.roles.reader)
   @LogOperation('GetAuthors')
-  async getAuthors(_req: Request, res: Response): Promise<void> {
-    const query = new ReadAuthorListQuery();
+  async getAuthors(req: Request, res: Response): Promise<void> {
+    const pagination = parsePaginationParams(req);
+    const sortConfig = parseSortParams(req, new AuthorSortSpecification());
+    const query = new ReadAuthorListQuery(pagination, sortConfig);
     const result = await this.readAuthorListHandler.handle(query);
 
     QueryResponseHelper.handleJsonResult(res, result);

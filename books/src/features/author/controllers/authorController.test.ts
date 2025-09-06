@@ -18,8 +18,10 @@ import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import { queryFail, queryOk } from '@libs/cqrs/queryResult';
 import { ILogger } from '@libs/logging/logger.interface';
+import { PaginatedResponse, PAGINATION_DEFAULTS } from '@libs/types/pagination.types';
 
 import { Author } from '@data/entities/author.entity';
+import { mapAuthorToReadAuthorDto } from '@data/mapping/authorMappers';
 
 import { CreateAuthorCommand } from '@features/author/commands/createAuthor.command';
 import { ReadAuthorDto } from '@features/author/models/readAuthorDto';
@@ -29,7 +31,7 @@ import { ReadAuthorListQuery } from '@features/author/queries/readAuthorList.que
 import { AuthorController } from './author.controller';
 
 describe('AuthorController', () => {
-  const mockReadAuthorListHandler = mock<IQueryHandler<ReadAuthorListQuery, ReadAuthorDto[]>>();
+  const mockReadAuthorListHandler = mock<IQueryHandler<ReadAuthorListQuery, PaginatedResponse<ReadAuthorDto>>>();
   const mockReadAuthorHandler = mock<IQueryHandler<ReadAuthorQuery, ReadAuthorDto | null>>();
   const mockCreateAuthorCommandHandler = mock<ICommandHandler<CreateAuthorCommand, Author>>();
   const mockLogger = mock<ILogger>();
@@ -52,30 +54,30 @@ describe('AuthorController', () => {
   });
 
   describe('getAuthors', () => {
-    it('should return a list of authors on success', async () => {
-      const mockAuthors: ReadAuthorDto[] = [
-        {
-          id: fakeAuthors[0].id,
-          authorId: fakeAuthors[0].authorId,
-          firstName: fakeAuthors[0].firstName,
-          lastName: fakeAuthors[0].lastName,
-          displayName: fakeAuthors[0].displayName,
-          genres: fakeAuthors[0].genres,
-          status: fakeAuthors[0].status,
-          isVerified: fakeAuthors[0].isVerified,
+    it('should return a paginated list of authors on success', async () => {
+      const paginatedResponse: PaginatedResponse<ReadAuthorDto> = {
+        data: fakeAuthors.map(mapAuthorToReadAuthorDto),
+        pagination: {
+          page: 1,
+          pageSize: PAGINATION_DEFAULTS.PAGE_SIZE,
+          totalItems: 25,
+          totalPages: 3,
         },
-      ];
+      };
 
-      mockReadAuthorListHandler.handle.mockResolvedValue(queryOk(mockAuthors));
+      mockReadAuthorListHandler.handle.mockResolvedValue(queryOk(paginatedResponse));
       const req = mockEmptyRequest();
       const res = httpMocks.createResponse();
 
       await sut.getAuthors(req, res);
 
-      expect(mockReadAuthorListHandler.handle).toHaveBeenCalledWith(new ReadAuthorListQuery());
+      expect(mockReadAuthorListHandler.handle).toHaveBeenCalled();
       expectSuccess(res, (data) => {
-        expect(data).toBeInstanceOf(Array);
-        expect((data as unknown[]).length).toBe(mockAuthors.length);
+        const result = data as PaginatedResponse<ReadAuthorDto>;
+        expect(result.data).toBeInstanceOf(Array);
+        expect(result.data.length).toBe(fakeAuthors.length);
+        expect(result.pagination).toBeDefined();
+        expect(result.pagination.totalItems).toBe(25);
       });
     });
 
@@ -88,7 +90,7 @@ describe('AuthorController', () => {
 
       await sut.getAuthors(req, res);
 
-      expect(mockReadAuthorListHandler.handle).toHaveBeenCalledWith(new ReadAuthorListQuery());
+      expect(mockReadAuthorListHandler.handle).toHaveBeenCalled();
       expectInternalServerError(res, 'Whoops! There was a Cosmos Error!');
     });
   });

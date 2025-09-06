@@ -2,9 +2,11 @@ import { Container as CosmosContainer, ItemResponse, PartitionKey, SqlParameter 
 
 import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 import { isErrorWithCode } from '@libs/guards/errorGuards';
+import { PaginationParams } from '@libs/types/pagination.types';
+import { ValidatedSortConfig } from '@libs/types/sorting.types';
 
 import { BaseEntity, PartitionedEntity } from '@data/entities/base/entity-traits';
-import { RepoResult, repoOk, repoFail } from '@data/libs/repoResult';
+import { RepoResult, repoOk, repoFail, PaginatedRepoResult, paginatedRepoOk, paginatedRepoFail } from '@data/libs/repoResult';
 
 /**
  * Base repository for Cosmos DB operations
@@ -39,6 +41,60 @@ export abstract class CosmosRepository<T extends BaseEntity & PartitionedEntity>
       return repoOk(resources);
     } catch {
       return repoFail(`Failed to retrieve ${this.entityName}s from the Cosmos DB.`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Get paginated entities of this type with optional sorting
+   * Uses Cosmos DB OFFSET/LIMIT for efficient pagination
+   * Uses ORDER BY for sorting when sort config is provided
+   *
+   * Based on Cosmos DB SQL API documentation:
+   * - Pagination: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/query/offset-limit
+   * - Sorting: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/query/order-by
+   *
+   * @param pagination - Pagination parameters (page, pageSize)
+   * @param sortConfig - Optional validated sort configuration (field path and direction)
+   * @returns Paginated result with items and total count
+   */
+  async getAllPaginated(pagination: PaginationParams, sortConfig?: ValidatedSortConfig): Promise<PaginatedRepoResult<T>> {
+    try {
+      // Calculate offset for OFFSET/LIMIT clause
+      const offset = (pagination.page - 1) * pagination.pageSize;
+
+      // Build ORDER BY clause if sort config is provided
+      const orderByClause = sortConfig
+        ? ` ORDER BY ${sortConfig.dbFieldPath} ${sortConfig.direction.toUpperCase()}`
+        : '';
+
+      // Query for paginated items with optional sorting
+      const itemsQuerySpec = {
+        query: `SELECT * FROM c WHERE c.entityType = @entityType${orderByClause} OFFSET @offset LIMIT @limit`,
+        parameters: [
+          { name: '@entityType', value: this.entityType },
+          { name: '@offset', value: offset },
+          { name: '@limit', value: pagination.pageSize },
+        ],
+      };
+
+      // Query for total count (needed for pagination metadata)
+      const countQuerySpec = {
+        query: 'SELECT VALUE COUNT(1) FROM c WHERE c.entityType = @entityType',
+        parameters: [{ name: '@entityType', value: this.entityType }],
+      };
+
+      // Execute both queries in parallel for better performance
+      const [itemsResult, countResult] = await Promise.all([
+        this.container.items.query<T>(itemsQuerySpec).fetchAll(),
+        this.container.items.query<number>(countQuerySpec).fetchAll(),
+      ]);
+
+      const items = itemsResult.resources;
+      const totalCount = countResult.resources[0] || 0;
+
+      return paginatedRepoOk(items, totalCount);
+    } catch {
+      return paginatedRepoFail(`Failed to retrieve paginated ${this.entityName}s from the Cosmos DB.`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
