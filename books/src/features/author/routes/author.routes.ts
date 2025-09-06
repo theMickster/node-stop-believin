@@ -104,6 +104,33 @@ import { AuthorController } from '@features/author/controllers/author.controller
  *         $ref: '#/components/responses/InternalServerError'
  */
 
+/**
+ * @swagger
+ * /v1/authors:
+ *   post:
+ *     tags:
+ *       - Authors (v1)
+ *     summary: Create a new author
+ *     description: Add a new author to the system
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateAuthorRequest'
+ *     responses:
+ *       201:
+ *         description: Author created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Author'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
+
 export function authorRoutes(): Router {
   const controller = iocContainer.get<AuthorController>(TYPES.AuthorController);
   return buildRoutes(controller);

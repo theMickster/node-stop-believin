@@ -35,6 +35,10 @@ const options: swaggerJsdoc.Options = {
         name: 'Books (v2)',
         description: 'Book management endpoints - Version 2 (Coming Soon)',
       },
+      {
+        name: 'Authors (v1)',
+        description: 'Author management endpoints - Version 1',
+      },
     ],
     security: [
       {
@@ -92,6 +96,15 @@ const options: swaggerJsdoc.Options = {
         Author: {
           type: 'object',
           properties: {
+            id: {
+              type: 'string',
+              description: 'Internal database ID',
+            },
+            authorId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Unique identifier for the author',
+            },
             firstName: {
               type: 'string',
               description: 'Author first name',
@@ -103,6 +116,105 @@ const options: swaggerJsdoc.Options = {
             lastName: {
               type: 'string',
               description: 'Author last name',
+            },
+            displayName: {
+              type: 'string',
+              description: 'Display name for the author',
+            },
+            pseudonyms: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'List of author pseudonyms',
+            },
+            suffix: {
+              type: 'string',
+              description: 'Name suffix (e.g., Jr., III)',
+            },
+            shortBio: {
+              type: 'string',
+              description: 'Short biography',
+            },
+            longBio: {
+              type: 'string',
+              description: 'Long biography',
+            },
+            genres: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'List of genres the author writes in',
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'Author email address',
+            },
+            website: {
+              type: 'string',
+              format: 'uri',
+              description: 'Author website URL',
+            },
+            socialMedia: {
+              $ref: '#/components/schemas/SocialMedia',
+            },
+            profilePhotoUrl: {
+              type: 'string',
+              format: 'uri',
+              description: 'URL to author profile photo',
+            },
+            bannerImageUrl: {
+              type: 'string',
+              format: 'uri',
+              description: 'URL to author banner image',
+            },
+            photoGallery: {
+              type: 'array',
+              items: {
+                type: 'string',
+                format: 'uri',
+              },
+              description: 'Array of photo URLs',
+            },
+            status: {
+              type: 'string',
+              enum: ['active', 'inactive', 'pending'],
+              description: 'Author status',
+            },
+            isVerified: {
+              type: 'boolean',
+              description: 'Whether the author is verified',
+            },
+          },
+        },
+        SocialMedia: {
+          type: 'object',
+          properties: {
+            twitter: {
+              type: 'string',
+              description: 'Twitter handle or URL',
+            },
+            instagram: {
+              type: 'string',
+              description: 'Instagram handle or URL',
+            },
+            facebook: {
+              type: 'string',
+              description: 'Facebook profile URL',
+            },
+            linkedin: {
+              type: 'string',
+              description: 'LinkedIn profile URL',
+            },
+            goodreads: {
+              type: 'string',
+              description: 'Goodreads profile URL',
+            },
+            amazonAuthor: {
+              type: 'string',
+              description: 'Amazon Author profile URL',
             },
           },
         },
@@ -258,7 +370,112 @@ const options: swaggerJsdoc.Options = {
             },
             oclcNumber: {
               type: 'string',
-              pattern: '^\\d+$',
+              pattern: String.raw`^\d+$`,
+            },
+          },
+        },
+        CreateAuthorRequest: {
+          type: 'object',
+          required: ['firstName', 'lastName', 'displayName', 'genres', 'status', 'isVerified'],
+          properties: {
+            firstName: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 100,
+              description: 'Author first name',
+            },
+            middleName: {
+              type: 'string',
+              maxLength: 100,
+              description: 'Author middle name',
+            },
+            lastName: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 100,
+              description: 'Author last name',
+            },
+            displayName: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 200,
+              description: 'Display name for the author',
+            },
+            pseudonyms: {
+              type: 'array',
+              items: {
+                type: 'string',
+                maxLength: 100,
+              },
+              description: 'List of author pseudonyms',
+            },
+            suffix: {
+              type: 'string',
+              maxLength: 20,
+              description: 'Name suffix (e.g., Jr., III)',
+            },
+            shortBio: {
+              type: 'string',
+              maxLength: 500,
+              description: 'Short biography',
+            },
+            longBio: {
+              type: 'string',
+              maxLength: 5000,
+              description: 'Long biography',
+            },
+            genres: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              minItems: 1,
+              description: 'List of genres the author writes in',
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              maxLength: 255,
+              description: 'Author email address',
+            },
+            website: {
+              type: 'string',
+              format: 'uri',
+              maxLength: 500,
+              description: 'Author website URL',
+            },
+            socialMedia: {
+              $ref: '#/components/schemas/SocialMedia',
+            },
+            profilePhotoUrl: {
+              type: 'string',
+              format: 'uri',
+              maxLength: 500,
+              description: 'URL to author profile photo',
+            },
+            bannerImageUrl: {
+              type: 'string',
+              format: 'uri',
+              maxLength: 500,
+              description: 'URL to author banner image',
+            },
+            photoGallery: {
+              type: 'array',
+              items: {
+                type: 'string',
+                format: 'uri',
+                maxLength: 500,
+              },
+              description: 'Array of photo URLs',
+            },
+            status: {
+              type: 'string',
+              enum: ['active', 'inactive', 'pending'],
+              description: 'Author status',
+            },
+            isVerified: {
+              type: 'boolean',
+              description: 'Whether the author is verified',
             },
           },
         },
