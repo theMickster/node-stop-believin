@@ -19,7 +19,7 @@ export function initializeTelemetry(): void {
   const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: config.applicationName,
     [ATTR_SERVICE_VERSION]: config.applicationVersion,
-    environment: config.environment,
+    environment: config.nodeEnv,
     [ATTR_SERVER_ADDRESS]: config.serverName,
     WEB_SERVER_NAME: 'testValue'
   });

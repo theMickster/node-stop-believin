@@ -17,12 +17,12 @@ export class WinstonLogger implements ILogger {
     this.staticProps = {
       ApplicationName: config.applicationName,
       ApplicationVersion: config.applicationVersion,
-      Environment: config.environment.toUpperCase(),
+      Environment: config.nodeEnv.toUpperCase(),
     };
 
     const transports: winston.transport[] = [];
 
-    if (config.environment === 'development') {
+    if (config.nodeEnv === 'development') {
       transports.push(new winston.transports.Console({
         format: winston.format.combine(
           winston.format.colorize(),

@@ -39,13 +39,13 @@ export class ContextualWinstonLogger implements ILogger {
     this.staticProps = {
       ApplicationName: config.applicationName,
       ApplicationVersion: config.applicationVersion,
-      Environment: config.environment.toUpperCase(),
+      Environment: config.nodeEnv.toUpperCase(),
     };
 
     const transports: winston.transport[] = [];
 
     // Development-only transports for local debugging
-    if (config.environment === 'development') {
+    if (config.nodeEnv === 'development') {
       // Console transport with colored, human-readable format
       transports.push(
         new winston.transports.Console({

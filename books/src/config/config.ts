@@ -1,6 +1,4 @@
-import dotenv from 'dotenv';
-
-dotenv.config();
+import './env';
 
 interface Config {
     applicationName: string;
@@ -13,7 +11,6 @@ interface Config {
     nodeEnv: string;
     port: number;
     appInsightsConnectionString: string;
-    environment: string;
     logLevel: string;
     serverName: string;
 }
@@ -29,7 +26,6 @@ const config: Config = {
     port: Number(process.env.PORT) || 3898,
     nodeEnv: process.env.NODE_ENV ?? 'development',
     appInsightsConnectionString: process.env.ShawskyApplicationInsights ?? '',
-    environment: process.env.NODE_ENV ?? 'development',
     logLevel: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'development' ? 'debug' : 'info'),
     serverName: process.env.SERVER_NAME ?? 'localhost',
 };

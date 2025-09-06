@@ -1,8 +1,4 @@
-import dotenv from 'dotenv';
-import dotenvExpand from 'dotenv-expand';
-
-const myEnv = dotenv.config();
-dotenvExpand.expand(myEnv);
+import './env';
 
 /**
  * Configuration for Azure Entra ID (formerly Azure AD) authentication
