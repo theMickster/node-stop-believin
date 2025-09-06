@@ -2,6 +2,7 @@ import { Container as CosmosContainer } from '@azure/cosmos';
 import { inject, injectable } from 'inversify';
 
 import TYPES from '@libs/ioc.types';
+import { ILogger } from '@libs/logging/logger.interface';
 
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { Book } from '@data/entities/book.entity';
@@ -18,8 +19,11 @@ import { CosmosRepository } from './base/cosmosRepository';
  */
 @injectable()
 export class BookRepository extends CosmosRepository<Book> {
-  constructor(@inject(TYPES.BookContainer) container: CosmosContainer) {
-    super(container, ENTITY_TYPES.BOOK, 'book');
+  constructor(
+    @inject(TYPES.BookContainer) container: CosmosContainer,
+    @inject(TYPES.Logger) logger: ILogger,
+  ) {
+    super(container, ENTITY_TYPES.BOOK, 'book', logger);
   }
 
   /**

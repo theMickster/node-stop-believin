@@ -2,6 +2,7 @@ import { Container as CosmosContainer, ItemResponse, Items } from '@azure/cosmos
 import { TEST_DATE_START_OF_2024, TEST_USER_NAME } from '@tests/helpers/resuableConstants';
 
 import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
+import { ILogger } from '@libs/logging/logger.interface';
 
 import { Author } from '@data/entities/author.entity';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
@@ -10,6 +11,7 @@ import { AuthorRepository } from './author.repository';
 
 describe('AuthorRepository', () => {
   let mockContainer: jest.Mocked<CosmosContainer>;
+  let mockLogger: jest.Mocked<ILogger>;
   let repository: AuthorRepository;
 
   const mockAuthor: Author = {
@@ -39,7 +41,15 @@ describe('AuthorRepository', () => {
       item: jest.fn(),
     } as unknown as jest.Mocked<CosmosContainer>;
 
-    repository = new AuthorRepository(mockContainer);
+    mockLogger = {
+      error: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      child: jest.fn().mockReturnThis(),
+    } as jest.Mocked<ILogger>;
+
+    repository = new AuthorRepository(mockContainer, mockLogger);
   });
 
   describe('getAll', () => {
@@ -69,7 +79,7 @@ describe('AuthorRepository', () => {
       const result = await repository.getAll();
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to retrieve authors from the Cosmos DB.');
+      expect(result.error).toBe('Internal server error occurred');
       expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
   });
@@ -116,7 +126,7 @@ describe('AuthorRepository', () => {
 
     it('should return 404 when statusCode is 404', async () => {
       const mockItem = {
-        read: jest.fn().mockRejectedValue({ code: 500, statusCode: 404 }),
+        read: jest.fn().mockRejectedValue({ statusCode: 404 }),
       };
       (mockContainer.item as jest.Mock).mockReturnValue(mockItem);
 
@@ -136,7 +146,7 @@ describe('AuthorRepository', () => {
       const result = await repository.getById('author-123');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to retrieve author');
+      expect(result.error).toBe('Internal server error occurred');
       expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
   });
@@ -171,7 +181,7 @@ describe('AuthorRepository', () => {
       const result = await repository.create(mockAuthor);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to create author');
+      expect(result.error).toBe('Internal server error occurred');
       expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
   });
@@ -225,7 +235,7 @@ describe('AuthorRepository', () => {
       const result = await repository.update(mockAuthor);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to update author');
+      expect(result.error).toBe('Internal server error occurred');
       expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
   });
@@ -266,7 +276,7 @@ describe('AuthorRepository', () => {
       const result = await repository.delete('author-123');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to delete author');
+      expect(result.error).toBe('Internal server error occurred');
       expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
   });

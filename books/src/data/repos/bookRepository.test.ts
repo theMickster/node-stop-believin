@@ -8,6 +8,8 @@ import {
   ERROR_BOOK_NOT_FOUND,
 } from '@tests/helpers/resuableConstants';
 
+import { ILogger } from '@libs/logging/logger.interface';
+
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { Book } from '@data/entities/book.entity';
 import { repoOk } from '@data/libs/repoResult';
@@ -17,6 +19,7 @@ import { BookRepository } from './book.repository';
 describe('BookRepository', () => {
   let sut: BookRepository;
   let mockContainer: jest.Mocked<CosmosContainer>;
+  let mockLogger: jest.Mocked<ILogger>;
   let testBook: Book;
 
   beforeEach(() => {
@@ -38,7 +41,15 @@ describe('BookRepository', () => {
 
     mockContainer = buildCosmosContainerMock().queryReturns(fakeCosmicBooks).build();
 
-    sut = new BookRepository(mockContainer);
+    mockLogger = {
+      error: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      child: jest.fn().mockReturnThis(),
+    } as jest.Mocked<ILogger>;
+
+    sut = new BookRepository(mockContainer, mockLogger);
   });
 
   describe('getAll', () => {
@@ -67,7 +78,7 @@ describe('BookRepository', () => {
       const result = await sut.getAll();
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to retrieve books from the Cosmos DB.');
+      expect(result.error).toBe('Internal server error occurred');
     });
   });
 
@@ -115,7 +126,7 @@ describe('BookRepository', () => {
       const result = await sut.getById('some-id');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to retrieve book');
+      expect(result.error).toBe('Internal server error occurred');
     });
   });
 
@@ -145,7 +156,7 @@ describe('BookRepository', () => {
       const result = await sut.create(testBook);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to create book');
+      expect(result.error).toBe('Internal server error occurred');
     });
   });
 
@@ -178,7 +189,7 @@ describe('BookRepository', () => {
       const result = await sut.update(testBook);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to update book');
+      expect(result.error).toBe('Internal server error occurred');
     });
 
     it('should return not found when Cosmos DB responds 404', async () => {
@@ -220,7 +231,7 @@ describe('BookRepository', () => {
       const result = await sut.delete('book-id-123');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to delete book');
+      expect(result.error).toBe('Internal server error occurred');
     });
   });
 
