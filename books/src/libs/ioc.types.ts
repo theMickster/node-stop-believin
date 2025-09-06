@@ -28,6 +28,8 @@ const TYPES = {
     UpdatePublicationCommandHandler: Symbol.for("UpdatePublicationCommandHandler"),
     ClassifyBookCommandHandler: Symbol.for("ClassifyBookCommandHandler"),
     UpdateClassificationCommandHandler: Symbol.for("UpdateClassificationCommandHandler"),
+    HealthService: Symbol.for("HealthService"),
+    HealthController: Symbol.for("HealthController"),
 };
 
 export default TYPES;

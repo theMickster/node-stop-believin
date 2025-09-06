@@ -26,6 +26,8 @@ import { CreateBookValidator } from '@features/book/validators/createBook.valida
 import { DeleteBookValidator } from '@features/book/validators/deleteBook.validator';
 import { PublishBookValidator } from '@features/book/validators/publishBook.validator';
 import { UpdateBookValidator } from '@features/book/validators/updateBook.validator';
+import { HealthController } from '@features/health/controllers/health.controller';
+import { HealthService } from '@features/health/services/health.service';
 
 import { default as config } from '../config/config';
 
@@ -112,5 +114,9 @@ container.bind<AuthorController>(TYPES.AuthorController).to(AuthorController);
 container.bind<BookController>(TYPES.BookController).to(BookController);
 container.bind<BookPublishController>(TYPES.BookPublishController).to(BookPublishController);
 container.bind<BookClassifyController>(TYPES.BookClassifyController).to(BookClassifyController);
+container.bind<HealthController>(TYPES.HealthController).to(HealthController);
+
+// Bind Services
+container.bind<HealthService>(TYPES.HealthService).to(HealthService);
 
 export default container;

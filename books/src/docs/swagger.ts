@@ -32,12 +32,12 @@ const options: swaggerJsdoc.Options = {
         description: 'Book management endpoints - Version 1',
       },
       {
-        name: 'Books (v2)',
-        description: 'Book management endpoints - Version 2 (Coming Soon)',
-      },
-      {
         name: 'Authors (v1)',
         description: 'Author management endpoints - Version 1',
+      },
+      {
+        name: 'Health (v1)',
+        description: 'System health check endpoints - Version 1 (ADMIN only)',
       },
     ],
     security: [
@@ -495,6 +495,68 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        HealthStatus: {
+          type: 'object',
+          properties: {
+            status: {
+              type: 'string',
+              enum: ['healthy', 'degraded', 'unhealthy'],
+              description: 'Overall system health status',
+            },
+            timestamp: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Timestamp of the health check',
+            },
+            version: {
+              type: 'string',
+              description: 'Application version',
+            },
+            environment: {
+              type: 'string',
+              description: 'Current environment (development, production, etc.)',
+            },
+            checks: {
+              type: 'object',
+              properties: {
+                cosmosDb: {
+                  $ref: '#/components/schemas/ComponentHealth',
+                },
+                booksContainer: {
+                  $ref: '#/components/schemas/ComponentHealth',
+                },
+                authorsContainer: {
+                  $ref: '#/components/schemas/ComponentHealth',
+                },
+                applicationInsights: {
+                  $ref: '#/components/schemas/ComponentHealth',
+                },
+              },
+            },
+          },
+        },
+        ComponentHealth: {
+          type: 'object',
+          properties: {
+            status: {
+              type: 'string',
+              enum: ['healthy', 'degraded', 'unhealthy'],
+              description: 'Component health status',
+            },
+            responseTime: {
+              type: 'number',
+              description: 'Response time in milliseconds',
+            },
+            message: {
+              type: 'string',
+              description: 'Status message',
+            },
+            error: {
+              type: 'string',
+              description: 'Error message if unhealthy',
+            },
+          },
+        },
       },
       responses: {
         BadRequest: {
@@ -531,9 +593,8 @@ const options: swaggerJsdoc.Options = {
     },
   },
   apis: [
-    './src/routes/v1/*.ts',
-    './src/routes/v2/*.ts',
-    './src/routes/*.ts',
+    './src/routes/**/*.ts',
+    './src/features/**/routes/*.ts',
   ],
 };
 
