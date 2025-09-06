@@ -18,21 +18,24 @@ import { CreateBookCommand } from './createBook.command';
 
 @injectable()
 export class CreateBookCommandHandler implements ICommandHandler<CreateBookCommand, Book> {
-  constructor(@inject(TYPES.BookRepository) private readonly bookRepository: BookRepository) {}
+  constructor(
+    @inject(TYPES.BookRepository) private readonly bookRepository: BookRepository,
+    @inject(TYPES.CreateBookValidator) private readonly validator: CreateBookValidator,
+  ) {}
 
   async handle(command: CreateBookCommand): Promise<CommandResult<Book>> {
-    const validationResult = CreateBookValidator.validate(command.createBookDto, { abortEarly: false });
+    const validationResult = await this.validator.validate(command.createBookDto);
 
-    if (validationResult.error) {
+    if (!validationResult.valid) {
       return commandFail(
         ErrorCodes.VALIDATION_FAILED,
-        `Validation failed: ${validationResult.error.message}`,
-        HttpStatus.BAD_REQUEST
+        validationResult.error.message,
+        HttpStatus.BAD_REQUEST,
       );
     }
 
     const newId = v4();
-    const bookToCreate = mapCreateDtoToBook(newId, validationResult.value, command.context);
+    const bookToCreate = mapCreateDtoToBook(newId, command.createBookDto, command.context);
 
     const result = await this.bookRepository.create(bookToCreate);
     if (!result.success || !result.data) {

@@ -22,11 +22,14 @@ import { Book } from '@data/entities/book.entity';
 import { repoOk, repoFail } from '@data/libs/repoResult';
 import { BookRepository } from '@data/repos/book.repository';
 
+import { ClassifyBookValidator } from '../validators/classifyBook.validator';
+
 import { ClassifyBookCommand } from './classifyBook.command';
 import { ClassifyBookCommandHandler } from './classifyBook.command.handler';
 
 describe('ClassifyBookCommandHandler', () => {
   const mockBookRepository = mock<BookRepository>();
+  const mockValidator = mock<ClassifyBookValidator>();
   let sut: ClassifyBookCommandHandler;
   const mockContext = buildMockExecutionContext().build();
 
@@ -46,7 +49,10 @@ describe('ClassifyBookCommandHandler', () => {
 
   beforeEach(() => {
     mockReset(mockBookRepository);
-    sut = new ClassifyBookCommandHandler(mockBookRepository);
+    mockReset(mockValidator);
+    // Default to valid - override in individual tests for validation failures
+    mockValidator.validate.mockResolvedValue({ valid: true });
+    sut = new ClassifyBookCommandHandler(mockBookRepository, mockValidator);
   });
 
   describe('handle', () => {
@@ -61,6 +67,7 @@ describe('ClassifyBookCommandHandler', () => {
         mockContext,
       );
 
+      mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(
         repoOk({
@@ -104,6 +111,7 @@ describe('ClassifyBookCommandHandler', () => {
         mockContext,
       );
 
+      mockValidator.validate.mockResolvedValue({ valid: true });
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(
         repoOk({
@@ -234,6 +242,11 @@ describe('ClassifyBookCommandHandler', () => {
     it('should return error when validation fails', async () => {
       const command = new ClassifyBookCommand('123e4567-e89b-12d3-a456-426614174000', {}, mockContext);
 
+      mockValidator.validate.mockResolvedValue({
+        valid: false,
+        error: new Error('Validation error: At least one classification field (deweyDecimal, libraryOfCongressNumber, or oclcNumber) must be provided'),
+      });
+
       const result = await sut.handle(command);
 
       expectValidationError(result, 'At least one classification field');
@@ -316,6 +329,11 @@ describe('ClassifyBookCommandHandler', () => {
         mockContext,
       );
 
+      mockValidator.validate.mockResolvedValue({
+        valid: false,
+        error: new Error('Validation error: Dewey Decimal must be in format XXX.XX (e.g., 813.6)'),
+      });
+
       const result = await sut.handle(command);
 
       expectValidationError(result, 'Dewey Decimal must be in format XXX.XX');
@@ -329,6 +347,11 @@ describe('ClassifyBookCommandHandler', () => {
         },
         mockContext,
       );
+
+      mockValidator.validate.mockResolvedValue({
+        valid: false,
+        error: new Error('Validation error: OCLC number must contain only digits'),
+      });
 
       const result = await sut.handle(command);
 

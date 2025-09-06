@@ -16,15 +16,18 @@ import { ClassifyBookCommand } from './classifyBook.command';
 
 @injectable()
 export class ClassifyBookCommandHandler implements ICommandHandler<ClassifyBookCommand, Book> {
-  constructor(@inject(TYPES.BookRepository) private readonly bookRepository: BookRepository) {}
+  constructor(
+    @inject(TYPES.BookRepository) private readonly bookRepository: BookRepository,
+    @inject(TYPES.ClassifyBookValidator) private readonly validator: ClassifyBookValidator,
+  ) {}
 
   async handle(command: ClassifyBookCommand): Promise<CommandResult<Book>> {
-    const validationResult = ClassifyBookValidator.validate(command.classifyBookDto, { abortEarly: false });
-    if (validationResult.error) {
+    const validationResult = await this.validator.validate(command.classifyBookDto);
+    if (!validationResult.valid) {
       return commandFail(
         ErrorCodes.VALIDATION_FAILED,
-        `Validation failed: ${validationResult.error.message}`,
-        HttpStatus.BAD_REQUEST
+        validationResult.error.message,
+        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -34,9 +37,9 @@ export class ClassifyBookCommandHandler implements ICommandHandler<ClassifyBookC
     }
 
     const book = bookResult.data;
-    const dewey = validationResult.value.deweyDecimal;
-    const loc = validationResult.value.libraryOfCongressNumber;
-    const oclc = validationResult.value.oclcNumber;
+    const dewey = command.classifyBookDto.deweyDecimal;
+    const loc = command.classifyBookDto.libraryOfCongressNumber;
+    const oclc = command.classifyBookDto.oclcNumber;
     const timestamp = command.context.timestamp;
     const userId = command.context.userId ?? 'system';
     const classifiedBook: Book = {

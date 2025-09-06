@@ -21,7 +21,10 @@ import { BookClassifyController } from '@features/book/controllers/classify/book
 import { BookPublishController } from '@features/book/controllers/publish/bookPublish.controller';
 import { ReadBookQueryHandler } from '@features/book/queries/readBook.query.handler';
 import { ReadBookListQueryHandler } from '@features/book/queries/readBookList.query.handler';
+import { ClassifyBookValidator } from '@features/book/validators/classifyBook.validator';
+import { CreateBookValidator } from '@features/book/validators/createBook.validator';
 import { DeleteBookValidator } from '@features/book/validators/deleteBook.validator';
+import { PublishBookValidator } from '@features/book/validators/publishBook.validator';
 import { UpdateBookValidator } from '@features/book/validators/updateBook.validator';
 
 import { default as config } from '../config/config';
@@ -98,8 +101,11 @@ container
   .to(UpdateClassificationCommandHandler);
 
 // Bind Validators
-container.bind<DeleteBookValidator>(TYPES.DeleteBookValidator).to(DeleteBookValidator);
+container.bind<CreateBookValidator>(TYPES.CreateBookValidator).to(CreateBookValidator);
 container.bind<UpdateBookValidator>(TYPES.UpdateBookValidator).to(UpdateBookValidator);
+container.bind<DeleteBookValidator>(TYPES.DeleteBookValidator).to(DeleteBookValidator);
+container.bind<ClassifyBookValidator>(TYPES.ClassifyBookValidator).to(ClassifyBookValidator);
+container.bind<PublishBookValidator>(TYPES.PublishBookValidator).to(PublishBookValidator);
 
 // Bind Controllers
 container.bind<AuthorController>(TYPES.AuthorController).to(AuthorController);

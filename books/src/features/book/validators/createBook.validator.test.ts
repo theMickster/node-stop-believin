@@ -1,8 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { CreateBookValidator } from './createBook.validator'; 
+import { isValidationSuccess, isValidationFailure } from '@libs/validation/validationResult.type';
+
+import { CreateBookValidator } from './createBook.validator';
 
 describe('CreateBookValidator', () => {
+    let validator: CreateBookValidator;
+
     const validBook = {
       name: 'Test Book',
       authors: [
@@ -14,31 +18,47 @@ describe('CreateBookValidator', () => {
         },
       ],
     };
-  
-    it('should pass validation for a valid book object', () => {
-      const { error } = CreateBookValidator.validate(validBook);
-      expect(error).toBeUndefined();
+
+    beforeEach(() => {
+      validator = new CreateBookValidator();
     });
-  
-    it('should fail when book name is missing', () => {
+
+    it('should pass validation for a valid book object', async () => {
+      const result = await validator.validate(validBook);
+      expect(result.valid).toBe(true);
+      expect(isValidationSuccess(result)).toBe(true);
+    });
+
+    it('should fail when book name is missing', async () => {
       const book = { ...validBook, name: '' };
-      const { error } = CreateBookValidator.validate(book);
-      expect(error?.details[0].message).toBe('Book name is required');
+      const result = await validator.validate(book);
+      expect(result.valid).toBe(false);
+      expect(isValidationFailure(result)).toBe(true);
+      if (!result.valid) {
+        expect(result.error.message).toContain('Book name is required');
+      }
     });
-  
-    it('should fail when authors array is missing', () => {
+
+    it('should fail when authors array is missing', async () => {
       const { authors: _authors, ...bookWithoutAuthors } = validBook;
-      const { error } = CreateBookValidator.validate(bookWithoutAuthors);
-      expect(error?.details[0].message).toBe('Authors are required');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await validator.validate(bookWithoutAuthors as any);
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toContain('Authors are required');
+      }
     });
-  
-    it('should fail when authors array is empty', () => {
+
+    it('should fail when authors array is empty', async () => {
       const book = { ...validBook, authors: [] };
-      const { error } = CreateBookValidator.validate(book);
-      expect(error?.details[0].message).toBe('At least one author is required');
-    }); 
-  
-    it('should fail when authorId is not a valid UUID', () => {
+      const result = await validator.validate(book);
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toContain('At least one author is required');
+      }
+    });
+
+    it('should fail when authorId is not a valid UUID', async () => {
       const book = {
         ...validBook,
         authors: [
@@ -48,11 +68,14 @@ describe('CreateBookValidator', () => {
           },
         ],
       };
-      const { error } = CreateBookValidator.validate(book);
-      expect(error?.details[0].message).toBe('Author ID must be a valid GUID');
+      const result = await validator.validate(book);
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toContain('Author ID must be a valid GUID');
+      }
     });
-  
-    it('should fail when author first name is missing', () => {
+
+    it('should fail when author first name is missing', async () => {
       const book = {
         ...validBook,
         authors: [
@@ -62,11 +85,14 @@ describe('CreateBookValidator', () => {
           },
         ],
       };
-      const { error } = CreateBookValidator.validate(book);
-      expect(error?.details[0].message).toBe('First name is required');
+      const result = await validator.validate(book);
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toContain('First name is required');
+      }
     });
-  
-    it('should fail when author last name is too short', () => {
+
+    it('should fail when author last name is too short', async () => {
       const book = {
         ...validBook,
         authors: [
@@ -76,25 +102,29 @@ describe('CreateBookValidator', () => {
           },
         ],
       };
-      const { error } = CreateBookValidator.validate(book);
-      expect(error?.details[0].message).toBe('Last name must be at least 2 characters');
+      const result = await validator.validate(book);
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toContain('Last name must be at least 2 characters');
+      }
     });
 
-    it('should pass with optional displayName and role fields', () => {
+    it('should pass with optional displayName and role fields', async () => {
       const book = {
         ...validBook,
-        authors: [{ ...validBook.authors[0], displayName: 'Johnny', role: 'Author' }],
+        authors: [{ ...validBook.authors[0], displayName: 'Johnny', role: 'Author' as const }],
       };
-      const { error } = CreateBookValidator.validate(book);
-      expect(error).toBeUndefined();
+      const result = await validator.validate(book);
+      expect(result.valid).toBe(true);
     });
 
-    it('should fail when role is invalid', () => {
+    it('should fail when role is invalid', async () => {
       const book = {
         ...validBook,
         authors: [{ ...validBook.authors[0], role: 'InvalidRole' }],
       };
-      const { error } = CreateBookValidator.validate(book);
-      expect(error).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await validator.validate(book as any);
+      expect(result.valid).toBe(false);
     });
   });

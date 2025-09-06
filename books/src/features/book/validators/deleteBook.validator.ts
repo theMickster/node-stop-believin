@@ -9,7 +9,7 @@ import { AbstractBookValidator } from './abstractBook.validator';
 
 @injectable()
 export class DeleteBookValidator extends AbstractBookValidator<string> {
-  private readonly schema = Joi.object({
+  protected readonly schema = Joi.object({
     bookId: Joi.string().uuid({ version: 'uuidv4' }).required().messages({
       'string.empty': 'Book ID must not be empty',
       'string.guid': 'Book ID must be a valid guid',

@@ -16,15 +16,18 @@ import { PublishBookCommand } from './publishBook.command';
 
 @injectable()
 export class PublishBookCommandHandler implements ICommandHandler<PublishBookCommand, Book> {
-  constructor(@inject(TYPES.BookRepository) private readonly bookRepository: BookRepository) {}
+  constructor(
+    @inject(TYPES.BookRepository) private readonly bookRepository: BookRepository,
+    @inject(TYPES.PublishBookValidator) private readonly validator: PublishBookValidator,
+  ) {}
 
   async handle(command: PublishBookCommand): Promise<CommandResult<Book>> {
-    const validationResult = PublishBookValidator.validate(command.publishBookDto, { abortEarly: false });
-    if (validationResult.error) {
+    const validationResult = await this.validator.validate(command.publishBookDto);
+    if (!validationResult.valid) {
       return commandFail(
         ErrorCodes.VALIDATION_FAILED,
-        `Validation failed: ${validationResult.error.message}`,
-        HttpStatus.BAD_REQUEST
+        validationResult.error.message,
+        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -39,39 +42,43 @@ export class PublishBookCommandHandler implements ICommandHandler<PublishBookCom
       return commandFail(
         ErrorCodes.BOOK_ALREADY_EXISTS,
         'Book is already published. Use update-publication endpoint to correct publication details.',
-        HttpStatus.CONFLICT
+        HttpStatus.CONFLICT,
       );
     }
 
     // Business rule: Validate ISBN uniqueness
-    const isbnExistsResult = await this.bookRepository.isbnExists(validationResult.value.isbn);
+    const isbnExistsResult = await this.bookRepository.isbnExists(command.publishBookDto.isbn);
     if (!isbnExistsResult.success) {
       return commandFail(
         ErrorCodes.DATABASE_ERROR,
         isbnExistsResult.error ?? 'Failed to validate ISBN uniqueness',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
     if (isbnExistsResult.data) {
-      const isbnValue = validationResult.value.isbn.isbn13 || validationResult.value.isbn.isbn10;
-      return commandFail(ErrorCodes.ISBN_CONFLICT, `ISBN ${isbnValue} is already assigned to another book`, HttpStatus.CONFLICT);
+      const isbnValue = command.publishBookDto.isbn.isbn13 || command.publishBookDto.isbn.isbn10;
+      return commandFail(
+        ErrorCodes.ISBN_CONFLICT,
+        `ISBN ${isbnValue} is already assigned to another book`,
+        HttpStatus.CONFLICT,
+      );
     }
 
     // Apply publication data
     const timestamp = command.context.timestamp;
     const userId = command.context.userId ?? 'system';
-    const publishedDate = validationResult.value.publishedDate || timestamp;
-    const firstPublishedDate = validationResult.value.firstPublishedDate || publishedDate;
+    const publishedDate = command.publishBookDto.publishedDate || timestamp;
+    const firstPublishedDate = command.publishBookDto.firstPublishedDate || publishedDate;
 
     const publishedBook: Book = {
       ...book,
-      isbn: validationResult.value.isbn,
+      isbn: command.publishBookDto.isbn,
       publishedDate,
       firstPublishedDate,
-      ...(validationResult.value.copyright && { copyright: validationResult.value.copyright }),
-      edition: validationResult.value.edition || '1st Edition',
-      ...(validationResult.value.bisacCodes && { bisacCodes: validationResult.value.bisacCodes }),
-      ...(validationResult.value.thema && { thema: validationResult.value.thema }),
+      ...(command.publishBookDto.copyright && { copyright: command.publishBookDto.copyright }),
+      edition: command.publishBookDto.edition || '1st Edition',
+      ...(command.publishBookDto.bisacCodes && { bisacCodes: command.publishBookDto.bisacCodes }),
+      ...(command.publishBookDto.thema && { thema: command.publishBookDto.thema }),
       updatedAt: timestamp,
       updatedBy: userId,
       version: book.version + 1,

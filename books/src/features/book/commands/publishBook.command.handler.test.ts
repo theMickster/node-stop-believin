@@ -22,11 +22,14 @@ import { HttpStatus } from '@libs/cqrs/httpStatusCodes';
 
 import { BookRepository } from '@data/repos/book.repository';
 
+import { PublishBookValidator } from '../validators/publishBook.validator';
+
 import { PublishBookCommand } from './publishBook.command';
 import { PublishBookCommandHandler } from './publishBook.command.handler';
 
 describe('PublishBookCommandHandler', () => {
   const mockBookRepository = mock<BookRepository>();
+  const mockValidator = mock<PublishBookValidator>();
   let sut: PublishBookCommandHandler;
   const mockContext = buildMockExecutionContext().build();
 
@@ -34,7 +37,9 @@ describe('PublishBookCommandHandler', () => {
 
   beforeEach(() => {
     mockReset(mockBookRepository);
-    sut = new PublishBookCommandHandler(mockBookRepository);
+    mockReset(mockValidator);
+    mockValidator.validate.mockResolvedValue({ valid: true });
+    sut = new PublishBookCommandHandler(mockBookRepository, mockValidator);
   });
 
   describe('handle - success scenarios', () => {
@@ -274,6 +279,11 @@ describe('PublishBookCommandHandler', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const command = new PublishBookCommand(testBook.bookId, {} as any, mockContext);
 
+      mockValidator.validate.mockResolvedValue({
+        valid: false,
+        error: new Error('Validation error: ISBN is required'),
+      });
+
       const result = await sut.handle(command);
 
       expectValidationError(result);
@@ -288,6 +298,11 @@ describe('PublishBookCommandHandler', () => {
         mockContext,
       );
 
+      mockValidator.validate.mockResolvedValue({
+        valid: false,
+        error: new Error('Validation error: ISBN-13 must be exactly 13 digits'),
+      });
+
       const result = await sut.handle(command);
 
       expectValidationError(result, 'ISBN-13 must be exactly 13 digits');
@@ -301,6 +316,11 @@ describe('PublishBookCommandHandler', () => {
         },
         mockContext,
       );
+
+      mockValidator.validate.mockResolvedValue({
+        valid: false,
+        error: new Error('Validation error: ISBN-10 must be exactly 10 digits'),
+      });
 
       const result = await sut.handle(command);
 

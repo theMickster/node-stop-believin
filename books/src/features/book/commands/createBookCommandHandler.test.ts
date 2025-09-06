@@ -9,12 +9,14 @@ import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { BookRepository } from '@data/repos/book.repository';
 
 import { Book } from '../../../data/entities/book.entity';
+import { CreateBookValidator } from '../validators/createBook.validator';
 
 import { CreateBookCommand } from './createBook.command';
 import { CreateBookCommandHandler } from './createBook.command.handler';
 
 describe('CreateBookCommandHandler', () => {
   const mockRepo = mock<BookRepository>();
+  const mockValidator = mock<CreateBookValidator>();
   const mockContext = buildMockExecutionContext()
     .withUserId('test-user-123')
     .withTimestamp(new Date('2024-01-01'))
@@ -23,7 +25,8 @@ describe('CreateBookCommandHandler', () => {
 
   beforeEach(() => {
     mockReset(mockRepo);
-    sut = new CreateBookCommandHandler(mockRepo);
+    mockReset(mockValidator);
+    sut = new CreateBookCommandHandler(mockRepo, mockValidator);
   });
 
   it('should successfully create a new book', async () => {
@@ -35,6 +38,8 @@ describe('CreateBookCommandHandler', () => {
       ],
     };
     const cmd = new CreateBookCommand(dto, mockContext);
+
+    mockValidator.validate.mockResolvedValue({ valid: true });
 
     const fakeBook: Book = {
       id: '1',
@@ -66,6 +71,11 @@ describe('CreateBookCommandHandler', () => {
     };
     const cmd = new CreateBookCommand(dto, mockContext);
 
+    mockValidator.validate.mockResolvedValue({
+      valid: false,
+      error: new Error('Validation error: Book name is required'),
+    });
+
     const result = await sut.handle(cmd);
 
     expect(mockRepo.create).not.toHaveBeenCalled();
@@ -78,6 +88,8 @@ describe('CreateBookCommandHandler', () => {
       authors: [{ authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 }],
     };
     const cmd = new CreateBookCommand(dto, mockContext);
+
+    mockValidator.validate.mockResolvedValue({ valid: true });
     buildBookRepoMock(mockRepo).createFails('Cosmos DB is down', HttpStatus.INTERNAL_SERVER_ERROR);
 
     const result = await sut.handle(cmd);
@@ -92,6 +104,8 @@ describe('CreateBookCommandHandler', () => {
       authors: [{ authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 }],
     };
     const cmd = new CreateBookCommand(dto, mockContext);
+
+    mockValidator.validate.mockResolvedValue({ valid: true });
     mockRepo.create.mockResolvedValue({ success: false, statusCode: HttpStatus.INTERNAL_SERVER_ERROR });
 
     const result = await sut.handle(cmd);
