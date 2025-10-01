@@ -73,6 +73,6 @@ container.bind<DeleteBookValidator>(TYPES.DeleteBookValidator).to(DeleteBookVali
 container.bind<UpdateBookValidator>(TYPES.UpdateBookValidator).to(UpdateBookValidator);
 
 // Bind Controllers
-container.bind<BookController>(BookController).to(BookController);
+container.bind<BookController>(TYPES.BookController).to(BookController);
 
 export default container;
