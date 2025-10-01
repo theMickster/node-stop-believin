@@ -6,7 +6,7 @@ import { injectable, inject } from 'inversify';
 import { UpdateBookValidator } from '../validators/updateBook.validator';
 import { UpdateBookCommand } from './updateBook.command';
 import { mapUpdateDtoToBook } from '@data/mapping/bookMappers';
-import { Book } from '@data/entities/book';
+import { Book } from '@data/entities/book.entity';
 
 @injectable()
 export class UpdateBookCommandHandler implements ICommandHandler<UpdateBookCommand, CommandResult<Book>> {

@@ -2,7 +2,7 @@ import { BookRepository } from '@data/repos/bookRepository';
 import { UpdateBookDto } from '../models/updateBookDto';
 import { UpdateBookValidator } from '../validators/updateBook.validator';
 import { UpdateBookCommandHandler } from './updateBook.command.handler';
-import { Book } from '@data/entities/book';
+import { Book } from '@data/entities/book.entity';
 import { commandOk } from '@libs/cqrs/commandResult';
 import { UpdateBookCommand } from './updateBook.command';
 
@@ -13,7 +13,7 @@ describe('UpdateBookCommandHandler', () => {
   const validDto: UpdateBookDto = {
     id: '123',
     name: 'Updated name',
-    authors: [{ authorId: '456', firstName: 'Steve', lastName: 'Smith' }],
+    authors: [{ authorId: '456', firstName: 'Steve', lastName: 'Smith', order: 1 }],
   };
 
   let sut: UpdateBookCommandHandler;

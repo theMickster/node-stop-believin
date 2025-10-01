@@ -1,4 +1,4 @@
-import { Book } from '@data/entities/book';
+import { Book } from '@data/entities/book.entity';
 import { mapCreateDtoToBook } from '@data/mapping/bookMappers';
 import { BookRepository } from '@data/repos/bookRepository';
 import { ICommandHandler } from '@libs/cqrs/commandHandler';

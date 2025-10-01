@@ -9,6 +9,7 @@ describe('CreateBookValidator', () => {
           authorId: uuidv4(),
           firstName: 'John',
           lastName: 'Doe',
+          order: 1,
         },
       ],
     };

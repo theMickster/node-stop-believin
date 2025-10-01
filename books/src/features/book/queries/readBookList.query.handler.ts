@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
 import { ReadBookListQuery } from './readBookList.query';
-import { Book } from '@data/entities/book';
+import { Book } from '@data/entities/book.entity';
 import { BookRepository } from '@data/repos/bookRepository';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import TYPES from '@libs/ioc.types';

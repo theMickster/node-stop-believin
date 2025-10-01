@@ -1,7 +1,7 @@
-import { Book } from "@data/entities/book";
-import { CreateBookDto } from "@features/book/models/createBookDto";
-import { mapToAuthor } from "./authorMappers";
-import { UpdateBookDto } from "@features/book/models/updateBookDto";
+import { Book } from '@data/entities/book.entity';
+import { CreateBookDto } from '@features/book/models/createBookDto';
+import { mapToBookAuthor } from './authorMappers';
+import { UpdateBookDto } from '@features/book/models/updateBookDto';
 
 const BOOK_ENTITY_TYPE = 'Book';
 
@@ -11,7 +11,7 @@ export function mapCreateDtoToBook(newId: string, dto: CreateBookDto): Book {
     bookId: newId,
     entityType: BOOK_ENTITY_TYPE,
     name: dto.name,
-    authors: Array.isArray(dto.authors) ? dto.authors.map(mapToAuthor) : [],
+    authors: Array.isArray(dto.authors) ? dto.authors.map(mapToBookAuthor) : [],
   };
 }
 
@@ -21,7 +21,7 @@ export function mapCosmosDocumentToBook(document: any): Book {
     bookId: document.bookId,
     entityType: document.entityType,
     name: document.name,
-    authors: Array.isArray(document.authors) ? document.authors.map(mapToAuthor) : [],
+    authors: Array.isArray(document.authors) ? document.authors.map(mapToBookAuthor) : [],
   };
 }
 
@@ -31,6 +31,6 @@ export function mapUpdateDtoToBook(dto: UpdateBookDto): Book {
     bookId: dto.id,
     entityType: BOOK_ENTITY_TYPE,
     name: dto.name,
-    authors: Array.isArray(dto.authors) ? dto.authors.map(mapToAuthor) : [],
+    authors: Array.isArray(dto.authors) ? dto.authors.map(mapToBookAuthor) : [],
   };
 }

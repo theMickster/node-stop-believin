@@ -1,5 +1,5 @@
 import { Container as CosmosContainer, ItemResponse } from '@azure/cosmos';
-import { Book } from '@data/entities/book';
+import { Book } from '@data/entities/book.entity';
 import { RepoResult, repoOk, repoFail } from '@data/libs/repoResult';
 import { mapCosmosDocumentToBook } from '@data/mapping/bookMappers';
 import TYPES from '@libs/ioc.types';

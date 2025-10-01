@@ -31,6 +31,11 @@ export class UpdateBookValidator extends AbstractBookValidator<UpdateBookDto> {
             'string.min': 'Last name must be at least 2 characters',
             'string.empty': 'Last name is required',
           }),
+          order: Joi.number().integer().min(1).required().messages({
+            'number.base': 'Order must be a number',
+            'number.min': 'Order must be at least 1',
+            'any.required': 'Order is required',
+          }),
         }).required(),
       )
       .min(1)

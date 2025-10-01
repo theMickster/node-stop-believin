@@ -8,4 +8,5 @@ interface UpdateBookAuthorDto{
     authorId: string;
     firstName: string;
     lastName: string;
+    order: number;
 }

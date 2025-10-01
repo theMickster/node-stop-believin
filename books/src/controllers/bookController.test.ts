@@ -1,5 +1,5 @@
 import { BookController } from "@controllers/book.controller";
-import { Book } from "@data/entities/book";
+import { Book } from "@data/entities/book.entity";
 import { CreateBookCommand } from "@features/book/commands/createBook.command";
 import { DeleteBookCommand } from "@features/book/commands/deleteBook.command";
 import { UpdateBookCommand } from "@features/book/commands/updateBook.command";
@@ -137,7 +137,7 @@ describe('BookController', () => {
     it('should create a book successfully', async () => {
       const createBookDto: CreateBookDto =  {
         name: "New Book",
-        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith" }],
+        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith", order: 1 }],
       };
 
       const createdBook: Book = {
@@ -145,7 +145,7 @@ describe('BookController', () => {
         bookId: "873ec84b-bf76-41e5-b5f8-1f585f7027e4",
         entityType: "Book",
         name: "New Book",
-        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith" }],
+        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith", order: 1 }],
       };
 
       mockCreateBookCommandHandler.handle.mockResolvedValue(createdBook);
@@ -163,7 +163,7 @@ describe('BookController', () => {
     it('should return the correct error upon hard exception', async () => {
       const createBookDto: CreateBookDto =  {
         name: "New Book",
-        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith" }],
+        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith", order: 1 }],
       };
 
       mockCreateBookCommandHandler.handle.mockRejectedValue(new Error('Whoops! There was a Cosmos Error!'));
@@ -219,7 +219,7 @@ describe('BookController', () => {
       const updateBookDto: UpdateBookDto =  {
         id: id,
         name: "Update Book",
-        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith" }],
+        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith", order: 1 }],
       };
 
       const updatedBook: Book = {
@@ -227,7 +227,7 @@ describe('BookController', () => {
         bookId: id,
         entityType: "Book",
         name: "Update Book",
-        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith" }],
+        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith", order: 1 }],
       };      
       
       mockUpdateBookCommandHandler.handle.mockResolvedValue(updatedBook);
@@ -248,7 +248,7 @@ describe('BookController', () => {
       const updateBookDto: UpdateBookDto =  {
         id: id,
         name: "Update Book",
-        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith" }],
+        authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith", order: 1 }],
       };
 
       mockUpdateBookCommandHandler.handle.mockRejectedValue(new Error('Whoops! There was a Cosmos Error!'));

@@ -1,4 +1,4 @@
-import { Book } from '@data/entities/book';
+import { Book } from '@data/entities/book.entity';
 import { CreateBookCommand } from '@features/book/commands/createBook.command';
 import { DeleteBookCommand } from '@features/book/commands/deleteBook.command';
 import { UpdateBookCommand } from '@features/book/commands/updateBook.command';

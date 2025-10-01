@@ -1,4 +1,4 @@
-import { Book } from "@data/entities/book";
+import { Book } from "@data/entities/book.entity";
 import { RepoResult } from "@data/libs/repoResult";
 import { BookRepository } from "@data/repos/bookRepository";
 import { fakeBooks } from "@fixtures/books";

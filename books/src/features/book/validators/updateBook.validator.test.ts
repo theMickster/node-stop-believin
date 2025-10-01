@@ -29,7 +29,7 @@ describe('UpdateBookValidator', () => {
     const dto: UpdateBookDto = {
       id: validBookId,
       name: 'Updated Title',
-      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith' }],
+      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith', order: 1 }],
     };
     const result = await sut.validate(dto);
     expect(result.valid).toBe(true);
@@ -39,7 +39,7 @@ describe('UpdateBookValidator', () => {
     const dto: UpdateBookDto = {
       id: 'invalid-uuid',
       name: 'Updated Title',
-      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith' }],
+      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith', order: 1 }],
     };
     const result = await sut.validate(dto);
     expect(result.valid).toBe(false);
@@ -52,7 +52,7 @@ describe('UpdateBookValidator', () => {
     const dto: UpdateBookDto = {
       id: validBookId,
       name: '',
-      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith' }],
+      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith', order: 1 }],
     };
     const result = await sut.validate(dto);
     expect(result.valid).toBe(false);
@@ -63,7 +63,7 @@ describe('UpdateBookValidator', () => {
 
     it('should fail validation if the book does not exist', async () => {
     (mockBookRepository.getById as jest.Mock).mockResolvedValue({ success: true, data: null });
-    const dto: UpdateBookDto = { id: validBookId, name: "Updated Title",authors: [{ authorId: "44452d4e-7feb-49f3-846e-585431a7aa49", firstName: "Alice", lastName: "Smith" }] };
+    const dto: UpdateBookDto = { id: validBookId, name: "Updated Title",authors: [{ authorId: "44452d4e-7feb-49f3-846e-585431a7aa49", firstName: "Alice", lastName: "Smith", order: 1 }] };
     
     const result = await sut.validate(dto);
     expect(result.valid).toBe(false);

@@ -1,7 +1,7 @@
 import { BookRepository } from 'data/repos/bookRepository';
 import { CreateBookCommandHandler } from './createBook.command.handler';
 import { CreateBookCommand } from './createBook.command';
-import { Book } from '../../../data/entities/book';
+import { Book } from '../../../data/entities/book.entity';
 import { repoOk, repoFail } from '../../../data/libs/repoResult';
 
 describe('CreateBookCommandHandler', () => {
@@ -23,8 +23,8 @@ describe('CreateBookCommandHandler', () => {
     const dto = {
       name: 'A Great Book',
       authors: [
-        { authorId: 'd5f5bc1c-d2c7-408b-b757-60ef713b47e9', firstName: 'Jane', lastName: 'Doe' },
-        { authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'John', lastName: 'Doe' },
+        { authorId: 'd5f5bc1c-d2c7-408b-b757-60ef713b47e9', firstName: 'Jane', lastName: 'Doe', order: 1 },
+        { authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'John', lastName: 'Doe', order: 1 },
       ],
     };
     const cmd = new CreateBookCommand(dto);
@@ -42,7 +42,7 @@ describe('CreateBookCommandHandler', () => {
     const dto = {
       name: '',
       authors: [
-        { authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'Jane', lastName: 'Doe' },
+        { authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'Jane', lastName: 'Doe', order: 1 },
       ],
     };
     const cmd = new CreateBookCommand(dto);  
@@ -55,7 +55,7 @@ describe('CreateBookCommandHandler', () => {
     const dto = {
       name: 'A Great Book Vol 3',
       authors: [
-        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe' },
+        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 },
       ],
     };
     const cmd = new CreateBookCommand(dto);
@@ -69,7 +69,7 @@ describe('CreateBookCommandHandler', () => {
     const dto = {
       name: 'A Great Book Vol 4',
       authors: [
-        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe' },
+        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 },
       ],
     };
     const cmd = new CreateBookCommand(dto);

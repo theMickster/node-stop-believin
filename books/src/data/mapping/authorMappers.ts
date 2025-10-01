@@ -1,9 +1,10 @@
-import { Author } from "@data/entities/author";
+import { BookAuthor } from '@data/entities/book-author.type';
 
-export function mapToAuthor(document: any): Author {
+export function mapToBookAuthor(document: any): BookAuthor {
   return {
     authorId: document.authorId,
     firstName: document.firstName,
     lastName: document.lastName,
+    order: document.order,
   };
 }

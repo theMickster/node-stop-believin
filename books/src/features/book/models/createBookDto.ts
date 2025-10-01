@@ -7,4 +7,5 @@ interface CreateBookAuthorDto{
     authorId: string;
     firstName: string;
     lastName: string;
+    order: number;
 }

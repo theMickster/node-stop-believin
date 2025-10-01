@@ -1,4 +1,4 @@
-import { Book } from 'data/entities/book';
+import { Book } from '@data/entities/book.entity';
 
 export const fakeCosmicBooks = [
   {
@@ -72,20 +72,20 @@ export const fakeBooks: Book[] = [
     bookId: '8fe6086b-61bf-4642-b5b0-4beb6839f49e',
     name: 'GitHub Copilot Cert Prep',
     entityType: 'Book',
-    authors: [{ authorId: '5aa2872a-202c-4d19-9a04-74b4f638275e', firstName: 'Pete', lastName: 'the Cat' }],
+    authors: [{ authorId: '5aa2872a-202c-4d19-9a04-74b4f638275e', firstName: 'Pete', lastName: 'the Cat', order: 1 }],
   },
   {
     id: 'd551376d-d645-4311-880b-accad096112b',
     bookId: 'd551376d-d645-4311-880b-accad096112b',
     name: 'Complete Guide to Azure AI for ML Engineers',
     entityType: 'Book',
-    authors: [{ authorId: 'ade3fa10-1269-4501-a25e-d88fc2bcf728', firstName: 'Jerry', lastName: 'the Giraffe' }],
+    authors: [{ authorId: 'ade3fa10-1269-4501-a25e-d88fc2bcf728', firstName: 'Jerry', lastName: 'the Giraffe', order: 1 }],
   },
   {
     id: 'fdd96c5d-3c69-4e58-a23e-41c18d93f8bc',
     bookId: 'fdd96c5d-3c69-4e58-a23e-41c18d93f8bc',
     name: 'Microsoft Azure For Dummies',
     entityType: 'Book',
-    authors: [{ authorId: 'fdd96c5d-3c69-4e58-a23e-41c18d93f8bc', firstName: 'Jack', lastName: 'the Jackal' }],
+    authors: [{ authorId: 'fdd96c5d-3c69-4e58-a23e-41c18d93f8bc', firstName: 'Jack', lastName: 'the Jackal', order: 1 }],
   },
 ];
