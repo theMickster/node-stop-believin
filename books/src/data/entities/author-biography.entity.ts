@@ -1,39 +1,22 @@
 import { BaseEntity, PartitionedEntity } from './base/entity-traits';
 import { MediaContent } from './base/media-content';
+import { ENTITY_TYPES } from './base/entity-types';
 
-export type BiographyEventType =
-  | 'Birth'
-  | 'Education'
-  | 'Career'
-  | 'Award'
-  | 'Publication'
-  | 'Personal'
-  | 'Death';
+export type BiographyEventType = 'Birth' | 'Education' | 'Career' | 'Award' | 'Publication' | 'Personal' | 'Death';
 
 /**
  * AuthorBiography entity - represents timeline events in an author's life
- * Stored in CosmicReadsAuthorContainer with partition key: /authorId, /entityType
  */
-export interface AuthorBiography
-  extends BaseEntity,
-    PartitionedEntity,
-    MediaContent {
-  // Partition Keys
+export interface AuthorBiography extends BaseEntity, PartitionedEntity, MediaContent {
   authorId: string;
-  entityType: 'Biography';
-
-  // Event Details
+  entityType: typeof ENTITY_TYPES.AUTHOR_BIOGRAPHY;
   eventDate: Date;
   eventType: BiographyEventType;
   title: string;
   description: string;
   location?: string;
-
-  // References
   sourceUrl?: string;
   relatedBookId?: string;
-
-  // Display
   displayOrder: number;
   isHighlight: boolean;
 }

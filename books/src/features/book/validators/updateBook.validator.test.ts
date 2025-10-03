@@ -1,6 +1,7 @@
 import { BookRepository } from '@data/repos/bookRepository';
 import { UpdateBookValidator } from './updateBook.validator';
 import { UpdateBookDto } from '../models/updateBookDto';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 describe('UpdateBookValidator', () => {
   let sut: UpdateBookValidator;
@@ -18,8 +19,14 @@ describe('UpdateBookValidator', () => {
         id: validBookId,
         bookId: validBookId,
         name: 'Sample Book',
-        entityType: 'book',
+        entityType: ENTITY_TYPES.BOOK,
         authors: [],
+        createdAt: new Date('2024-01-01'),
+        createdBy: 'test-user',
+        updatedAt: new Date('2024-01-01'),
+        updatedBy: 'test-user',
+        isDeleted: false,
+        version: 1,
       },
     });
     sut = new UpdateBookValidator(mockBookRepository);

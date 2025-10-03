@@ -3,6 +3,7 @@ import { CreateBookCommandHandler } from './createBook.command.handler';
 import { CreateBookCommand } from './createBook.command';
 import { Book } from '../../../data/entities/book.entity';
 import { repoOk, repoFail } from '../../../data/libs/repoResult';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 describe('CreateBookCommandHandler', () => {
   let mockRepo: jest.Mocked<BookRepository>;
@@ -29,7 +30,19 @@ describe('CreateBookCommandHandler', () => {
     };
     const cmd = new CreateBookCommand(dto);
     
-    const fakeBook: Book = { id: '1', bookId: '1', entityType: 'Book', name: 'A Great Book', authors: dto.authors };
+    const fakeBook: Book = {
+      id: '1',
+      bookId: '1',
+      entityType: ENTITY_TYPES.BOOK,
+      name: 'A Great Book',
+      authors: dto.authors,
+      createdAt: new Date('2024-01-01'),
+      createdBy: 'test-user',
+      updatedAt: new Date('2024-01-01'),
+      updatedBy: 'test-user',
+      isDeleted: false,
+      version: 1,
+    };
     mockRepo.create.mockResolvedValue(repoOk(fakeBook));
 
     const result = await sut.handle(cmd);

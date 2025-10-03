@@ -14,6 +14,7 @@ import { ILogger } from "@libs/logging/logger.interface";
 import { Request as ExpressRequest } from 'express';
 import { mock, mockReset } from 'jest-mock-extended';
 import httpMocks from 'node-mocks-http';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 describe('BookController', () => {
   const mockReadBookListHandler = mock<IQueryHandler<ReadBookListQuery, Book[]>>();
@@ -97,7 +98,11 @@ describe('BookController', () => {
       expect(mockReadBookHandler.handle).toHaveBeenCalledWith(new ReadBookQuery(bookId));
       expect(res.statusCode).toBe(200);
       const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual(book);
+      expect(responseData).toEqual({
+        ...book,
+        createdAt: book.createdAt.toISOString(),
+        updatedAt: book.updatedAt.toISOString(),
+      });
 
     });
 
@@ -143,9 +148,15 @@ describe('BookController', () => {
       const createdBook: Book = {
         id: "873ec84b-bf76-41e5-b5f8-1f585f7027e4",
         bookId: "873ec84b-bf76-41e5-b5f8-1f585f7027e4",
-        entityType: "Book",
+        entityType: ENTITY_TYPES.BOOK,
         name: "New Book",
         authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith", order: 1 }],
+        createdAt: new Date('2024-01-01'),
+        createdBy: 'test-user',
+        updatedAt: new Date('2024-01-01'),
+        updatedBy: 'test-user',
+        isDeleted: false,
+        version: 1,
       };
 
       mockCreateBookCommandHandler.handle.mockResolvedValue(createdBook);
@@ -157,7 +168,11 @@ describe('BookController', () => {
       expect(mockCreateBookCommandHandler.handle).toHaveBeenCalledWith(new CreateBookCommand(createBookDto));
       expect(res.statusCode).toBe(201);
       const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual(createdBook);
+      expect(responseData).toEqual({
+        ...createdBook,
+        createdAt: createdBook.createdAt.toISOString(),
+        updatedAt: createdBook.updatedAt.toISOString(),
+      });
     });
 
     it('should return the correct error upon hard exception', async () => {
@@ -225,9 +240,15 @@ describe('BookController', () => {
       const updatedBook: Book = {
         id: id,
         bookId: id,
-        entityType: "Book",
+        entityType: ENTITY_TYPES.BOOK,
         name: "Update Book",
         authors: [{authorId: '873ec84b-bf76-41e5-b5f8-1f585f7027e4', firstName: "Alice", lastName: "Smith", order: 1 }],
+        createdAt: new Date('2024-01-01'),
+        createdBy: 'test-user',
+        updatedAt: new Date('2024-01-01'),
+        updatedBy: 'test-user',
+        isDeleted: false,
+        version: 1,
       };      
       
       mockUpdateBookCommandHandler.handle.mockResolvedValue(updatedBook);

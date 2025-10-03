@@ -1,5 +1,6 @@
 import { Container as CosmosContainer, ItemResponse } from '@azure/cosmos';
 import { Book } from '@data/entities/book.entity';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { RepoResult, repoOk, repoFail } from '@data/libs/repoResult';
 import { mapCosmosDocumentToBook } from '@data/mapping/bookMappers';
 import TYPES from '@libs/ioc.types';
@@ -17,7 +18,7 @@ export class BookRepository {
     try {
       const querySpec = {
         query: 'SELECT * FROM c WHERE c.entityType = @entityType',
-        parameters: [{ name: '@entityType', value: 'Book' }],
+        parameters: [{ name: '@entityType', value: ENTITY_TYPES.BOOK }],
       };
 
       const { resources: documents } = await this.container.items.query<Book>(querySpec).fetchAll();
@@ -30,7 +31,7 @@ export class BookRepository {
 
   async getById(id: string): Promise<RepoResult<Book>> {
     try {
-      const response: ItemResponse<Book> = await this.container.item(id, [id, 'Book']).read<Book>();
+      const response: ItemResponse<Book> = await this.container.item(id, [id, ENTITY_TYPES.BOOK]).read<Book>();
       if (!response.resource) {
         return repoFail('Book not found');
       }
@@ -57,7 +58,7 @@ export class BookRepository {
 
   async update(book: Book): Promise<RepoResult<Book>> {
     try {
-      const { resource: updatedItem } = await this.container.item(book.id, [book.id, 'Book']).replace(book);
+      const { resource: updatedItem } = await this.container.item(book.id, [book.id, ENTITY_TYPES.BOOK]).replace(book);
       if (!updatedItem) {
         return repoFail('Failed to update book');
       }      
@@ -73,7 +74,7 @@ export class BookRepository {
 
   async delete(id: string): Promise<RepoResult<void>> {
     try {
-      await this.container.item(id, [id, 'Book']).delete();
+      await this.container.item(id, [id, ENTITY_TYPES.BOOK]).delete();
       return repoOk(undefined);
     } catch (err: any) {
       if (err.code === 404) {

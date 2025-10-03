@@ -4,6 +4,7 @@ import { repoOk } from '@data/libs/repoResult';
 import { mapCosmosDocumentToBook } from '@data/mapping/bookMappers';
 import { fakeCosmicBooks } from '@fixtures/books';
 import { BookRepository } from './bookRepository';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 
 describe('BookRepository', () => {
@@ -18,8 +19,14 @@ describe('BookRepository', () => {
       id: '10000000-0000-0000-0000-000000000001',
       bookId: '10000000-0000-0000-0000-000000000001',
       name: 'Test Book',
-      entityType: 'Book',
+      entityType: ENTITY_TYPES.BOOK,
       authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname', order: 1 }],
+      createdAt: new Date('2024-01-01'),
+      createdBy: 'test-user',
+      updatedAt: new Date('2024-01-01'),
+      updatedBy: 'test-user',
+      isDeleted: false,
+      version: 1,
     };
 
     const fetchAllMock = jest.fn().mockResolvedValue({ resources: fakeCosmicBooks });
@@ -47,7 +54,7 @@ describe('BookRepository', () => {
 
       expect(mockContainer.items.query).toHaveBeenCalledWith({
         query: 'SELECT * FROM c WHERE c.entityType = @entityType',
-        parameters: [{ name: '@entityType', value: 'Book' }],
+        parameters: [{ name: '@entityType', value: ENTITY_TYPES.BOOK }],
       });
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(10);
@@ -77,7 +84,7 @@ describe('BookRepository', () => {
 
         const result = await sut.getById('00000000-0000-0000-0000-000000000007');
         expect(result.success).toBe(true);
-        expect(mockContainer.item).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000007', ['00000000-0000-0000-0000-000000000007', 'Book']);
+        expect(mockContainer.item).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000007', ['00000000-0000-0000-0000-000000000007', ENTITY_TYPES.BOOK]);
         expect(result.data).toEqual(mapCosmosDocumentToBook(book));
     });
 
@@ -151,7 +158,7 @@ describe('BookRepository', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(mapCosmosDocumentToBook(testBook));
-      expect(mockContainer.item).toHaveBeenCalledWith(testBook.id, [testBook.id, 'Book']);
+      expect(mockContainer.item).toHaveBeenCalledWith(testBook.id, [testBook.id, ENTITY_TYPES.BOOK]);
     });
 
     it('should return fail result when resource is null', async () => {
@@ -193,7 +200,7 @@ describe('BookRepository', () => {
       const result = await sut.delete('book-id-123');
 
       expect(result).toEqual(repoOk(undefined));
-      expect(mockContainer.item).toHaveBeenCalledWith('book-id-123', ['book-id-123', 'Book']);
+      expect(mockContainer.item).toHaveBeenCalledWith('book-id-123', ['book-id-123', ENTITY_TYPES.BOOK]);
     });
 
     it('should return not found if book does not exist', async () => {

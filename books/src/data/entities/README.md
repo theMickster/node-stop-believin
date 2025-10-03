@@ -23,8 +23,6 @@ Each entity includes partition key fields for optimal Cosmos DB performance:
 - `AuthorAward` - awards won
 - `AuthorQuote` - memorable quotes
 - `AuthorInterview` - interviews
-- `AuthorEvent` - public events
-- `AuthorReadingList` - book recommendations
 - `AuthorSocialPost` - social media highlights
 - `AuthorNote` - fun facts and trivia
 
@@ -66,8 +64,6 @@ Located in `base/` folder (INTERNAL USE ONLY - not exported):
 - `author-award.entity.ts` - Awards won
 - `author-quote.entity.ts` - Memorable quotes
 - `author-interview.entity.ts` - Interviews
-- `author-event.entity.ts` - Public events
-- `author-reading-list.entity.ts` - Book recommendations
 - `author-social-post.entity.ts` - Social media posts
 - `author-note.entity.ts` - Fun facts and notes
 

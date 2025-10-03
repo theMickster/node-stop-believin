@@ -5,6 +5,7 @@ import { UpdateBookCommandHandler } from './updateBook.command.handler';
 import { Book } from '@data/entities/book.entity';
 import { commandOk } from '@libs/cqrs/commandResult';
 import { UpdateBookCommand } from './updateBook.command';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 describe('UpdateBookCommandHandler', () => {
   let mockRepo: jest.Mocked<BookRepository>;
@@ -37,9 +38,15 @@ describe('UpdateBookCommandHandler', () => {
     const updatedBook: Book = {
       id: validDto.id,
       bookId: validDto.id,
-      entityType: 'Book',
+      entityType: ENTITY_TYPES.BOOK,
       name: validDto.name,
       authors: validDto.authors,
+      createdAt: new Date('2024-01-01'),
+      createdBy: 'test-user',
+      updatedAt: new Date('2024-01-01'),
+      updatedBy: 'test-user',
+      isDeleted: false,
+      version: 1,
     };
 
     mockValidator.validate.mockResolvedValue({ valid: true });
