@@ -1,30 +1,26 @@
 # Entity Base Types
 
 ## Purpose
+
 This folder contains foundational types for entity composition using TypeScript's type system.
 
 ## NOT FOR EXTERNAL USE
+
 **These types are INTERNAL to the entities folder only.**
 
 They should NEVER be:
+
 - Exported from the entities folder
 - Imported by features, controllers, or any code outside `/data/entities/`
 - Used in DTOs or API contracts
 
 ## Why?
+
 These are **infrastructure composition primitives**. Exposing them would:
+
 1. Couple domain logic to persistence concerns
 2. Leak implementation details
 3. Violate CQRS boundaries
-
-## Files
-
-- `entity-traits.ts` - Core entity behaviors (BaseEntity, PartitionedEntity, SoftDeletable, Versionable)
-- `location.ts` - Geographic location types
-- `social-media.ts` - Social media link types
-- `media-content.ts` - Media URL types
-- `behavioral-traits.ts` - Behavioral composition (Taggable, Rateable, Engageable)
-- `common-enums.ts` - Shared enum types
 
 ## Usage Pattern
 
@@ -46,6 +42,7 @@ import { BaseEntity } from '@data/entities/base/entity-traits';
 ```
 
 Features should only work with:
+
 - DTOs (CreateAuthorDto, ReadAuthorDto, etc.)
 - Commands/Queries
 - Never raw entities or base types
