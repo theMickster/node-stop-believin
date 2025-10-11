@@ -22,6 +22,8 @@ export const ENTITY_TYPES = {
   BOOK_PROMOTION: 'Promotion',
   BOOK_RECOMMENDATION: 'Recommendation',
   BOOK_MEDIA: 'Media',
+  BOOK_METRICS: 'Metrics',
+  BOOK_TABLE_OF_CONTENTS: 'TableOfContents',
 
   // Author-related entities (CosmicReadsAuthor container)
   AUTHOR: 'Author',

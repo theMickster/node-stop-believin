@@ -40,10 +40,6 @@ export interface TableOfContents {
   title: string;
   pageStart?: number;
   pageEnd?: number;
-  subChapters?: Array<{
-    title: string;
-    pageStart?: number;
-  }>;
 }
 
 export interface PurchaseLink {
@@ -63,6 +59,19 @@ export interface RatingSummary {
   oneStarCount: number;
 }
 
+export interface LibraryClassification {
+  deweyDecimal?: string;
+  libraryOfCongressNumber?: string;
+  oclcNumber?: string;
+}
+
+export interface ExternalIds {
+  amazonBooksId?: string;
+  googleBooksId?: string;
+  openLibraryId?: string;
+  goodreadsId?: string;
+}
+
 /**
  * Book root entity - comprehensive book metadata
  *
@@ -75,7 +84,6 @@ export interface RatingSummary {
 export interface Book extends BaseEntity, PartitionedEntity, SoftDeletable, Versionable, Rateable, Taggable {
   bookId: string;
   entityType: typeof ENTITY_TYPES.BOOK;
-  title?: string;
   name: string;
   subtitle?: string;
   isbn?: ISBN;
@@ -91,12 +99,8 @@ export interface Book extends BaseEntity, PartitionedEntity, SoftDeletable, Vers
 
   description?: string;
   shortDescription?: string;
-  backCoverText?: string;
-  tableOfContents?: TableOfContents[];
 
   // Format & Physical Properties
-  formats?: BookFormat[];
-  primaryFormat?: BookFormat;
   language?: BookLanguage;
   originalLanguage?: BookLanguage;
 
@@ -104,7 +108,6 @@ export interface Book extends BaseEntity, PartitionedEntity, SoftDeletable, Vers
   genres?: string[];
   subjects?: string[];
   topics?: string[];
-  categories?: string[]; // Dewey Decimal, Library of Congress, etc.
   keywords?: string[];
   bisacCodes?: string[]; // Book Industry Standards categories
   thema?: string[]; // International subject category scheme
@@ -113,52 +116,9 @@ export interface Book extends BaseEntity, PartitionedEntity, SoftDeletable, Vers
   ageRating?: AgeRating;
   readingLevel?: ReadingLevel;
 
-  prices?: Record<BookFormat, BookPrice>;
-  availability?: BookAvailability;
-  stockQuantity?: number;
-  preOrderDate?: Date;
-  discontinuedDate?: Date;
-
   ratingSummary?: RatingSummary;
-  reviewCount?: number;
-  featured?: boolean;
-  bestseller?: boolean;
-  newRelease?: boolean;
-  comingSoon?: boolean;
-
-  // Series & Related Books
   series?: BookSeries;
-
-  // Purchase & Distribution
-  purchaseLinks?: PurchaseLink[];
-  printOnDemand?: boolean;
-  drm?: string; // Digital Rights Management info
-
-  // Library-Specific
-  deweyDecimal?: string;
-  libraryOfCongress?: string;
-  lccn?: string; // Library of Congress Control Number
-  oclcNumber?: string; // WorldCat identifier
-  callNumber?: string;
-
-  // Technical & E-commerce
-  sku?: string;
-  barcode?: string;
-  amazonBooksId?: string;
-  googleBooksId?: string;
-  openLibraryId?: string;
-
-  // Sales & Analytics
-  totalSales?: number;
-  viewCount?: number;
-  wishlistCount?: number;
-  downloadCount?: number;
+  libraryClassification?: LibraryClassification;
+  externalIds?: ExternalIds;
   firstPublishedDate?: Date;
-  lastModifiedDate?: Date;
-
-  // User Engagement (aggregated)
-  readCount?: number; // How many users marked as "read"
-  currentlyReadingCount?: number;
-  wantToReadCount?: number;
-  favoritesCount?: number;
 }

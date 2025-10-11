@@ -1,33 +1,24 @@
 import { BaseEntity, PartitionedEntity } from './base/entity-traits';
 import { ENTITY_TYPES } from './base/entity-types';
 
-export type PromotionType =
-  | 'Discount'
-  | 'BuyOneGetOne'
-  | 'FreeShipping'
-  | 'BundleDeal'
-  | 'StaffPick'
-  | 'NewRelease'
-  | 'BestSeller'
-  | 'SeasonalSale'
-  | 'LimitedEdition';
-
-export type PromotionStatus = 'Scheduled' | 'Active' | 'Paused' | 'Expired' | 'Cancelled';
-export type DiscountType = 'Percentage' | 'FixedAmount' | 'BuyXGetY' | 'FreeItem';
+export type PromotionType = 'Discount' | 'Featured' | 'NewRelease' | 'BestSeller';
+export type PromotionStatus = 'Scheduled' | 'Active' | 'Expired';
 
 /**
- * BookPromotion entity - marketing campaigns and special offers
- * Use cases:
- * - Bookstore sales and discounts
- * - Marketing campaign tracking
- * - Staff picks and featured books
- * - New release highlighting
- * - Seasonal sales (back to school, holiday gift guides)
+ * BookPromotion entity - simple marketing promotions
+ *
+ * Simplified for learning purposes - demonstrates:
+ * - Basic discount logic
+ * - Time-based promotions
+ * - Featured book highlighting
+ * - UI display priority
+ *
+ * Perfect for building Angular storefront features with RxJS and NgRx
  */
 export interface BookPromotion extends BaseEntity, PartitionedEntity {
   bookId: string;
   entityType: typeof ENTITY_TYPES.BOOK_PROMOTION;
-  promotionCode?: string;
+
   name: string;
   description: string;
   type: PromotionType;
@@ -35,31 +26,12 @@ export interface BookPromotion extends BaseEntity, PartitionedEntity {
 
   startDate: Date;
   endDate: Date;
-  isRecurring: boolean;
-  recurrencePattern?: string; // "Weekly", "Monthly", etc.
 
-  // Discount Details
-  discountType?: DiscountType;
-  discountPercentage?: number;
-  discountAmount?: number;
-  currency?: string;
-  minPurchaseAmount?: number;
-  maxDiscountAmount?: number;
+  // Simple discount - either percentage OR fixed amount
+  discountPercentage?: number; // e.g., 15 = 15% off
+  discountAmount?: number; // e.g., 5.00 = $5 off
 
-  // Bundle Details
-  bundledBookIds?: string[];
-  bundlePrice?: number;
-  bundleDescription?: string;
-
-  // Buy X Get Y
-  buyQuantity?: number;
-  getQuantity?: number;
-  getFreeItem?: boolean;
-  getDiscountPercent?: number;
-
-  // Display Settings
+  // Display settings for UI
   isFeatured: boolean;
-  displayPriority?: number;
-
-  termsAndConditions?: string;
+  displayPriority?: number; // Higher number = shown first
 }

@@ -353,3 +353,7 @@ MigrationBackup/
 books/dist
 books/.env
 books/coverage
+books/src/data/.DS_Store
+books/.DS_Store
+.DS_Store
+*.DS_Store
