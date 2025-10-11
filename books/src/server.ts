@@ -1,4 +1,8 @@
-import 'module-alias/register';
+// Only use module-alias in production (compiled JS), not in dev (ts-node-dev uses tsconfig paths)
+if (process.env.NODE_ENV === 'production') {
+  require('module-alias/register');
+}
+
 import app from './app';
 import config from './config/config';
 

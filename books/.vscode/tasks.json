@@ -9,14 +9,7 @@
                 "$tsc"
             ],
             "label": "npm: build",
-            "detail": "Clean and build TypeScript to JavaScript"
-        },
-        {
-            "type": "npm",
-            "script": "clean",
-            "problemMatcher": [],
-            "label": "npm: clean",
-            "detail": "Remove dist folder"
+            "detail": "Clean dist and compile TypeScript"
         },
         {
             "type": "npm",
@@ -26,6 +19,14 @@
             ],
             "label": "npm: type-check",
             "detail": "Type-check without emitting files"
+        },
+        {
+            "type": "npm",
+            "script": "test",
+            "group": "test",
+            "problemMatcher": [],
+            "label": "npm: test",
+            "detail": "Run unit tests"
         }
     ]
 }
