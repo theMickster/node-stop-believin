@@ -1,17 +1,32 @@
 import { Container as CosmosContainer } from '@azure/cosmos';
-import { Book } from '@data/entities/book';
+import { Book } from '@data/entities/book.entity';
 import { repoOk } from '@data/libs/repoResult';
-import { mapCosmosDocumentToBook } from '@data/mapping/bookMappers';
 import { fakeCosmicBooks } from '@fixtures/books';
 import { BookRepository } from './bookRepository';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 
 describe('BookRepository', () => {
   let sut: BookRepository;
   let mockContainer: jest.Mocked<CosmosContainer>;
-  
+  let testBook: Book;
+
   beforeEach(() => {
     jest.clearAllMocks();
+
+    testBook = {
+      id: '10000000-0000-0000-0000-000000000001',
+      bookId: '10000000-0000-0000-0000-000000000001',
+      name: 'Test Book',
+      entityType: ENTITY_TYPES.BOOK,
+      authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname', order: 1 }],
+      createdAt: new Date('2024-01-01'),
+      createdBy: 'test-user',
+      updatedAt: new Date('2024-01-01'),
+      updatedBy: 'test-user',
+      isDeleted: false,
+      version: 1,
+    };
 
     const fetchAllMock = jest.fn().mockResolvedValue({ resources: fakeCosmicBooks });
 
@@ -36,18 +51,25 @@ describe('BookRepository', () => {
 
       const result = await sut.getAll();
 
-      expect(mockContainer.items.query).toHaveBeenCalled();
       expect(mockContainer.items.query).toHaveBeenCalledWith({
         query: 'SELECT * FROM c WHERE c.entityType = @entityType',
-        parameters: [{ name: '@entityType', value: 'Book' }],
+        parameters: [{ name: '@entityType', value: ENTITY_TYPES.BOOK }],
       });
-
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(10);
+      expect(result.data?.[5]).toEqual(fakeCosmicBooks[5]);
+    });
 
-      expect(result.data?.[5].id).toEqual(mapCosmosDocumentToBook(fakeCosmicBooks[5]).id);
-      expect(result.data?.[5].bookId).toEqual(mapCosmosDocumentToBook(fakeCosmicBooks[5]).bookId);
-      expect(result.data?.[4].name).toEqual(mapCosmosDocumentToBook(fakeCosmicBooks[4]).name);
+    it('should return fail result when query throws error', async () => {
+      const fetchAllMock = jest.fn().mockRejectedValue(new Error('Cosmos DB error'));
+      (mockContainer.items.query as jest.Mock).mockReturnValue({
+        fetchAll: fetchAllMock,
+      });
+
+      const result = await sut.getAll();
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to retrieve books from the Cosmos DB.');
     });
   });
 
@@ -61,104 +83,111 @@ describe('BookRepository', () => {
 
         const result = await sut.getById('00000000-0000-0000-0000-000000000007');
         expect(result.success).toBe(true);
-        expect(mockContainer.item).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000007', ['00000000-0000-0000-0000-000000000007', 'Book']);
-        expect(result.data).toEqual(mapCosmosDocumentToBook(book));
+        expect(mockContainer.item).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000007', ['00000000-0000-0000-0000-000000000007', ENTITY_TYPES.BOOK]);
+        expect(result.data).toEqual(book);
     });
 
+    it('should return fail result when resource is undefined', async () => {
+      const readMock = jest.fn().mockResolvedValue({ resource: undefined });
+      (mockContainer.item as jest.Mock).mockReturnValue({ read: readMock });
+
+      const result = await sut.getById('non-existent-id');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Book not found');
+    });
+
+    it('should return fail result when Cosmos DB throws 404 error', async () => {
+      const readMock = jest.fn().mockRejectedValue({ code: 404 });
+      (mockContainer.item as jest.Mock).mockReturnValue({ read: readMock });
+
+      const result = await sut.getById('non-existent-id');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Book not found');
+    });
+
+    it('should return fail result when Cosmos DB throws general error', async () => {
+      const readMock = jest.fn().mockRejectedValue({ code: 500 });
+      (mockContainer.item as jest.Mock).mockReturnValue({ read: readMock });
+
+      const result = await sut.getById('some-id');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to retrieve book');
+    });
   });
 
   describe('create', () => {
     it('should create a book and return valid entity', async () => {
-      const inputBook: Book = {
-        id: '10000000-0000-0000-0000-000000000001',
-        bookId: '10000000-0000-0000-0000-000000000001',
-        name: 'Book 1',
-        entityType: 'Book',
-        authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname' }],
-      };
-      
-      (mockContainer.items.create as jest.Mock).mockResolvedValue({ resource: inputBook });
+      (mockContainer.items.create as jest.Mock).mockResolvedValue({ resource: testBook });
 
-      const result = await sut.create(inputBook);
+      const result = await sut.create(testBook);
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(mapCosmosDocumentToBook(inputBook));
+      expect(result.data).toEqual(testBook);
+      expect(mockContainer.items.create).toHaveBeenCalledWith(testBook);
     });
 
-    it('should throw an error if book creation fails', async () => {
-      const inputBook: Book = {
-        id: '10000000-0000-0000-0000-000000000001',
-        bookId: '10000000-0000-0000-0000-000000000001',
-        name: 'Book 1',
-        entityType: 'Book',
-        authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname' }],
-      };
-
+    it('should return fail result if resource is null', async () => {
       (mockContainer.items.create as jest.Mock).mockResolvedValue({ resource: null });
 
-      const result = await sut.create(inputBook);
-      
+      const result = await sut.create(testBook);
+
       expect(result.success).toBe(false);
       expect(result.error).toBe('Failed to create book');
-      expect(mockContainer.items.create).toHaveBeenCalledWith(inputBook);
+    });
+
+    it('should return fail result when Cosmos DB throws error', async () => {
+      (mockContainer.items.create as jest.Mock).mockRejectedValue(new Error('Cosmos error'));
+
+      const result = await sut.create(testBook);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to create book');
     });
   });
 
-  describe  ('update', () => {
+  describe('update', () => {
     it('should update a book and return valid entity', async () => {
-      const inputBook: Book = {
-        id: '10000000-0000-0000-0000-000000000001',
-        bookId: '10000000-0000-0000-0000-000000000001',
-        name: 'Book 1',
-        entityType: 'Book',
-        authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname' }],
-      };
-
-      const replace = jest.fn().mockResolvedValue({ resource: inputBook });
+      const replace = jest.fn().mockResolvedValue({ resource: testBook });
       (mockContainer.item as jest.Mock).mockReturnValue({ replace });
 
-      const result = await sut.update(inputBook);
+      const result = await sut.update(testBook);
 
-      expect(result).toEqual(repoOk(inputBook));
-      expect(mockContainer.item).toHaveBeenCalledTimes(1);
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(testBook);
+      expect(mockContainer.item).toHaveBeenCalledWith(testBook.id, [testBook.id, ENTITY_TYPES.BOOK]);
     });
 
-    it('should return fail result when Cosmos DB throws', async () => {
-      const inputBook: Book = {
-        id: '10000000-0000-0000-0000-000000000001',
-        bookId: '10000000-0000-0000-0000-000000000001',
-        name: 'Book 1',
-        entityType: 'Book',
-        authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname' }],
-      };
-
-      const replace = jest.fn().mockRejectedValue({ code: 500 });
+    it('should return fail result when resource is null', async () => {
+      const replace = jest.fn().mockResolvedValue({ resource: null });
       (mockContainer.item as jest.Mock).mockReturnValue({ replace });
 
-      const result = await sut.update(inputBook);
+      const result = await sut.update(testBook);
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Failed to update book');
-      expect(mockContainer.item).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return fail result when Cosmos DB throws general error', async () => {
+      const replace = jest.fn().mockRejectedValue({ code: 500 });
+      (mockContainer.item as jest.Mock).mockReturnValue({ replace });
+
+      const result = await sut.update(testBook);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to update book');
     });
 
     it('should return not found when Cosmos DB responds 404', async () => {
-      const inputBook: Book = {
-        id: '10000000-0000-0000-0000-000000000001',
-        bookId: '10000000-0000-0000-0000-000000000001',
-        name: 'Book 1',
-        entityType: 'Book',
-        authors: [{ authorId: '00000000-0000-0000-0000-000000000001', firstName: 'Fname', lastName: 'Lname' }],
-      };
-
       const replace = jest.fn().mockRejectedValue({ code: 404 });
       (mockContainer.item as jest.Mock).mockReturnValue({ replace });
 
-      const result = await sut.update(inputBook);
+      const result = await sut.update(testBook);
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Book not found');
-      expect(mockContainer.item).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -170,7 +199,7 @@ describe('BookRepository', () => {
       const result = await sut.delete('book-id-123');
 
       expect(result).toEqual(repoOk(undefined));
-      expect(mockContainer.item).toHaveBeenCalledWith('book-id-123', ['book-id-123', 'Book']);
+      expect(mockContainer.item).toHaveBeenCalledWith('book-id-123', ['book-id-123', ENTITY_TYPES.BOOK]);
     });
 
     it('should return not found if book does not exist', async () => {

@@ -1,6 +1,7 @@
 import { BookRepository } from '@data/repos/bookRepository';
 import { UpdateBookValidator } from './updateBook.validator';
 import { UpdateBookDto } from '../models/updateBookDto';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 describe('UpdateBookValidator', () => {
   let sut: UpdateBookValidator;
@@ -18,8 +19,14 @@ describe('UpdateBookValidator', () => {
         id: validBookId,
         bookId: validBookId,
         name: 'Sample Book',
-        entityType: 'book',
+        entityType: ENTITY_TYPES.BOOK,
         authors: [],
+        createdAt: new Date('2024-01-01'),
+        createdBy: 'test-user',
+        updatedAt: new Date('2024-01-01'),
+        updatedBy: 'test-user',
+        isDeleted: false,
+        version: 1,
       },
     });
     sut = new UpdateBookValidator(mockBookRepository);
@@ -29,7 +36,7 @@ describe('UpdateBookValidator', () => {
     const dto: UpdateBookDto = {
       id: validBookId,
       name: 'Updated Title',
-      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith' }],
+      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith', order: 1 }],
     };
     const result = await sut.validate(dto);
     expect(result.valid).toBe(true);
@@ -39,7 +46,7 @@ describe('UpdateBookValidator', () => {
     const dto: UpdateBookDto = {
       id: 'invalid-uuid',
       name: 'Updated Title',
-      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith' }],
+      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith', order: 1 }],
     };
     const result = await sut.validate(dto);
     expect(result.valid).toBe(false);
@@ -52,7 +59,7 @@ describe('UpdateBookValidator', () => {
     const dto: UpdateBookDto = {
       id: validBookId,
       name: '',
-      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith' }],
+      authors: [{ authorId: '44452d4e-7feb-49f3-846e-585431a7aa49', firstName: 'Alice', lastName: 'Smith', order: 1 }],
     };
     const result = await sut.validate(dto);
     expect(result.valid).toBe(false);
@@ -63,7 +70,7 @@ describe('UpdateBookValidator', () => {
 
     it('should fail validation if the book does not exist', async () => {
     (mockBookRepository.getById as jest.Mock).mockResolvedValue({ success: true, data: null });
-    const dto: UpdateBookDto = { id: validBookId, name: "Updated Title",authors: [{ authorId: "44452d4e-7feb-49f3-846e-585431a7aa49", firstName: "Alice", lastName: "Smith" }] };
+    const dto: UpdateBookDto = { id: validBookId, name: "Updated Title",authors: [{ authorId: "44452d4e-7feb-49f3-846e-585431a7aa49", firstName: "Alice", lastName: "Smith", order: 1 }] };
     
     const result = await sut.validate(dto);
     expect(result.valid).toBe(false);

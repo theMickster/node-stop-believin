@@ -1,6 +1,7 @@
 import { repoOk, repoFail } from "@data/libs/repoResult";
 import { BookRepository } from "@data/repos/bookRepository";
 import { DeleteBookValidator } from "./deleteBook.validator";
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 describe('DeleteBookValidator', () => {
   let sut: DeleteBookValidator;
@@ -21,7 +22,13 @@ describe('DeleteBookValidator', () => {
         bookId: 'b9223c19-5a6d-4406-bf96-aefbae10746a',
         name: 'Test Book',
         authors: [],
-        entityType: 'Book',
+        entityType: ENTITY_TYPES.BOOK,
+        createdAt: new Date('2024-01-01'),
+        createdBy: 'test-user',
+        updatedAt: new Date('2024-01-01'),
+        updatedBy: 'test-user',
+        isDeleted: false,
+        version: 1,
       }),
     );
 

@@ -1,13 +1,18 @@
-{    
+{
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch CosmicBooks",
+            "name": "Debug CosmicBooks",
             "type": "node",
             "request": "launch",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "dev"],
             "skipFiles": ["<node_internals>/**"],
-            "program": "${workspaceFolder}/src/server.ts",
-            "preLaunchTask": "npm: build"
+            "console": "integratedTerminal",
+            "restart": true,
+            "env": {
+                "NODE_ENV": "development"
+            }
         }
-    ]    
+    ]
 }

@@ -1,7 +1,8 @@
 import { Container as CosmosContainer, ItemResponse } from '@azure/cosmos';
-import { Book } from '@data/entities/book';
+import { Book } from '@data/entities/book.entity';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 import { RepoResult, repoOk, repoFail } from '@data/libs/repoResult';
-import { mapCosmosDocumentToBook } from '@data/mapping/bookMappers';
+import { isErrorWithCode } from '@libs/guards/errorGuards';
 import TYPES from '@libs/ioc.types';
 import { inject, injectable } from 'inversify';
 
@@ -17,29 +18,30 @@ export class BookRepository {
     try {
       const querySpec = {
         query: 'SELECT * FROM c WHERE c.entityType = @entityType',
-        parameters: [{ name: '@entityType', value: 'Book' }],
+        parameters: [{ name: '@entityType', value: ENTITY_TYPES.BOOK }],
       };
 
-      const { resources: documents } = await this.container.items.query<Book>(querySpec).fetchAll();
-      const books = documents.map(mapCosmosDocumentToBook);
+      const { resources: books } = await this.container.items.query<Book>(querySpec).fetchAll();
       return repoOk(books);
     } catch {
-      return repoFail('Failed to retrieve books from the Cosmos DB.');
+      return repoFail('Failed to retrieve books from the Cosmos DB.', 500);
     }
   }
 
   async getById(id: string): Promise<RepoResult<Book>> {
     try {
-      const response: ItemResponse<Book> = await this.container.item(id, [id, 'Book']).read<Book>();
+      const response: ItemResponse<Book> = await this.container.item(id, [id, ENTITY_TYPES.BOOK]).read<Book>();
       if (!response.resource) {
-        return repoFail('Book not found');
+        const failResult = repoFail('Book not found', 404);
+        return failResult;
       }
-      return repoOk(mapCosmosDocumentToBook(response.resource));      
-    } catch (err: any) {
-      if (err.code === 404) {
-        return repoFail('Book not found');
+      return repoOk(response.resource);
+    } catch (err: unknown) {
+      if (isErrorWithCode(err) && (err.code === 404 || (err as { statusCode?: number }).statusCode === 404)) {
+        const failResult = repoFail('Book not found', 404);
+        return failResult;
       }
-      return repoFail('Failed to retrieve book');
+      return repoFail('Failed to retrieve book', 500);
     }
   }
 
@@ -47,39 +49,38 @@ export class BookRepository {
     try {
       const { resource: createdItem } = await this.container.items.create(book);
       if (!createdItem) {
-        return repoFail('Failed to create book');
+        return repoFail('Failed to create book', 500);
       }
-      return repoOk(mapCosmosDocumentToBook(createdItem));
+      return repoOk(createdItem);
     } catch {
-      return repoFail('Failed to create book');
+      return repoFail('Failed to create book', 500);
     }
   }
 
   async update(book: Book): Promise<RepoResult<Book>> {
     try {
-      const { resource: updatedItem } = await this.container.item(book.id, [book.id, 'Book']).replace(book);
+      const { resource: updatedItem } = await this.container.item(book.id, [book.id, ENTITY_TYPES.BOOK]).replace(book);
       if (!updatedItem) {
-        return repoFail('Failed to update book');
-      }      
-      return repoOk(mapCosmosDocumentToBook(updatedItem));
-    }
-    catch (err: any) {
-      if (err.code === 404) {
-        return repoFail('Book not found');
+        return repoFail('Failed to update book', 500);
       }
-      return repoFail('Failed to update book');
+      return repoOk(updatedItem);
+    } catch (err: unknown) {
+      if (isErrorWithCode(err) && err.code === 404) {
+        return repoFail('Book not found', 404);
+      }
+      return repoFail('Failed to update book', 500);
     }
   }
 
   async delete(id: string): Promise<RepoResult<void>> {
     try {
-      await this.container.item(id, [id, 'Book']).delete();
+      await this.container.item(id, [id, ENTITY_TYPES.BOOK]).delete();
       return repoOk(undefined);
-    } catch (err: any) {
-      if (err.code === 404) {
-        return repoFail('Book not found');
+    } catch (err: unknown) {
+      if (isErrorWithCode(err) && err.code === 404) {
+        return repoFail('Book not found', 404);
       }
-      return repoFail('Failed to delete book');
+      return repoFail('Failed to delete book', 500);
     }
   }
 }

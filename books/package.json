@@ -4,12 +4,14 @@
   "description": "A Node.js Express API for managing books with Azure Cosmos DB",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn -r tsconfig-paths/register src/server.ts",
-    "build": "npx tsc",
-    "start": "node dist/server.js",
+    "start": "npm run build && NODE_ENV=production node dist/server.js",
+    "dev": "pkill -f 'ts-node-dev.*books/src/server' || true && ts-node-dev --respawn --clear --transpile-only --ignore-watch node_modules --no-notify -r tsconfig-paths/register src/server.ts",
+    "build": "rm -rf dist && tsc",
     "lint": "eslint 'src/**/*.ts'",
-    "unit-test": "jest --config jest.config.js",
-    "unit-test-cover": "jest --coverage"
+    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "type-check": "tsc --noEmit",
+    "test": "jest --config jest.config.js",
+    "test:coverage": "jest --coverage"
   },
   "_moduleAliases": {
     "@features": "dist/features",
@@ -61,6 +63,7 @@
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.0.0"
   }
 }

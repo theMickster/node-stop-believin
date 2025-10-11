@@ -9,6 +9,7 @@ describe('CreateBookValidator', () => {
           authorId: uuidv4(),
           firstName: 'John',
           lastName: 'Doe',
+          order: 1,
         },
       ],
     };
@@ -25,7 +26,7 @@ describe('CreateBookValidator', () => {
     });
   
     it('should fail when authors array is missing', () => {
-      const { authors, ...bookWithoutAuthors } = validBook;
+      const { authors: _authors, ...bookWithoutAuthors } = validBook;
       const { error } = CreateBookValidator.validate(bookWithoutAuthors);
       expect(error?.details[0].message).toBe('Authors are required');
     });
@@ -76,5 +77,23 @@ describe('CreateBookValidator', () => {
       };
       const { error } = CreateBookValidator.validate(book);
       expect(error?.details[0].message).toBe('Last name must be at least 2 characters');
+    });
+
+    it('should pass with optional displayName and role fields', () => {
+      const book = {
+        ...validBook,
+        authors: [{ ...validBook.authors[0], displayName: 'Johnny', role: 'Author' }],
+      };
+      const { error } = CreateBookValidator.validate(book);
+      expect(error).toBeUndefined();
+    });
+
+    it('should fail when role is invalid', () => {
+      const book = {
+        ...validBook,
+        authors: [{ ...validBook.authors[0], role: 'InvalidRole' }],
+      };
+      const { error } = CreateBookValidator.validate(book);
+      expect(error).toBeDefined();
     });
   });

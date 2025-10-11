@@ -1,8 +1,9 @@
 import { BookRepository } from 'data/repos/bookRepository';
 import { CreateBookCommandHandler } from './createBook.command.handler';
 import { CreateBookCommand } from './createBook.command';
-import { Book } from '../../../data/entities/book';
+import { Book } from '../../../data/entities/book.entity';
 import { repoOk, repoFail } from '../../../data/libs/repoResult';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 describe('CreateBookCommandHandler', () => {
   let mockRepo: jest.Mocked<BookRepository>;
@@ -23,13 +24,25 @@ describe('CreateBookCommandHandler', () => {
     const dto = {
       name: 'A Great Book',
       authors: [
-        { authorId: 'd5f5bc1c-d2c7-408b-b757-60ef713b47e9', firstName: 'Jane', lastName: 'Doe' },
-        { authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'John', lastName: 'Doe' },
+        { authorId: 'd5f5bc1c-d2c7-408b-b757-60ef713b47e9', firstName: 'Jane', lastName: 'Doe', order: 1 },
+        { authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'John', lastName: 'Doe', order: 1 },
       ],
     };
     const cmd = new CreateBookCommand(dto);
     
-    const fakeBook: Book = { id: '1', bookId: '1', entityType: 'Book', name: 'A Great Book', authors: dto.authors };
+    const fakeBook: Book = {
+      id: '1',
+      bookId: '1',
+      entityType: ENTITY_TYPES.BOOK,
+      name: 'A Great Book',
+      authors: dto.authors,
+      createdAt: new Date('2024-01-01'),
+      createdBy: 'test-user',
+      updatedAt: new Date('2024-01-01'),
+      updatedBy: 'test-user',
+      isDeleted: false,
+      version: 1,
+    };
     mockRepo.create.mockResolvedValue(repoOk(fakeBook));
 
     const result = await sut.handle(cmd);
@@ -42,7 +55,7 @@ describe('CreateBookCommandHandler', () => {
     const dto = {
       name: '',
       authors: [
-        { authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'Jane', lastName: 'Doe' },
+        { authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'Jane', lastName: 'Doe', order: 1 },
       ],
     };
     const cmd = new CreateBookCommand(dto);  
@@ -55,7 +68,7 @@ describe('CreateBookCommandHandler', () => {
     const dto = {
       name: 'A Great Book Vol 3',
       authors: [
-        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe' },
+        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 },
       ],
     };
     const cmd = new CreateBookCommand(dto);
@@ -69,11 +82,11 @@ describe('CreateBookCommandHandler', () => {
     const dto = {
       name: 'A Great Book Vol 4',
       authors: [
-        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe' },
+        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 },
       ],
     };
     const cmd = new CreateBookCommand(dto);
-    mockRepo.create.mockResolvedValue({ success: false });
+    mockRepo.create.mockResolvedValue({ success: false, statusCode: 500 });
 
     await expect(sut.handle(cmd)).rejects.toThrow('Unknown error creating book');
   });

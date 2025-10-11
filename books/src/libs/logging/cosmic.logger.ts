@@ -8,19 +8,19 @@ export class CosmicLogger implements ILogger {
     @inject(TYPES.WinstonLogger) private readonly winstonLogger: ILogger
   ) {}
 
-  info(message: string, meta?: Record<string, unknown>) {
+  info(message: string, meta?: Record<string, unknown>): void {
     this.winstonLogger.info(message, meta);
   }
 
-  warn(message: string, meta?: Record<string, unknown>) {
+  warn(message: string, meta?: Record<string, unknown>): void {
     this.winstonLogger.warn(message, meta);
   }
 
-  error(message: string, meta?: Record<string, unknown>) {
+  error(message: string, meta?: Record<string, unknown>): void {
     this.winstonLogger.error(message, meta);
   }
 
-  debug(message: string, meta?: Record<string, unknown>) {
+  debug(message: string, meta?: Record<string, unknown>): void {
     this.winstonLogger.debug(message, meta);
   }
 }

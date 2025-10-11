@@ -23,7 +23,7 @@ async handle(command: DeleteBookCommand): Promise<CommandResult<void>> {
     try {
       await this.bookRepository.delete(command.id);
       return commandOk();
-    } catch (error) {
+    } catch {
       return commandFail('Unexpected error deleting book', 'InternalError');
     }
   }

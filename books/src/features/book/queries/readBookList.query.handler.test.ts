@@ -1,5 +1,6 @@
 import { BookRepository } from '@data/repos/bookRepository';
 import { ReadBookListQueryHandler } from './readBookList.query.handler';
+import { mapBookToReadBookDto } from '@data/mapping/bookMappers';
 import { fakeBooks } from '@fixtures/books';
 
 jest.mock('@data/repos/bookRepository');
@@ -19,11 +20,13 @@ describe('ReadBookListQueryHandler', () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: true,
       data: fakeBooks,
+      statusCode: 0,
     });
 
     const result = await sut.handle({});
 
-    expect(result).toEqual(fakeBooks);
+    const expectedDtos = fakeBooks.map(mapBookToReadBookDto);
+    expect(result).toEqual(expectedDtos);
     expect(mockBookRepository.getAll).toHaveBeenCalledTimes(1);
   });
 
@@ -31,6 +34,7 @@ describe('ReadBookListQueryHandler', () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: true,
       data: [],
+      statusCode: 0,
     });
 
     const result = await sut.handle({});
@@ -43,6 +47,7 @@ describe('ReadBookListQueryHandler', () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: false,
       error: 'Database failure',
+      statusCode: 500,
     });
 
     await expect(sut.handle({})).rejects.toThrow('Database failure');
@@ -52,6 +57,7 @@ describe('ReadBookListQueryHandler', () => {
   it('should throw a generic error when repository result has no error message', async () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: false,
+      statusCode: 500,
     });
 
     await expect(sut.handle({})).rejects.toThrow('Failed to retrieve books');
