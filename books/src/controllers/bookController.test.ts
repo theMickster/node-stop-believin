@@ -56,8 +56,8 @@ describe('BookController', () => {
     
     it('should return a list of books on success', async () => {
       mockReadBookListHandler.handle.mockResolvedValue(fakeBooks);
-      let req = createMockRequest();
-      let res = httpMocks.createResponse();
+      const req = createMockRequest();
+      const res = httpMocks.createResponse();
 
       await sut.getBooks(req, res);
 

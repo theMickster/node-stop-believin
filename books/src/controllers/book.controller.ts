@@ -7,6 +7,7 @@ import { ReadBookQuery } from '@features/book/queries/readBook.query';
 import { ReadBookListQuery } from '@features/book/queries/readBookList.query';
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
 import { IQueryHandler } from '@libs/cqrs/queryHandler';
+import { getErrorMessage } from '@libs/guards/errorGuards';
 import TYPES from '@libs/ioc.types';
 import { ILogger } from '@libs/logging/logger.interface';
 import { Request, Response } from 'express';
@@ -28,8 +29,8 @@ export class BookController {
       const query = new ReadBookListQuery();
       const books = await this.readBookListHandler.handle(query);
       res.json(books);
-    } catch (err) {
-      this.logger.error('Failed to fetch book list', { error: (err as Error).message });
+    } catch (err: unknown) {
+      this.logger.error('Failed to fetch book list', { error: getErrorMessage(err) });
       res.status(500).json({ message: 'Failed to list books' });
     }
   }
@@ -44,30 +45,30 @@ export class BookController {
         return;
       }
       res.json(book);
-    } catch (err: any) {
-      this.logger.error('Failed to retrieve book', { error: err.message, bookId: id });
+    } catch (err: unknown) {
+      this.logger.error('Failed to retrieve book', { error: getErrorMessage(err), bookId: id });
       res.status(500).json({ error: 'Failed to retrieve book' });
     }
   }
 
-  async createBook(req: Request<{}, {}, CreateBookDto>, res: Response): Promise<void> {
+  async createBook(req: Request<object, object, CreateBookDto>, res: Response): Promise<void> {
     try {
       const command = new CreateBookCommand(req.body);
       const createdBook = await this.createBookCommandHandler.handle(command);
       res.status(201).json(createdBook);
-    } catch (err) {
-      this.logger.error('Failed to create book', { error: (err as Error).message });
+    } catch (err: unknown) {
+      this.logger.error('Failed to create book', { error: getErrorMessage(err) });
       res.status(500).json({ message: 'Failed to create book' });
     }
   }
 
-  async updateBook(req: Request, res: Response): Promise<void> {    
+  async updateBook(req: Request, res: Response): Promise<void> {
     try {
       const command = new UpdateBookCommand(req.body);
-      const updatedBook = await this.updateBookCommandHandler.handle(command);      
+      const updatedBook = await this.updateBookCommandHandler.handle(command);
       res.status(200).json(updatedBook);
-    } catch (err: any) {
-      this.logger.error('Failed to update book', { error: err.message });
+    } catch (err: unknown) {
+      this.logger.error('Failed to update book', { error: getErrorMessage(err) });
       res.status(500).json({ error: 'Failed to update book' });
     }
   }
@@ -78,8 +79,8 @@ export class BookController {
       const command = new DeleteBookCommand(id);
       await this.deleteBookCommandHandler.handle(command);
       res.status(204).send();
-    } catch (err: any) {
-      this.logger.error('Failed to delete book', { error: err.message, bookId: id });
+    } catch (err: unknown) {
+      this.logger.error('Failed to delete book', { error: getErrorMessage(err), bookId: id });
       res.status(500).json({ error: "Failed to delete book" });
     }
   }

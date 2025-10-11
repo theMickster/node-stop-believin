@@ -16,6 +16,10 @@ export class ReadBookQueryHandler implements IQueryHandler<ReadBookQuery, Book |
       return result.data;
     }
 
+    if (result.statusCode === 404) {
+      return null;
+    }
+
     throw new Error(result.error ?? 'Failed to retrieve books');
   }
 }

@@ -25,7 +25,7 @@ describe('DeleteBookCommandHandler', () => {
   it('should delete the book successfully', async () => {
     const command = new DeleteBookCommand('0365ea2a-4afc-4916-a933-5c7a5ae067e0');
     mockValidator.validate.mockResolvedValue({ valid: true });
-    mockRepo.delete.mockResolvedValue({ success: true });
+    mockRepo.delete.mockResolvedValue({ success: true, statusCode: 0 });
 
     const result: CommandResult<void> = await handler.handle(command);
 

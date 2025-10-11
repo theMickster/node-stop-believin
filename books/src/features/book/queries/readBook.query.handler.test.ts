@@ -14,6 +14,7 @@ describe('ReadBookQueryHandler', () => {
       const successResult: RepoResult<Book> = {
         success: true,
         data: fakeBooks[1],
+        statusCode: 0,
       };
 
       beforeEach(() => {
@@ -40,17 +41,19 @@ describe('ReadBookQueryHandler', () => {
         expect(result?.name).toEqual('Complete Guide to Azure AI for ML Engineers');
       });
 
-      it('should throw an error if the book is not found', async () => {
-        const notFoundResult: RepoResult<Book> = {success: false, data: null, error: 'Book not found'};
+      it('should return null if the book is not found', async () => {
+        const notFoundResult: RepoResult<Book> = {success: false, data: null, error: 'Book not found', statusCode: 404};
         mockBookRepository.getById.mockResolvedValue(notFoundResult);
-        
-        await expect(sut.handle(query)).rejects.toThrow('Book not found');
+
+        const result = await sut.handle(query);
+
+        expect(result).toBeNull();
         expect(mockBookRepository.getById).toHaveBeenCalledWith(query.id);
       });
 
       it('should throw a generic error if repository fails without message', async () => {
-        mockBookRepository.getById.mockResolvedValue({success: false, data: null, error: null});        
-    
+        mockBookRepository.getById.mockResolvedValue({success: false, data: null, error: null, statusCode: 500});
+
         await expect(sut.handle(query)).rejects.toThrow('Failed to retrieve books');
         expect(mockBookRepository.getById).toHaveBeenCalledWith(query.id);
       });

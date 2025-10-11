@@ -50,7 +50,7 @@ describe('UpdateBookCommandHandler', () => {
     };
 
     mockValidator.validate.mockResolvedValue({ valid: true });
-    mockRepo.update.mockResolvedValue(Promise.resolve({ success: true, data: updatedBook }));
+    mockRepo.update.mockResolvedValue(Promise.resolve({ success: true, data: updatedBook, statusCode: 0 }));
 
     const result = await sut.handle(command);
 
@@ -63,16 +63,16 @@ describe('UpdateBookCommandHandler', () => {
     const command = new UpdateBookCommand(validDto);
 
     mockValidator.validate.mockResolvedValue({ valid: true });
-    mockRepo.update.mockResolvedValue(Promise.resolve({ success: false, data: null, error: null }));
+    mockRepo.update.mockResolvedValue(Promise.resolve({ success: false, data: null, error: null, statusCode: 500 }));
 
     await expect(sut.handle(command)).rejects.toThrow('Unknown error updating book');
   });
 
   it('should throw the error message from the repository if update fails', async () => {
-    const command = new UpdateBookCommand(validDto);    
+    const command = new UpdateBookCommand(validDto);
     const repoErrorMessage = 'Failed to update in the database';
     mockValidator.validate.mockResolvedValue({ valid: true });
-    mockRepo.update.mockResolvedValue(Promise.resolve({ success: false, data: null, error: repoErrorMessage }));
+    mockRepo.update.mockResolvedValue(Promise.resolve({ success: false, data: null, error: repoErrorMessage, statusCode: 500 }));
 
     await expect(sut.handle(command)).rejects.toThrow(repoErrorMessage);
   });

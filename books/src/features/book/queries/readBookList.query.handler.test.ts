@@ -19,6 +19,7 @@ describe('ReadBookListQueryHandler', () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: true,
       data: fakeBooks,
+      statusCode: 0,
     });
 
     const result = await sut.handle({});
@@ -31,6 +32,7 @@ describe('ReadBookListQueryHandler', () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: true,
       data: [],
+      statusCode: 0,
     });
 
     const result = await sut.handle({});
@@ -43,6 +45,7 @@ describe('ReadBookListQueryHandler', () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: false,
       error: 'Database failure',
+      statusCode: 500,
     });
 
     await expect(sut.handle({})).rejects.toThrow('Database failure');
@@ -52,6 +55,7 @@ describe('ReadBookListQueryHandler', () => {
   it('should throw a generic error when repository result has no error message', async () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: false,
+      statusCode: 500,
     });
 
     await expect(sut.handle({})).rejects.toThrow('Failed to retrieve books');

@@ -52,21 +52,21 @@ export class WinstonLogger implements ILogger {
     };
   }
 
-  info(message: string, meta?: Record<string, unknown>) {
+  info(message: string, meta?: Record<string, unknown>): void {
     this.logger.info(message, this.enrichMetadata(meta));
   }
 
-  warn(message: string, meta?: Record<string, unknown>) {
+  warn(message: string, meta?: Record<string, unknown>): void {
     this.logger.warn(message, this.enrichMetadata(meta));
   }
 
-  error(message: string, meta?: Record<string, unknown>) {
+  error(message: string, meta?: Record<string, unknown>): void {
     const enrichedMeta = this.enrichMetadata(meta);
     const errorObject = (meta && meta.error instanceof Error) ? meta.error : new Error(message);
-    this.logger.error(message, { ...enrichedMeta, error: errorObject });    
+    this.logger.error(message, { ...enrichedMeta, error: errorObject });
   }
 
-  debug(message: string, meta?: Record<string, unknown>) {
+  debug(message: string, meta?: Record<string, unknown>): void {
     this.logger.debug(message, this.enrichMetadata(meta));
   }
 }

@@ -9,7 +9,7 @@ import TYPES from '@libs/ioc.types';
 export class ReadBookListQueryHandler implements IQueryHandler<ReadBookListQuery, Book[]> {
   constructor(@inject(TYPES.BookRepository) private readonly bookRepository: BookRepository) {}
 
-  async handle(query: ReadBookListQuery): Promise<Book[]> {
+  async handle(_query: ReadBookListQuery): Promise<Book[]> {
     const result = await this.bookRepository.getAll();
     
     if (result.success && result.data) {

@@ -22,22 +22,6 @@ export function mapCreateDtoToBook(newId: string, dto: CreateBookDto): Book {
   };
 }
 
-export function mapCosmosDocumentToBook(document: any): Book {
-  return {
-    id: document.id,
-    bookId: document.bookId,
-    entityType: document.entityType,
-    name: document.name,
-    authors: Array.isArray(document.authors) ? document.authors.map(mapToBookAuthor) : [],
-    createdAt: new Date('2024-01-01'),
-    createdBy: 'test-user',
-    updatedAt: new Date('2024-01-01'),
-    updatedBy: 'test-user',
-    isDeleted: false,
-    version: 1,
-  };
-}
-
 export function mapUpdateDtoToBook(dto: UpdateBookDto): Book {
   return {
     id: dto.id,

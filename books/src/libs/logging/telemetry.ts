@@ -7,7 +7,7 @@ import { WinstonInstrumentation } from '@opentelemetry/instrumentation-winston';
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { metrics, ProxyTracerProvider, trace } from '@opentelemetry/api';
 
-export function initializeTelemetry() {
+export function initializeTelemetry(): void {
   const connectionString = config.appInsightsConnectionString;
   if (!connectionString || connectionString === '') {
     throw new Error(

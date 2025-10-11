@@ -13,14 +13,14 @@ export class CreateBookCommandHandler implements ICommandHandler<CreateBookComma
   constructor(@inject(TYPES.BookRepository) private readonly bookRepository: BookRepository) {}
 
   async handle(command: CreateBookCommand): Promise<Book> {
-    const { error, value: validatedDto } = CreateBookValidator.validate(command.createBookDto, { abortEarly: false });
+    const validationResult = CreateBookValidator.validate(command.createBookDto, { abortEarly: false });
 
-    if (error) {
-      throw new Error(`Validation failed: ${error.message}`);
+    if (validationResult.error) {
+      throw new Error(`Validation failed: ${validationResult.error.message}`);
     }
 
     const newId = v4();
-    const bookToCreate = mapCreateDtoToBook(newId, validatedDto);
+    const bookToCreate = mapCreateDtoToBook(newId, validationResult.value);
 
     const result = await this.bookRepository.create(bookToCreate);
     if (!result.success || !result.data) {

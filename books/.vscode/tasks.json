@@ -1,0 +1,31 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "npm",
+            "script": "build",
+            "group": "build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "label": "npm: build",
+            "detail": "Clean and build TypeScript to JavaScript"
+        },
+        {
+            "type": "npm",
+            "script": "clean",
+            "problemMatcher": [],
+            "label": "npm: clean",
+            "detail": "Remove dist folder"
+        },
+        {
+            "type": "npm",
+            "script": "type-check",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "label": "npm: type-check",
+            "detail": "Type-check without emitting files"
+        }
+    ]
+}

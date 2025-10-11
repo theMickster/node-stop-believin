@@ -86,7 +86,7 @@ describe('CreateBookCommandHandler', () => {
       ],
     };
     const cmd = new CreateBookCommand(dto);
-    mockRepo.create.mockResolvedValue({ success: false });
+    mockRepo.create.mockResolvedValue({ success: false, statusCode: 500 });
 
     await expect(sut.handle(cmd)).rejects.toThrow('Unknown error creating book');
   });

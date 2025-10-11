@@ -1,13 +1,30 @@
-{    
+{
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch CosmicBooks",
+            "name": "Debug CosmicBooks (Dev - TS Direct)",
             "type": "node",
             "request": "launch",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "dev"],
             "skipFiles": ["<node_internals>/**"],
-            "program": "${workspaceFolder}/src/server.ts",
-            "preLaunchTask": "npm: build"
+            "console": "integratedTerminal",
+            "env": {
+                "NODE_ENV": "development"
+            }
+        },
+        {
+            "name": "Debug CosmicBooks (Prod - JS Build)",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["start"],
+            "skipFiles": ["<node_internals>/**"],
+            "console": "integratedTerminal",
+            "preLaunchTask": "npm: build",
+            "env": {
+                "NODE_ENV": "production"
+            }
         }
-    ]    
+    ]
 }

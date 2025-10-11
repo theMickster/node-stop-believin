@@ -1,7 +1,6 @@
 import { Container as CosmosContainer } from '@azure/cosmos';
 import { Book } from '@data/entities/book.entity';
 import { repoOk } from '@data/libs/repoResult';
-import { mapCosmosDocumentToBook } from '@data/mapping/bookMappers';
 import { fakeCosmicBooks } from '@fixtures/books';
 import { BookRepository } from './bookRepository';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
@@ -58,7 +57,7 @@ describe('BookRepository', () => {
       });
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(10);
-      expect(result.data?.[5]).toEqual(mapCosmosDocumentToBook(fakeCosmicBooks[5]));
+      expect(result.data?.[5]).toEqual(fakeCosmicBooks[5]);
     });
 
     it('should return fail result when query throws error', async () => {
@@ -85,7 +84,7 @@ describe('BookRepository', () => {
         const result = await sut.getById('00000000-0000-0000-0000-000000000007');
         expect(result.success).toBe(true);
         expect(mockContainer.item).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000007', ['00000000-0000-0000-0000-000000000007', ENTITY_TYPES.BOOK]);
-        expect(result.data).toEqual(mapCosmosDocumentToBook(book));
+        expect(result.data).toEqual(book);
     });
 
     it('should return fail result when resource is undefined', async () => {
@@ -126,7 +125,7 @@ describe('BookRepository', () => {
       const result = await sut.create(testBook);
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(mapCosmosDocumentToBook(testBook));
+      expect(result.data).toEqual(testBook);
       expect(mockContainer.items.create).toHaveBeenCalledWith(testBook);
     });
 
@@ -157,7 +156,7 @@ describe('BookRepository', () => {
       const result = await sut.update(testBook);
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(mapCosmosDocumentToBook(testBook));
+      expect(result.data).toEqual(testBook);
       expect(mockContainer.item).toHaveBeenCalledWith(testBook.id, [testBook.id, ENTITY_TYPES.BOOK]);
     });
 

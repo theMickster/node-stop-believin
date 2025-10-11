@@ -1,11 +1,15 @@
+import { AuthorBookRole } from '@data/entities/book-author.type';
+
 export interface CreateBookDto {
   name: string;
   authors: CreateBookAuthorDto[]
 }
 
-interface CreateBookAuthorDto{
-    authorId: string;
-    firstName: string;
-    lastName: string;
-    order: number;
+export interface CreateBookAuthorDto {
+  authorId: string;
+  firstName: string;
+  lastName: string;
+  displayName?: string;
+  role?: AuthorBookRole;
+  order: number;
 }

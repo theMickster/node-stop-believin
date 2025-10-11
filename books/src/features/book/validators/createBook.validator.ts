@@ -19,6 +19,8 @@ export const CreateBookValidator = Joi.object({
           'string.min': 'Last name must be at least 2 characters',
           'string.empty': 'Last name is required',
         }),
+        displayName: Joi.string().optional().allow(''),
+        role: Joi.string().valid('Author', 'CoAuthor', 'Editor', 'Translator', 'Illustrator').optional(),
         order: Joi.number().integer().min(1).required().messages({
           'number.base': 'Order must be a number',
           'number.min': 'Order must be at least 1',
