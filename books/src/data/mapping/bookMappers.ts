@@ -1,7 +1,8 @@
 import { Book } from '@data/entities/book.entity';
 import { CreateBookDto } from '@features/book/models/createBookDto';
-import { mapToBookAuthor } from './authorMappers';
+import { mapToBookAuthor, mapBookAuthorToReadAuthorDto } from './authorMappers';
 import { UpdateBookDto } from '@features/book/models/updateBookDto';
+import { ReadBookDto } from '@features/book/models/readBookDto';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 const BOOK_ENTITY_TYPE = ENTITY_TYPES.BOOK;
@@ -35,5 +36,13 @@ export function mapUpdateDtoToBook(dto: UpdateBookDto): Book {
     updatedBy: 'test-user',
     isDeleted: false,
     version: 1,
+  };
+}
+
+export function mapBookToReadBookDto(book: Book): ReadBookDto {
+  return {
+    id: book.id,
+    name: book.name,
+    authors: Array.isArray(book.authors) ? book.authors.map(mapBookAuthorToReadAuthorDto) : [],
   };
 }

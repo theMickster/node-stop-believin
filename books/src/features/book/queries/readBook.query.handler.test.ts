@@ -34,9 +34,8 @@ describe('ReadBookQueryHandler', () => {
         
         const result = await sut.handle(query);
     
-        expect(mockBookRepository.getById).toHaveBeenCalledWith(query.id);        
+        expect(mockBookRepository.getById).toHaveBeenCalledWith(query.id);
         expect(result?.id).toEqual('d551376d-d645-4311-880b-accad096112b');
-        expect(result?.bookId).toEqual('d551376d-d645-4311-880b-accad096112b');
         expect(result?.authors.length).toEqual(1);
         expect(result?.name).toEqual('Complete Guide to Azure AI for ML Engineers');
       });

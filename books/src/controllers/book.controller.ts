@@ -3,6 +3,7 @@ import { CreateBookCommand } from '@features/book/commands/createBook.command';
 import { DeleteBookCommand } from '@features/book/commands/deleteBook.command';
 import { UpdateBookCommand } from '@features/book/commands/updateBook.command';
 import { CreateBookDto } from '@features/book/models/createBookDto';
+import { ReadBookDto } from '@features/book/models/readBookDto';
 import { ReadBookQuery } from '@features/book/queries/readBook.query';
 import { ReadBookListQuery } from '@features/book/queries/readBookList.query';
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
@@ -16,8 +17,8 @@ import { inject, injectable } from 'inversify';
 @injectable()
 export class BookController {
   constructor(
-    @inject(TYPES.ReadBookListHandler) private readonly readBookListHandler: IQueryHandler<ReadBookListQuery, Book[]>,
-    @inject(TYPES.ReadBookHandler) private readonly readBookHandler: IQueryHandler<ReadBookQuery, Book>,
+    @inject(TYPES.ReadBookListHandler) private readonly readBookListHandler: IQueryHandler<ReadBookListQuery, ReadBookDto[]>,
+    @inject(TYPES.ReadBookHandler) private readonly readBookHandler: IQueryHandler<ReadBookQuery, ReadBookDto | null>,
     @inject(TYPES.CreateBookCommandHandler) private readonly createBookCommandHandler: ICommandHandler<CreateBookCommand, Book>,
     @inject(TYPES.DeleteBookCommandHandler) private readonly deleteBookCommandHandler: ICommandHandler<DeleteBookCommand, void>,
     @inject(TYPES.UpdateBookCommandHandler) private readonly updateBookCommandHandler: ICommandHandler<UpdateBookCommand, Book>,

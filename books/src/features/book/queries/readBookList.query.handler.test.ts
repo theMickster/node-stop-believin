@@ -1,5 +1,6 @@
 import { BookRepository } from '@data/repos/bookRepository';
 import { ReadBookListQueryHandler } from './readBookList.query.handler';
+import { mapBookToReadBookDto } from '@data/mapping/bookMappers';
 import { fakeBooks } from '@fixtures/books';
 
 jest.mock('@data/repos/bookRepository');
@@ -24,7 +25,8 @@ describe('ReadBookListQueryHandler', () => {
 
     const result = await sut.handle({});
 
-    expect(result).toEqual(fakeBooks);
+    const expectedDtos = fakeBooks.map(mapBookToReadBookDto);
+    expect(result).toEqual(expectedDtos);
     expect(mockBookRepository.getAll).toHaveBeenCalledTimes(1);
   });
 
