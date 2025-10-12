@@ -1,4 +1,4 @@
-import { bookRoutes } from '@routes/book.routes';
+import { bookRoutes } from './book.routes';
 import { RouterLayer, isRouteLayer, hasMethod } from '@libs/types/expressRouterTypes';
 
 describe('bookRoutes', () => {
