@@ -83,4 +83,42 @@ export class BookRepository {
       return repoFail('Failed to delete book', 500);
     }
   }
+
+  async isbnExists(isbn: { isbn10?: string; isbn13?: string }, excludeBookId?: string): Promise<RepoResult<boolean>> {
+    try {
+      // Build conditions dynamically to avoid matching empty strings
+      const conditions: string[] = [];
+      const parameters: Array<{ name: string; value: string }> = [{ name: '@entityType', value: ENTITY_TYPES.BOOK }];
+
+      if (isbn.isbn10) {
+        conditions.push('c.isbn.isbn10 = @isbn10');
+        parameters.push({ name: '@isbn10', value: isbn.isbn10 });
+      }
+
+      if (isbn.isbn13) {
+        conditions.push('c.isbn.isbn13 = @isbn13');
+        parameters.push({ name: '@isbn13', value: isbn.isbn13 });
+      }
+
+      // If no ISBN values provided, return false (no match)
+      if (conditions.length === 0) {
+        return repoOk(false);
+      }
+
+      const isbnCondition = conditions.join(' OR ');
+      const excludeCondition = excludeBookId ? ' AND c.id != @excludeBookId' : '';
+      const query = `SELECT VALUE COUNT(1) FROM c WHERE c.entityType = @entityType AND (${isbnCondition})${excludeCondition}`;
+
+      if (excludeBookId) {
+        parameters.push({ name: '@excludeBookId', value: excludeBookId });
+      }
+
+      const querySpec = { query, parameters };
+      const { resources } = await this.container.items.query<number>(querySpec).fetchAll();
+      const count = resources[0] || 0;
+      return repoOk(count > 0);
+    } catch {
+      return repoFail('Failed to check ISBN existence', 500);
+    }
+  }
 }

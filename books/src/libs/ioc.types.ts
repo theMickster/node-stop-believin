@@ -7,13 +7,19 @@ const TYPES = {
     ReadBookHandler: Symbol.for("ReadBookHandler"),
     CreateBookCommandHandler: Symbol.for("CreateBookCommandHandler"),
     BookController: Symbol.for("BookController"),
+    BookPublishController: Symbol.for("BookPublishController"),
+    BookClassifyController: Symbol.for("BookClassifyController"),
     CosmosClient: Symbol.for('CosmosClient'),
     BookContainer: Symbol.for('BookContainer'),
-    AuthorContainer: Symbol.for('AuthorContainer'),    
+    AuthorContainer: Symbol.for('AuthorContainer'),
     UpdateBookValidator: Symbol.for('UpdateBookValidator'),
-    UpdateBookCommandHandler: Symbol.for("UpdateBookCommandHandler"),    
+    UpdateBookCommandHandler: Symbol.for("UpdateBookCommandHandler"),
     DeleteBookValidator: Symbol.for('DeleteBookValidator'),
     DeleteBookCommandHandler: Symbol.for("DeleteBookCommandHandler"),
+    PublishBookCommandHandler: Symbol.for("PublishBookCommandHandler"),
+    UpdatePublicationCommandHandler: Symbol.for("UpdatePublicationCommandHandler"),
+    ClassifyBookCommandHandler: Symbol.for("ClassifyBookCommandHandler"),
+    UpdateClassificationCommandHandler: Symbol.for("UpdateClassificationCommandHandler"),
 };
 
 export default TYPES;
