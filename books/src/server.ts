@@ -1,5 +1,6 @@
 // Only use module-alias in production (compiled JS), not in dev (ts-node-dev uses tsconfig paths)
 if (process.env.NODE_ENV === 'production') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('module-alias/register');
 }
 

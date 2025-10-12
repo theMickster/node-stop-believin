@@ -191,7 +191,7 @@ describe('BookRepository', () => {
     });
   });
 
-  describe  ('delete', () => {
+  describe('delete', () => {
     it('should return success when book is deleted', async () => {
       const del = jest.fn().mockResolvedValue({});
       (mockContainer.item as jest.Mock).mockReturnValue({ delete: del });
@@ -220,6 +220,157 @@ describe('BookRepository', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Failed to delete book');
+    });
+  });
+
+  describe('isbnExists', () => {
+    describe('when ISBN exists in database', () => {
+      it('should return true when ISBN-13 matches', async () => {
+        const isbn = { isbn13: '9781234567890' };
+        const fetchAllMock = jest.fn().mockResolvedValue({ resources: [1] });
+        (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
+
+        const result = await sut.isbnExists(isbn);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBe(true);
+        expect(mockContainer.items.query).toHaveBeenCalledWith({
+          query: expect.stringContaining('SELECT VALUE COUNT(1)'),
+          parameters: expect.arrayContaining([
+            { name: '@entityType', value: ENTITY_TYPES.BOOK },
+            { name: '@isbn13', value: '9781234567890' },
+          ]),
+        });
+      });
+
+      it('should return true when ISBN-10 matches', async () => {
+        const isbn = { isbn10: '1234567890' };
+        const fetchAllMock = jest.fn().mockResolvedValue({ resources: [1] });
+        (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
+
+        const result = await sut.isbnExists(isbn);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBe(true);
+      });
+
+      it('should return true when both ISBN-10 and ISBN-13 are provided', async () => {
+        const isbn = { isbn10: '1234567890', isbn13: '9781234567890' };
+        const fetchAllMock = jest.fn().mockResolvedValue({ resources: [1] });
+        (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
+
+        const result = await sut.isbnExists(isbn);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBe(true);
+      });
+    });
+
+    describe('when ISBN does not exist in database', () => {
+      it('should return false when no matches found', async () => {
+        const isbn = { isbn13: '9780000000000' };
+        const fetchAllMock = jest.fn().mockResolvedValue({ resources: [0] });
+        (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
+
+        const result = await sut.isbnExists(isbn);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBe(false);
+      });
+
+      it('should return false when resources array is empty', async () => {
+        const isbn = { isbn13: '9780000000000' };
+        const fetchAllMock = jest.fn().mockResolvedValue({ resources: [] });
+        (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
+
+        const result = await sut.isbnExists(isbn);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBe(false);
+      });
+    });
+
+    describe('when excluding a specific book ID', () => {
+      it('should return false when ISBN belongs only to excluded book', async () => {
+        const isbn = { isbn13: '9781234567890' };
+        const excludeBookId = 'book-123';
+        const fetchAllMock = jest.fn().mockResolvedValue({ resources: [0] });
+        (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
+
+        const result = await sut.isbnExists(isbn, excludeBookId);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBe(false);
+        expect(mockContainer.items.query).toHaveBeenCalledWith({
+          query: expect.stringContaining('c.id != @excludeBookId'),
+          parameters: expect.arrayContaining([
+            { name: '@entityType', value: ENTITY_TYPES.BOOK },
+            { name: '@excludeBookId', value: 'book-123' },
+          ]),
+        });
+      });
+
+      it('should return true when ISBN belongs to another book besides excluded one', async () => {
+        const isbn = { isbn13: '9781234567890' };
+        const excludeBookId = 'book-123';
+        const fetchAllMock = jest.fn().mockResolvedValue({ resources: [1] });
+        (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
+
+        const result = await sut.isbnExists(isbn, excludeBookId);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBe(true);
+      });
+
+      it('should include exclusion clause in query when excludeBookId is provided', async () => {
+        const isbn = { isbn13: '9781234567890' };
+        const excludeBookId = 'book-456';
+        const fetchAllMock = jest.fn().mockResolvedValue({ resources: [0] });
+        (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
+
+        await sut.isbnExists(isbn, excludeBookId);
+
+        const callArgs = (mockContainer.items.query as jest.Mock).mock.calls[0][0];
+        expect(callArgs.query).toContain('AND c.id != @excludeBookId');
+        expect(callArgs.parameters).toContainEqual({ name: '@excludeBookId', value: 'book-456' });
+      });
+
+      it('should not include exclusion clause when excludeBookId is not provided', async () => {
+        const isbn = { isbn13: '9781234567890' };
+        const fetchAllMock = jest.fn().mockResolvedValue({ resources: [0] });
+        (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
+
+        await sut.isbnExists(isbn);
+
+        const callArgs = (mockContainer.items.query as jest.Mock).mock.calls[0][0];
+        expect(callArgs.query).not.toContain('excludeBookId');
+        expect(callArgs.parameters).not.toContainEqual(expect.objectContaining({ name: '@excludeBookId' }));
+      });
+    });
+
+    describe('when query fails', () => {
+      it('should return failure result with appropriate error message', async () => {
+        const isbn = { isbn13: '9781234567890' };
+        const fetchAllMock = jest.fn().mockRejectedValue(new Error('Database error'));
+        (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
+
+        const result = await sut.isbnExists(isbn);
+
+        expect(result.success).toBe(false);
+        expect(result.error).toBe('Failed to check ISBN existence');
+        expect(result.statusCode).toBe(500);
+      });
+
+      it('should return failure result on network timeout', async () => {
+        const isbn = { isbn10: '1234567890' };
+        const fetchAllMock = jest.fn().mockRejectedValue(new Error('Timeout'));
+        (mockContainer.items.query as jest.Mock).mockReturnValue({ fetchAll: fetchAllMock });
+
+        const result = await sut.isbnExists(isbn);
+
+        expect(result.success).toBe(false);
+        expect(result.error).toBe('Failed to check ISBN existence');
+      });
     });
   });
 

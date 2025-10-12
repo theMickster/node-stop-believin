@@ -1,6 +1,6 @@
 import { BookAuthor } from '@data/entities/book-author.type';
-import { ReadAuthorDto } from '@features/book/models/readBookDto';
 import { CreateBookAuthorDto } from '@features/book/models/createBookDto';
+import { ReadAuthorDto } from '@features/book/models/readBookDto';
 import { UpdateBookAuthorDto } from '@features/book/models/updateBookDto';
 
 /**

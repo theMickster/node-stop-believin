@@ -1,0 +1,1200 @@
+{
+	"info": {
+		"_postman_id": "52aa9467-146f-4809-89f2-7d90249f0f18",
+		"name": "Development Sandbox",
+		"description": "Comprehensive sandbox testing for the Cosmic Books API. Includes CRUD operations, publishing, and classification workflows.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2569631"
+	},
+	"item": [
+		{
+			"name": "Book Management",
+			"item": [
+				{
+					"name": "Books List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Book By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "e874da2e-6187-4d23-9270-aa82a63305ba"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Book - Success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has book data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData.name).to.eql('The Great Gatsby');",
+									"    ",
+									"    // Store the book ID for later use",
+									"    pm.collectionVariables.set('bookId', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"The Great Gatsby\",\n    \"authors\": [\n        {\n            \"authorId\": \"3e85bd9a-8780-46eb-a65b-1481188c8cd1\",\n            \"firstName\": \"F. Scott\",\n            \"lastName\": \"Fitzgerald\",\n            \"displayName\": \"F. Scott Fitzgerald\",\n            \"role\": \"Author\",\n            \"order\": 1\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Book - Multiple Authors",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has multiple authors\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.authors).to.have.lengthOf(2);",
+									"    pm.collectionVariables.set('multiAuthorBookId', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Good Omens\",\n    \"authors\": [\n        {\n            \"authorId\": \"4e85bd9a-8780-46eb-a65b-1481188c8cd1\",\n            \"firstName\": \"Terry\",\n            \"lastName\": \"Pratchett\",\n            \"displayName\": \"Terry Pratchett\",\n            \"role\": \"Author\",\n            \"order\": 1\n        },\n        {\n            \"authorId\": \"5e85bd9a-8780-46eb-a65b-1481188c8cd2\",\n            \"firstName\": \"Neil\",\n            \"lastName\": \"Gaiman\",\n            \"displayName\": \"Neil Gaiman\",\n            \"role\": \"Author\",\n            \"order\": 2\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Book - Fails Without Name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message mentions name\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('name');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"\",\n    \"authors\": [\n        {\n            \"authorId\": \"3e85bd9a-8780-46eb-a65b-1481188c8cd1\",\n            \"firstName\": \"Mick\",\n            \"lastName\": \"Letofsky\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Book - Fails Without Authors",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message mentions authors\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('author');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Book Without Authors\",\n    \"authors\": []\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Book name was updated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.include('Updated');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"{{bookId}}\",\n    \"name\": \"The Great Gatsby - Updated Edition\",\n    \"authors\": [\n        {\n            \"authorId\": \"3e85bd9a-8780-46eb-a65b-1481188c8cd1\",\n            \"firstName\": \"F. Scott\",\n            \"lastName\": \"Fitzgerald\",\n            \"displayName\": \"F. Scott Fitzgerald\",\n            \"role\": \"Author\",\n            \"order\": 1\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/{{bookId}}",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{bookId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 204\", function () {",
+									"    pm.expect([200, 204]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{bookId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Publishing Workflow",
+			"item": [
+				{
+					"name": "Publish Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Book has publication data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('publishedDate');",
+									"    pm.expect(jsonData).to.have.property('isbn');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"isbn\": {\n        \"isbn13\": \"9780743273567\"\n    },\n    \"publishedDate\": \"1925-04-10T00:00:00.000Z\",\n    \"copyright\": \"© 1925 Charles Scribner's Sons\",\n    \"edition\": \"1st Edition\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id/publish",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id",
+								"publish"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "196000c0-bc8e-471e-9f10-917974de47a6"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Publish Book - With Both ISBNs",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Create a new book for this test",
+									"const createBookRequest = {",
+									"    url: pm.variables.get('cosmosReadApiUrl') + '/api/books',",
+									"    method: 'POST',",
+									"    header: {",
+									"        'Content-Type': 'application/json'",
+									"    },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            name: 'To Kill a Mockingbird',",
+									"            authors: [{",
+									"                authorId: '6e85bd9a-8780-46eb-a65b-1481188c8cd3',",
+									"                firstName: 'Harper',",
+									"                lastName: 'Lee',",
+									"                displayName: 'Harper Lee',",
+									"                role: 'Author',",
+									"                order: 1",
+									"            }]",
+									"        })",
+									"    }",
+									"};",
+									"",
+									"pm.sendRequest(createBookRequest, (err, response) => {",
+									"    if (err) {",
+									"        console.error('Failed to create book:', err);",
+									"    } else {",
+									"        const bookData = response.json();",
+									"        pm.collectionVariables.set('publishBookId', bookData.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Book has both ISBN formats\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.isbn).to.have.property('isbn10');",
+									"    pm.expect(jsonData.isbn).to.have.property('isbn13');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"isbn\": {\n        \"isbn10\": \"0061120081\",\n        \"isbn13\": \"9780061120084\"\n    },\n    \"publishedDate\": \"1960-07-11T00:00:00.000Z\",\n    \"copyright\": \"© 1960 Harper Lee\",\n    \"edition\": \"1st Edition\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/{{publishBookId}}/publish",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{publishBookId}}",
+								"publish"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Publish Book - Fails With Invalid ISBN",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message mentions ISBN\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('ISBN');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"isbn\": {\n        \"isbn13\": \"123\"\n    },\n    \"publishedDate\": \"1925-04-10T00:00:00.000Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id/publish",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id",
+								"publish"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "196000c0-bc8e-471e-9f10-917974de47a6"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Publication Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Copyright was updated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.copyright).to.include('Corrected');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"copyright\": \"© 1932 Charles Scribner's Sons - Corrected\",\n    \"reason\": \"Correcting copyright notice per publisher request\",\n    \"publishedDate\": \"1932-04-10T00:00:00.000Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id/publication",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id",
+								"publication"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "196000c0-bc8e-471e-9f10-917974de47a6"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Publication - Fails Without Reason",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message mentions reason\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('reason');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"copyright\": \"© 1925 Updated\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id/publication",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id",
+								"publication"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "196000c0-bc8e-471e-9f10-917974de47a6"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Classification Workflow",
+			"item": [
+				{
+					"name": "Classify Book - Dewey Decimal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Book has Dewey Decimal classification\", function () {",
+									"    var jsonData = pm.response.json();    ",
+									"    pm.expect(jsonData.libraryClassification.deweyDecimal).to.equal('813.52');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"deweyDecimal\": \"813.52\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id/classify",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id",
+								"classify"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{bookId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Classify Book - All Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Book has all classification fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var classification = jsonData.libraryClassification; ",
+									"    pm.expect(classification).to.have.property('deweyDecimal');",
+									"    pm.expect(classification).to.have.property('libraryOfCongressNumber');",
+									"    pm.expect(classification).to.have.property('oclcNumber');",
+									"    pm.expect(jsonData.libraryClassification.deweyDecimal).to.equal('813.6');",
+									"    pm.expect(jsonData.libraryClassification.libraryOfCongressNumber).to.equal('PS3568.O243');",
+									"    pm.expect(jsonData.libraryClassification.oclcNumber).to.equal('123456789012');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"deweyDecimal\": \"813.6\",\n    \"libraryOfCongressNumber\": \"PS3568.O243\",\n    \"oclcNumber\": \"123456789012\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id/classify",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id",
+								"classify"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{bookId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Classify Book - Fails Without Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message mentions classification\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error.toLowerCase()).to.include('classification');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id/classify",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id",
+								"classify"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{bookId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Classification",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Classification was updated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.libraryClassification.deweyDecimal).to.equal('813.54');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"deweyDecimal\": \"813.54\",\n    \"libraryOfCongressNumber\": \"PS3568.O243\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id/classify",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id",
+								"classify"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{bookId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Classification - Clear Field with Null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"OCLC number was cleared\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.libraryClassification.oclcNumber).to.be.undefined;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"deweyDecimal\": \"813.6\",\n    \"libraryOfCongressNumber\": \"PS3568.O243\",\n    \"oclcNumber\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id/classify",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id",
+								"classify"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{bookId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Edge Cases & Validation",
+			"item": [
+				{
+					"name": "Get Non-Existent Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "00000000-0000-0000-0000-000000000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Non-Existent Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/:id",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "00000000-0000-0000-0000-000000000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Book - Name Too Long",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message mentions length\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error.toLowerCase()).to.match(/length|long|characters/);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{$randomLoremWords}}{{$randomLoremWords}}{{$randomLoremWords}}{{$randomLoremWords}}{{$randomLoremWords}}{{$randomLoremWords}}{{$randomLoremWords}}{{$randomLoremWords}}{{$randomLoremWords}}{{$randomLoremWords}}{{$randomLoremWords}}{{$randomLoremWords}}\",\n    \"authors\": [\n        {\n            \"authorId\": \"3e85bd9a-8780-46eb-a65b-1481188c8cd1\",\n            \"firstName\": \"Test\",\n            \"lastName\": \"Author\",\n            \"order\": 1\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Classify Book - Invalid Dewey Decimal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message mentions Dewey Decimal format\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('Dewey');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"deweyDecimal\": \"81.3\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/{{publishBookId}}/classify",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{publishBookId}}",
+								"classify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Classify Book - Invalid OCLC Number",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message mentions OCLC\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('OCLC');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"oclcNumber\": \"123-456-789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cosmosReadApiUrl}}/api/books/{{publishBookId}}/classify",
+							"host": [
+								"{{cosmosReadApiUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{publishBookId}}",
+								"classify"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "cosmosReadApiUrl",
+			"value": "http://localhost:3898",
+			"type": "default"
+		},
+		{
+			"key": "bookId",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "multiAuthorBookId",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "publishBookId",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

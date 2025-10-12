@@ -7,7 +7,8 @@
         "fixtures": "Snippet",
         "queries": "Quasar",
         "features": "Home",
-        "cqrs": "Link"
+        "cqrs": "Link",
+        "postman": "api"
     },
     "material-icon-theme.files.associations": {
         "*.query.ts": "Sequelize",
