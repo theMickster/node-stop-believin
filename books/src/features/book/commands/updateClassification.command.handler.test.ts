@@ -116,7 +116,7 @@ describe('UpdateClassificationCommandHandler', () => {
 
     it('should clear field when null is provided', async () => {
       const command = new UpdateClassificationCommand('123e4567-e89b-12d3-a456-426614174000', {
-        deweyDecimal: null,
+        deweyDecimal: null as unknown as string,
       });
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
@@ -139,16 +139,18 @@ describe('UpdateClassificationCommandHandler', () => {
 
     it('should clear all classification fields when all are null', async () => {
       const command = new UpdateClassificationCommand('123e4567-e89b-12d3-a456-426614174000', {
-        deweyDecimal: null,
-        libraryOfCongressNumber: null,
-        oclcNumber: null,
+        deweyDecimal: null as unknown as string,
+        libraryOfCongressNumber: null as unknown as string,
+        oclcNumber: null as unknown as string,
       });
+
+      const bookWithoutClassification = { ...testBook };
+      delete bookWithoutClassification.libraryClassification;
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.update.mockResolvedValue(
         repoOk({
-          ...testBook,
-          libraryClassification: undefined,
+          ...bookWithoutClassification,
           version: 2,
         }),
       );
@@ -159,10 +161,8 @@ describe('UpdateClassificationCommandHandler', () => {
     });
 
     it('should work with book that has no existing classification', async () => {
-      const bookWithoutClassification = {
-        ...testBook,
-        libraryClassification: undefined,
-      };
+      const bookWithoutClassification = { ...testBook };
+      delete bookWithoutClassification.libraryClassification;
 
       const command = new UpdateClassificationCommand('123e4567-e89b-12d3-a456-426614174000', {
         deweyDecimal: '813.6',

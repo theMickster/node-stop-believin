@@ -1,6 +1,6 @@
-import { repoOk, repoFail } from "@data/libs/repoResult";
-import { BookRepository } from "@data/repos/bookRepository";
-import { DeleteBookValidator } from "./deleteBook.validator";
+import { repoOk, repoFail } from '@data/libs/repoResult';
+import { BookRepository } from '@data/repos/bookRepository';
+import { DeleteBookValidator } from './deleteBook.validator';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 describe('DeleteBookValidator', () => {
@@ -55,8 +55,8 @@ describe('DeleteBookValidator', () => {
   });
 
   it('should return false if the book does not exist', async () => {
-    mockRepo.getById.mockResolvedValue(repoFail('Not found'));
-    
+    mockRepo.getById.mockResolvedValue(repoFail('Not found', 500));
+
     const result = await sut.validate('b9223c19-5a6d-4406-bf96-aefbae10746a');
 
     expect(result.valid).toBe(false);

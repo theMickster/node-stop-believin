@@ -1,5 +1,5 @@
 export interface UpdateClassificationDto {
-  deweyDecimal?: string;
-  libraryOfCongressNumber?: string;
-  oclcNumber?: string;
+  deweyDecimal?: string | null;
+  libraryOfCongressNumber?: string | null;
+  oclcNumber?: string | null;
 }
