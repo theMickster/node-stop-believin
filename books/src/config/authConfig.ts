@@ -26,11 +26,6 @@ export interface AzureAuthConfig {
     loggingLevel: 'info' | 'warn' | 'error' | null;
     loggingNoPII: boolean;
   };
-  scopes: {
-    read: string;
-    write: string;
-    delete: string;
-  };
   roles: {
     admin: string;
     writer: string;
@@ -72,11 +67,6 @@ const authConfig: AzureAuthConfig = {
     passReqToCallback: false,
     loggingLevel: process.env.NODE_ENV === 'development' ? 'info' : null,
     loggingNoPII: process.env.NODE_ENV !== 'development',
-  },
-  scopes: {
-    read: 'Books.Read',
-    write: 'Books.Write',
-    delete: 'Delete.Books',
   },
   roles: {
     admin: 'Books.Admin',

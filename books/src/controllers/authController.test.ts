@@ -31,7 +31,6 @@ describe('AuthController', () => {
         name: 'Michael Scott',
         preferred_username: 'michael.scott@dunder.com',
         roles: ['Books.Admin'],
-        scp: 'Books.Read Books.Write',
       };
 
       mockRequest.authInfo = mockAuthInfo as ITokenPayload;
@@ -45,7 +44,6 @@ describe('AuthController', () => {
           name: 'Michael Scott',
           username: 'michael.scott@dunder.com',
           roles: ['Books.Admin'],
-          scopes: ['Books.Read', 'Books.Write'],
         },
       });
     });
@@ -62,16 +60,14 @@ describe('AuthController', () => {
           name: undefined,
           username: undefined,
           roles: [],
-          scopes: [],
         },
       });
     });
 
-    it('should handle missing scopes in authInfo', () => {
+    it('should handle missing roles in authInfo', () => {
       const mockAuthInfo: Partial<ITokenPayload> = {
         name: 'Jim Halpert',
         preferred_username: 'jim.halpert@dunder.com',
-        roles: ['Books.Writer'],
       };
 
       mockRequest.authInfo = mockAuthInfo as ITokenPayload;
@@ -81,7 +77,7 @@ describe('AuthController', () => {
       expect(jsonMock).toHaveBeenCalledWith(
         expect.objectContaining({
           user: expect.objectContaining({
-            scopes: [],
+            roles: [],
           }),
         }),
       );
@@ -165,12 +161,11 @@ describe('AuthController', () => {
   });
 
   describe('getRoleCheck', () => {
-    it('should return comprehensive role and scope analysis for Admin', () => {
+    it('should return comprehensive role analysis for Admin', () => {
       const mockAuthInfo: Partial<ITokenPayload> = {
         name: 'Michael Scott',
         preferred_username: 'michael.scott@dunder.com',
         roles: ['Books.Admin'],
-        scp: 'Books.Read Books.Write Delete.Books',
       };
 
       mockRequest.authInfo = mockAuthInfo as ITokenPayload;
@@ -179,22 +174,16 @@ describe('AuthController', () => {
 
       expect(statusMock).toHaveBeenCalledWith(200);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: 'Role and Scope Check',
+        message: 'Role Check',
         user: {
           name: 'Michael Scott',
           username: 'michael.scott@dunder.com',
         },
         authorization: {
           roles: ['Books.Admin'],
-          scopes: ['Books.Read', 'Books.Write', 'Delete.Books'],
           isAdmin: true,
           isWriter: true,
           isReader: true,
-        },
-        permissions: {
-          canRead: true,
-          canWrite: true,
-          canDelete: true,
         },
       });
     });
@@ -204,7 +193,6 @@ describe('AuthController', () => {
         name: 'Jim Halpert',
         preferred_username: 'jim.halpert@dunder.com',
         roles: ['Books.Writer', 'Books.Reader'],
-        scp: 'Books.Read Books.Write',
       };
 
       mockRequest.authInfo = mockAuthInfo as ITokenPayload;
@@ -215,15 +203,9 @@ describe('AuthController', () => {
         expect.objectContaining({
           authorization: {
             roles: ['Books.Writer', 'Books.Reader'],
-            scopes: ['Books.Read', 'Books.Write'],
             isAdmin: false,
             isWriter: true,
             isReader: true,
-          },
-          permissions: {
-            canRead: true,
-            canWrite: true,
-            canDelete: false,
           },
         }),
       );
@@ -234,7 +216,6 @@ describe('AuthController', () => {
         name: 'Pam Beesly',
         preferred_username: 'pam.beesly@dunder.com',
         roles: ['Books.Reader'],
-        scp: 'Books.Read',
       };
 
       mockRequest.authInfo = mockAuthInfo as ITokenPayload;
@@ -245,21 +226,15 @@ describe('AuthController', () => {
         expect.objectContaining({
           authorization: {
             roles: ['Books.Reader'],
-            scopes: ['Books.Read'],
             isAdmin: false,
             isWriter: false,
             isReader: true,
-          },
-          permissions: {
-            canRead: true,
-            canWrite: false,
-            canDelete: false,
           },
         }),
       );
     });
 
-    it('should handle missing authInfo with empty roles and scopes', () => {
+    it('should handle missing authInfo with empty roles', () => {
       mockRequest.authInfo = undefined;
 
       controller.getRoleCheck(mockRequest as Request, mockResponse as Response);
@@ -268,21 +243,15 @@ describe('AuthController', () => {
         expect.objectContaining({
           authorization: {
             roles: [],
-            scopes: [],
             isAdmin: false,
             isWriter: false,
             isReader: false,
-          },
-          permissions: {
-            canRead: false,
-            canWrite: false,
-            canDelete: false,
           },
         }),
       );
     });
 
-    it('should handle user with no roles or scopes', () => {
+    it('should handle user with no roles', () => {
       const mockAuthInfo: Partial<ITokenPayload> = {
         name: 'Toby Flenderson',
         preferred_username: 'toby.flenderson@dunder.com',
@@ -296,15 +265,9 @@ describe('AuthController', () => {
         expect.objectContaining({
           authorization: {
             roles: [],
-            scopes: [],
             isAdmin: false,
             isWriter: false,
             isReader: false,
-          },
-          permissions: {
-            canRead: false,
-            canWrite: false,
-            canDelete: false,
           },
         }),
       );
