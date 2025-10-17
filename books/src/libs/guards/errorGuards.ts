@@ -10,17 +10,6 @@
  *
  * @param error - The unknown error to check
  * @returns true if error has a message property of type string
- *
- * @example
- * ```typescript
- * try {
- *   // some operation
- * } catch (err: unknown) {
- *   if (isErrorWithMessage(err)) {
- *     console.log(err.message); // Type-safe access to message
- *   }
- * }
- * ```
  */
 export function isErrorWithMessage(error: unknown): error is Error {
   return (
@@ -37,17 +26,6 @@ export function isErrorWithMessage(error: unknown): error is Error {
  *
  * @param error - The unknown error to check
  * @returns true if error has a code property of type number
- *
- * @example
- * ```typescript
- * try {
- *   await cosmosContainer.item(id).read();
- * } catch (err: unknown) {
- *   if (isErrorWithCode(err) && err.code === 404) {
- *     console.log('Item not found');
- *   }
- * }
- * ```
  */
 export function isErrorWithCode(error: unknown): error is { code: number } {
   return (
@@ -64,17 +42,6 @@ export function isErrorWithCode(error: unknown): error is { code: number } {
  *
  * @param error - The unknown error to check
  * @returns true if error has a status property of type number
- *
- * @example
- * ```typescript
- * try {
- *   await fetch('/api/data');
- * } catch (err: unknown) {
- *   if (isErrorWithStatus(err) && err.status === 401) {
- *     console.log('Unauthorized');
- *   }
- * }
- * ```
  */
 export function isErrorWithStatus(error: unknown): error is { status: number } {
   return (
@@ -91,16 +58,6 @@ export function isErrorWithStatus(error: unknown): error is { status: number } {
  *
  * @param error - The unknown error to extract a message from
  * @returns A string error message. Returns 'Unknown error' if no message can be extracted
- *
- * @example
- * ```typescript
- * try {
- *   // some operation
- * } catch (err: unknown) {
- *   const message = getErrorMessage(err); // Always safe, always returns string
- *   logger.error(message);
- * }
- * ```
  */
 export function getErrorMessage(error: unknown): string {
   if (isErrorWithMessage(error)) {

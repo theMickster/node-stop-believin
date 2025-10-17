@@ -38,14 +38,6 @@ const bearerStrategyOptions: IBearerStrategyOptionWithRequest = {
 const bearerStrategy = new BearerStrategy(
   bearerStrategyOptions,
   (token: ITokenPayload, done: (error: Error | null, user?: ITokenPayload | false, info?: unknown) => void) => {
-    // Token has been validated by passport-azure-ad... Log token info in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ Token validated for user:', token.preferred_username || token.upn || token.name);
-      console.log('📋 Scopes:', token.scp);
-      console.log('👤 Roles:', token.roles);
-    }
-
-    // Return the token payload as the user object. This will be available in req.authInfo
     return done(null, token, token);
   },
 );
@@ -59,7 +51,6 @@ passport.use(bearerStrategy);
  * Usage:
  * ```typescript
  * router.get('/protected', authenticateToken, (req, res) => {
- *   // req.authInfo contains token claims
  *   res.json({ user: req.authInfo });
  * });
  * ```
@@ -82,4 +73,4 @@ declare global {
 /* eslint-enable @typescript-eslint/no-empty-object-type */
 /* eslint-enable @typescript-eslint/no-namespace */
 
-export default passport;
+export { default } from 'passport';

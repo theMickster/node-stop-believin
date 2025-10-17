@@ -6,6 +6,7 @@ import iocContainer from '../../libs/ioc.container';
 import TYPES from '@libs/ioc.types';
 import { authenticateToken } from '../../middleware/authMiddleware';
 import { requireRole, requireAdmin } from '../../middleware/authorizationMiddleware';
+import authConfig from '../../config/authConfig';
 
 /**
  * @swagger
@@ -306,49 +307,49 @@ export function bookRoutes(): Router {
   router.get(
     '/',
     authenticateToken,
-    requireRole(['Books.Admin', 'Books.Reader']),
+    requireRole([authConfig.roles.admin, authConfig.roles.reader]),
     controller.getBooks.bind(controller),
   );
 
   router.get(
     '/:id',
     authenticateToken,
-    requireRole(['Books.Admin', 'Books.Reader']),
+    requireRole([authConfig.roles.admin, authConfig.roles.reader]),
     controller.getBookById.bind(controller),
   );
 
   router.put(
     '/:id',
     authenticateToken,
-    requireRole(['Books.Admin', 'Books.Writer']),
+    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
     controller.updateBook.bind(controller),
   );
 
   router.post(
     '/:id/publish',
     authenticateToken,
-    requireRole(['Books.Admin', 'Books.Writer']),
+    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
     publishController.publishBook.bind(publishController),
   );
 
   router.patch(
     '/:id/publication',
     authenticateToken,
-    requireRole(['Books.Admin', 'Books.Writer']),
+    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
     publishController.updatePublication.bind(publishController),
   );
 
   router.post(
     '/:id/classify',
     authenticateToken,
-    requireRole(['Books.Admin', 'Books.Writer']),
+    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
     classifyController.classifyBook.bind(classifyController),
   );
 
   router.put(
     '/:id/classify',
     authenticateToken,
-    requireRole(['Books.Admin', 'Books.Writer']),
+    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
     classifyController.updateClassification.bind(classifyController),
   );
 
