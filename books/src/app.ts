@@ -4,11 +4,14 @@ import { apiRoutes } from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import bodyParser from 'body-parser';
 import { initializeTelemetry } from './libs/logging/telemetry';
-import { swaggerSpec } from './config/swagger';
+import { swaggerSpec } from './docs/swagger';
+import passport from './middleware/authMiddleware';
 
 initializeTelemetry();
 
 const app = express();
+
+app.use(passport.initialize());
 
 app.use((_req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,13 +23,15 @@ app.use((_req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Swagger UI
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customSiteTitle: 'Cosmic Books API Documentation',
-  customCss: '.swagger-ui .topbar { display: none }',
-}));
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: 'Cosmic Books API Documentation',
+    customCss: '.swagger-ui .topbar { display: none }',
+  }),
+);
 
-// Mount versioned API routes
 app.use('/api', apiRoutes());
 
 app.use(errorHandler);

@@ -246,9 +246,9 @@ describe('BookClassifyController', () => {
         libraryOfCongressNumber: null,
         oclcNumber: null,
       };
+      const { libraryClassification: _libraryClassification, ...bookWithoutClassification } = updatedBook;
       const book: Book = {
-        ...updatedBook,
-        libraryClassification: undefined,
+        ...bookWithoutClassification,
       };
       mockUpdateClassificationCommandHandler.handle.mockResolvedValue(book);
       const req = createMockUpdateRequest({ id: bookId }, dto);

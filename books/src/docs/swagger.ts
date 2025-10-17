@@ -1,5 +1,5 @@
 import swaggerJsdoc from 'swagger-jsdoc';
-import config from './config';
+import config from '../config/config';
 
 const options: swaggerJsdoc.Options = {
   definition: {
@@ -35,7 +35,20 @@ const options: swaggerJsdoc.Options = {
         description: 'Book management endpoints - Version 2 (Coming Soon)',
       },
     ],
+    security: [
+      {
+        BearerAuth: [],
+      },
+    ],
     components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter your Azure Entra ID (Azure AD) JWT Bearer token',
+        },
+      },
       schemas: {
         Book: {
           type: 'object',

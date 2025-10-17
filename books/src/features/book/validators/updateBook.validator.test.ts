@@ -15,6 +15,7 @@ describe('UpdateBookValidator', () => {
 
     mockBookRepository.getById.mockResolvedValue({
       success: true,
+      statusCode: 0,
       data: {
         id: validBookId,
         bookId: validBookId,

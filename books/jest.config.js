@@ -4,7 +4,7 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
   setupFiles: ['<rootDir>/src/_test_/jest.setup.ts'],
-  moduleDirectories : ['node_modules', 'src'],
+  moduleDirectories: ['node_modules', 'src'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -14,7 +14,7 @@ module.exports = {
     '^@data/(.*)$': '<rootDir>/src/data/$1',
     '^@libs/(.*)$': '<rootDir>/src/libs/$1',
     '^@routes/(.*)$': '<rootDir>/src/routes/$1',
-  },  
+  },
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
@@ -32,6 +32,9 @@ module.exports = {
     '!src/libs/ioc.container.ts',
     '!src/libs/ioc.types.ts',
     '!src/libs/logging/**',
+    '!src/routes/index.ts',
+    '!src/routes/v1/index.ts',
+    '!src/routes/v2/index.ts',
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
@@ -40,7 +43,7 @@ module.exports = {
       lines: 85,
       branches: 75,
       functions: 85,
-      statements: 85
-    }
-  }
+      statements: 85,
+    },
+  },
 };

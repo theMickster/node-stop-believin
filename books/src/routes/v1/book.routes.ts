@@ -4,6 +4,9 @@ import { BookPublishController } from '../../controllers/bookPublish.controller'
 import { BookClassifyController } from '../../controllers/bookClassify.controller';
 import iocContainer from '../../libs/ioc.container';
 import TYPES from '@libs/ioc.types';
+import { authenticateToken } from '../../middleware/authMiddleware';
+import { requireRole, requireAdmin } from '../../middleware/authorizationMiddleware';
+import authConfig from '../../config/authConfig';
 
 /**
  * @swagger
@@ -299,17 +302,58 @@ export function bookRoutes(): Router {
   const publishController = iocContainer.get<BookPublishController>(TYPES.BookPublishController);
   const classifyController = iocContainer.get<BookClassifyController>(TYPES.BookClassifyController);
 
-  router.get('/', controller.getBooks.bind(controller));
-  router.get('/:id', controller.getBookById.bind(controller));
   router.post('/', controller.createBook.bind(controller));
-  router.put('/:id', controller.updateBook.bind(controller));
-  router.delete('/:id', controller.deleteBook.bind(controller));
 
-  router.post('/:id/publish', publishController.publishBook.bind(publishController));
-  router.patch('/:id/publication', publishController.updatePublication.bind(publishController));
+  router.get(
+    '/',
+    authenticateToken,
+    requireRole([authConfig.roles.admin, authConfig.roles.reader]),
+    controller.getBooks.bind(controller),
+  );
 
-  router.post('/:id/classify', classifyController.classifyBook.bind(classifyController));
-  router.put('/:id/classify', classifyController.updateClassification.bind(classifyController));
+  router.get(
+    '/:id',
+    authenticateToken,
+    requireRole([authConfig.roles.admin, authConfig.roles.reader]),
+    controller.getBookById.bind(controller),
+  );
+
+  router.put(
+    '/:id',
+    authenticateToken,
+    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
+    controller.updateBook.bind(controller),
+  );
+
+  router.post(
+    '/:id/publish',
+    authenticateToken,
+    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
+    publishController.publishBook.bind(publishController),
+  );
+
+  router.patch(
+    '/:id/publication',
+    authenticateToken,
+    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
+    publishController.updatePublication.bind(publishController),
+  );
+
+  router.post(
+    '/:id/classify',
+    authenticateToken,
+    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
+    classifyController.classifyBook.bind(classifyController),
+  );
+
+  router.put(
+    '/:id/classify',
+    authenticateToken,
+    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
+    classifyController.updateClassification.bind(classifyController),
+  );
+
+  router.delete('/:id', authenticateToken, requireAdmin, controller.deleteBook.bind(controller));
 
   return router;
 }

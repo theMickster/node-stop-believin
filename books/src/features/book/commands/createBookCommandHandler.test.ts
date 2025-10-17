@@ -72,7 +72,7 @@ describe('CreateBookCommandHandler', () => {
       ],
     };
     const cmd = new CreateBookCommand(dto);
-    mockRepo.create.mockResolvedValue(repoFail('Cosmos DB is down'));
+    mockRepo.create.mockResolvedValue(repoFail('Cosmos DB is down', 500));
 
     await expect(sut.handle(cmd)).rejects.toThrow('Cosmos DB is down');
     expect(mockRepo.create).toHaveBeenCalled();
