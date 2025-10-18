@@ -1,4 +1,4 @@
-import { AuthorBookRole } from '@data/entities/book-author.type';
+import { AuthorRole } from '@data/entities/metadata/authorRole.type';
 
 export interface UpdateBookDto {
   id: string;
@@ -11,6 +11,6 @@ export interface UpdateBookAuthorDto {
   firstName: string;
   lastName: string;
   displayName?: string;
-  role?: AuthorBookRole;
+  role?: AuthorRole;
   order: number;
 }

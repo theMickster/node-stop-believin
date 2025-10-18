@@ -1,8 +1,9 @@
-import { BookRepository } from "@data/repos/bookRepository";
-import { CommandResult } from "@libs/cqrs/commandResult";
-import { DeleteBookValidator } from "../validators/deleteBook.validator";
-import { DeleteBookCommand } from "./deleteBook.command";
-import { DeleteBookCommandHandler } from "./deleteBook.command.handler";
+import { BookRepository } from '@data/repos/book.repository';
+import { isCommandFail, isCommandOk } from '@libs/cqrs/commandResult';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
+import { DeleteBookValidator } from '../validators/deleteBook.validator';
+import { DeleteBookCommand } from './deleteBook.command';
+import { DeleteBookCommandHandler } from './deleteBook.command.handler';
 
 describe('DeleteBookCommandHandler', () => {
   let handler: DeleteBookCommandHandler;
@@ -27,22 +28,23 @@ describe('DeleteBookCommandHandler', () => {
     mockValidator.validate.mockResolvedValue({ valid: true });
     mockRepo.delete.mockResolvedValue({ success: true, statusCode: 0 });
 
-    const result: CommandResult<void> = await handler.handle(command);
+    const result = await handler.handle(command);
 
-    expect(result.success).toBe(true);
-    expect(result.error).toBeUndefined();
+    expect(isCommandOk(result)).toBe(true);
   });
 
   it('should fail validation if ID is invalid', async () => {
     const command = new DeleteBookCommand('invalid-uuid');
     mockValidator.validate.mockResolvedValue({ valid: false, error: new Error('Invalid book ID format') });
 
-    const result: CommandResult<void> = await handler.handle(command);
+    const result = await handler.handle(command);
 
-    expect(result.success).toBe(false);
-    expect(result.error).toBeDefined();
-    expect(result.error).toBe('Invalid book ID format');
-    expect(result.code).toBe('ValidationError');
+    expect(isCommandFail(result)).toBe(true);
+
+    if (isCommandFail(result)) {
+      expect(result.error.message).toBe('Invalid book ID format');
+      expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+    }
   });
 
   it('should fail if book does not exist', async () => {
@@ -50,12 +52,14 @@ describe('DeleteBookCommandHandler', () => {
     mockValidator.validate.mockResolvedValue({ valid: true });
     mockRepo.delete.mockRejectedValue(new Error('Book not found'));
 
-    const result: CommandResult<void> = await handler.handle(command);
+    const result = await handler.handle(command);
 
-    expect(result.success).toBe(false);
-    expect(result.error).toBeDefined();
-    expect(result.error).toBe('Unexpected error deleting book');
-    expect(result.code).toBe('InternalError');
+    expect(isCommandFail(result)).toBe(true);
+
+    if (isCommandFail(result)) {
+      expect(result.error.message).toContain('Unexpected error deleting book');
+      expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
+    }
   });
 
   it('should handle unexpected repository errors', async () => {
@@ -63,11 +67,13 @@ describe('DeleteBookCommandHandler', () => {
     mockValidator.validate.mockResolvedValue({ valid: true });
     mockRepo.delete.mockRejectedValue(new Error('Database connection error'));
 
-    const result: CommandResult<void> = await handler.handle(command);
+    const result = await handler.handle(command);
 
-    expect(result.success).toBe(false);
-    expect(result.error).toBeDefined();
-    expect(result.error).toBe('Unexpected error deleting book');
-    expect(result.code).toBe('InternalError');
+    expect(isCommandFail(result)).toBe(true);
+
+    if (isCommandFail(result)) {
+      expect(result.error.message).toContain('Unexpected error deleting book');
+      expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
+    }
   });
 });

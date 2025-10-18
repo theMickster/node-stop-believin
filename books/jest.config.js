@@ -13,6 +13,7 @@ module.exports = {
     '^@fixtures/(.*)$': '<rootDir>/src/_test_/fixtures/$1',
     '^@data/(.*)$': '<rootDir>/src/data/$1',
     '^@libs/(.*)$': '<rootDir>/src/libs/$1',
+    '^@middleware/(.*)$': '<rootDir>/src/middleware/$1',
     '^@routes/(.*)$': '<rootDir>/src/routes/$1',
   },
   transform: {

@@ -1,6 +1,6 @@
 import { Book } from '@data/entities/book.entity';
 import { CreateBookDto } from '@features/book/models/createBookDto';
-import { mapToBookAuthor, mapBookAuthorToReadAuthorDto } from './authorMappers';
+import { mapToBookAuthor, mapBookAuthorToReadAuthorDto } from './bookAuthorMappers';
 import { UpdateBookDto } from '@features/book/models/updateBookDto';
 import { ReadBookDto, PublicationInfoDto, ClassificationInfoDto } from '@features/book/models/readBookDto';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';

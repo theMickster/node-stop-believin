@@ -1,10 +1,12 @@
 import { Book } from '@data/entities/book.entity';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
-import { BookRepository } from '@data/repos/bookRepository';
+import { BookRepository } from '@data/repos/book.repository';
 import { repoOk, repoFail } from '@data/libs/repoResult';
 import { PublishBookCommandHandler } from './publishBook.command.handler';
 import { PublishBookCommand } from './publishBook.command';
 import { mock, mockReset } from 'jest-mock-extended';
+import { isCommandOk, isCommandFail } from '@libs/cqrs/commandResult';
+import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 
 describe('PublishBookCommandHandler', () => {
   const mockBookRepository = mock<BookRepository>();
@@ -59,12 +61,15 @@ describe('PublishBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.isbn).toEqual({ isbn13: '9781234567890' });
-      expect(result.publishedDate).toEqual(new Date('2025-01-15'));
-      expect(result.copyright).toBe('© 2025 Test Publisher');
-      expect(result.edition).toBe('2nd Edition');
-      expect(result.bisacCodes).toEqual(['JUV037000', 'FIC009000']);
-      expect(result.thema).toEqual(['YFB', 'YFD']);
+      expect(isCommandOk(result)).toBe(true);
+      if (isCommandOk(result)) {
+        expect(result.data.isbn).toEqual({ isbn13: '9781234567890' });
+        expect(result.data.publishedDate).toEqual(new Date('2025-01-15'));
+        expect(result.data.copyright).toBe('© 2025 Test Publisher');
+        expect(result.data.edition).toBe('2nd Edition');
+        expect(result.data.bisacCodes).toEqual(['JUV037000', 'FIC009000']);
+        expect(result.data.thema).toEqual(['YFB', 'YFD']);
+      }
     });
 
     it('should publish book with only required ISBN field', async () => {
@@ -87,8 +92,11 @@ describe('PublishBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.isbn).toEqual({ isbn13: '9781234567890' });
-      expect(result.edition).toBe('1st Edition');
+      expect(isCommandOk(result)).toBe(true);
+      if (isCommandOk(result)) {
+        expect(result.data.isbn).toEqual({ isbn13: '9781234567890' });
+        expect(result.data.edition).toBe('1st Edition');
+      }
     });
 
     it('should use current date when publishedDate not provided', async () => {
@@ -166,7 +174,10 @@ describe('PublishBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.isbn).toEqual({ isbn10: '1234567890' });
+      expect(isCommandOk(result)).toBe(true);
+      if (isCommandOk(result)) {
+        expect(result.data.isbn).toEqual({ isbn10: '1234567890' });
+      }
     });
 
     it('should publish with both ISBN-10 and ISBN-13', async () => {
@@ -186,7 +197,10 @@ describe('PublishBookCommandHandler', () => {
 
       const result = await sut.handle(command);
 
-      expect(result.isbn).toEqual({ isbn10: '1234567890', isbn13: '9781234567890' });
+      expect(isCommandOk(result)).toBe(true);
+      if (isCommandOk(result)) {
+        expect(result.data.isbn).toEqual({ isbn10: '1234567890', isbn13: '9781234567890' });
+      }
     });
 
     it('should increment book version', async () => {
@@ -226,33 +240,53 @@ describe('PublishBookCommandHandler', () => {
       );
     });
 
-    it('should throw error when validation fails', async () => {
+    it('should return error when validation fails', async () => {
       const command = new PublishBookCommand('123e4567-e89b-12d3-a456-426614174000', {} as any);
 
-      await expect(sut.handle(command)).rejects.toThrow('Validation failed');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+        expect(result.error.statusCode).toBe(HttpStatus.BAD_REQUEST);
+      }
     });
 
-    it('should throw error when book not found', async () => {
+    it('should return error when book not found', async () => {
       const command = new PublishBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn13: '9781234567890' },
       });
 
       mockBookRepository.getById.mockResolvedValue(repoFail('Book not found', 404));
 
-      await expect(sut.handle(command)).rejects.toThrow('Book not found');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
+        expect(result.error.message).toBe('Book not found');
+        expect(result.error.statusCode).toBe(HttpStatus.NOT_FOUND);
+      }
     });
 
-    it('should throw error when repository returns no data', async () => {
+    it('should return error when repository returns no data', async () => {
       const command = new PublishBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn13: '9781234567890' },
       });
 
       mockBookRepository.getById.mockResolvedValue(repoOk(null as any));
 
-      await expect(sut.handle(command)).rejects.toThrow('Book not found');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
+        expect(result.error.message).toBe('Book not found');
+        expect(result.error.statusCode).toBe(HttpStatus.NOT_FOUND);
+      }
     });
 
-    it('should throw error when book is already published', async () => {
+    it('should return error when book is already published', async () => {
       const publishedBook = {
         ...testBook,
         publishedDate: new Date('2024-12-01'),
@@ -264,11 +298,18 @@ describe('PublishBookCommandHandler', () => {
 
       mockBookRepository.getById.mockResolvedValue(repoOk(publishedBook));
 
-      await expect(sut.handle(command)).rejects.toThrow('Book is already published');
-      await expect(sut.handle(command)).rejects.toThrow('Use update-publication endpoint');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.BOOK_ALREADY_EXISTS);
+        expect(result.error.message).toContain('Book is already published');
+        expect(result.error.message).toContain('Use update-publication endpoint');
+        expect(result.error.statusCode).toBe(HttpStatus.CONFLICT);
+      }
     });
 
-    it('should throw error when ISBN check fails', async () => {
+    it('should return error when ISBN check fails', async () => {
       const command = new PublishBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn13: '9781234567890' },
       });
@@ -276,10 +317,17 @@ describe('PublishBookCommandHandler', () => {
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.isbnExists.mockResolvedValue(repoFail('Database error', 500));
 
-      await expect(sut.handle(command)).rejects.toThrow('Database error');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
+        expect(result.error.message).toBe('Database error');
+        expect(result.error.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     });
 
-    it('should throw error when ISBN already exists with ISBN-13', async () => {
+    it('should return error when ISBN already exists with ISBN-13', async () => {
       const command = new PublishBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn13: '9781234567890' },
       });
@@ -287,10 +335,17 @@ describe('PublishBookCommandHandler', () => {
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.isbnExists.mockResolvedValue(repoOk(true));
 
-      await expect(sut.handle(command)).rejects.toThrow('ISBN 9781234567890 is already assigned to another book');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.ISBN_CONFLICT);
+        expect(result.error.message).toContain('ISBN 9781234567890 is already assigned to another book');
+        expect(result.error.statusCode).toBe(HttpStatus.CONFLICT);
+      }
     });
 
-    it('should throw error when ISBN already exists with ISBN-10', async () => {
+    it('should return error when ISBN already exists with ISBN-10', async () => {
       const command = new PublishBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn10: '1234567890' },
       });
@@ -298,10 +353,17 @@ describe('PublishBookCommandHandler', () => {
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
       mockBookRepository.isbnExists.mockResolvedValue(repoOk(true));
 
-      await expect(sut.handle(command)).rejects.toThrow('ISBN 1234567890 is already assigned to another book');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.ISBN_CONFLICT);
+        expect(result.error.message).toContain('ISBN 1234567890 is already assigned to another book');
+        expect(result.error.statusCode).toBe(HttpStatus.CONFLICT);
+      }
     });
 
-    it('should throw error when update fails', async () => {
+    it('should return error when update fails', async () => {
       const command = new PublishBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn13: '9781234567890' },
       });
@@ -310,10 +372,17 @@ describe('PublishBookCommandHandler', () => {
       mockBookRepository.isbnExists.mockResolvedValue(repoOk(false));
       mockBookRepository.update.mockResolvedValue(repoFail('Database error', 500));
 
-      await expect(sut.handle(command)).rejects.toThrow('Database error');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
+        expect(result.error.message).toBe('Database error');
+        expect(result.error.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     });
 
-    it('should throw error when update returns no data', async () => {
+    it('should return error when update returns no data', async () => {
       const command = new PublishBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn13: '9781234567890' },
       });
@@ -322,25 +391,44 @@ describe('PublishBookCommandHandler', () => {
       mockBookRepository.isbnExists.mockResolvedValue(repoOk(false));
       mockBookRepository.update.mockResolvedValue(repoOk(null as any));
 
-      await expect(sut.handle(command)).rejects.toThrow('Failed to publish book');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
+        expect(result.error.message).toBe('Failed to publish book');
+        expect(result.error.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     });
 
-    it('should throw error with invalid ISBN-13 format', async () => {
+    it('should return error with invalid ISBN-13 format', async () => {
       const command = new PublishBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn13: '978123456789' },
       });
 
-      await expect(sut.handle(command)).rejects.toThrow('Validation failed');
-      await expect(sut.handle(command)).rejects.toThrow('ISBN-13 must be exactly 13 digits');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+        expect(result.error.message).toContain('ISBN-13 must be exactly 13 digits');
+        expect(result.error.statusCode).toBe(HttpStatus.BAD_REQUEST);
+      }
     });
 
-    it('should throw error with invalid ISBN-10 format', async () => {
+    it('should return error with invalid ISBN-10 format', async () => {
       const command = new PublishBookCommand('123e4567-e89b-12d3-a456-426614174000', {
         isbn: { isbn10: '123456789' },
       });
 
-      await expect(sut.handle(command)).rejects.toThrow('Validation failed');
-      await expect(sut.handle(command)).rejects.toThrow('ISBN-10 must be exactly 10 digits');
+      const result = await sut.handle(command);
+
+      expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+        expect(result.error.message).toContain('ISBN-10 must be exactly 10 digits');
+        expect(result.error.statusCode).toBe(HttpStatus.BAD_REQUEST);
+      }
     });
   });
 });

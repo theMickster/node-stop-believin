@@ -1,12 +1,12 @@
-import { Router } from 'express';
-import { BookController } from '../../controllers/book.controller';
-import { BookPublishController } from '../../controllers/bookPublish.controller';
-import { BookClassifyController } from '../../controllers/bookClassify.controller';
-import iocContainer from '../../libs/ioc.container';
+import { Router, RequestHandler } from 'express';
+import { BookController } from '../controllers/book.controller';
+import { BookPublishController } from '../controllers/publish/bookPublish.controller';
+import { BookClassifyController } from '../controllers/classify/bookClassify.controller';
+import iocContainer from '../../../libs/ioc.container';
 import TYPES from '@libs/ioc.types';
-import { authenticateToken } from '../../middleware/authMiddleware';
-import { requireRole, requireAdmin } from '../../middleware/authorizationMiddleware';
-import authConfig from '../../config/authConfig';
+import { buildRoutes, getRoutes, getAuthMetadata } from '@libs/decorators/routeBuilder';
+import { authenticateToken } from '@middleware/authMiddleware';
+import { requireRole } from '@middleware/authorizationMiddleware';
 
 /**
  * @swagger
@@ -296,64 +296,59 @@ import authConfig from '../../config/authConfig';
  */
 
 export function bookRoutes(): Router {
-  const router = Router();
-
   const controller = iocContainer.get<BookController>(TYPES.BookController);
   const publishController = iocContainer.get<BookPublishController>(TYPES.BookPublishController);
   const classifyController = iocContainer.get<BookClassifyController>(TYPES.BookClassifyController);
 
-  router.post('/', controller.createBook.bind(controller));
+  // Build routes from all three controllers and merge them into one router
+  const router = buildRoutes(controller);
 
-  router.get(
-    '/',
-    authenticateToken,
-    requireRole([authConfig.roles.admin, authConfig.roles.reader]),
-    controller.getBooks.bind(controller),
-  );
+  // Get routes from publish and classify controllers and register them on the same router
+  const publishRoutes = getRoutes(publishController);
+  const classifyRoutes = getRoutes(classifyController);
 
-  router.get(
-    '/:id',
-    authenticateToken,
-    requireRole([authConfig.roles.admin, authConfig.roles.reader]),
-    controller.getBookById.bind(controller),
-  );
+  for (const route of [...publishRoutes, ...classifyRoutes]) {
+    const { method, path, methodName } = route;
+    const ctrl = publishRoutes.includes(route) ? publishController : classifyController;
+    const handler = (ctrl as unknown as Record<string, unknown>)[methodName];
 
-  router.put(
-    '/:id',
-    authenticateToken,
-    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
-    controller.updateBook.bind(controller),
-  );
+    if (typeof handler !== 'function') {
+      throw new TypeError(`Method ${methodName} is not a function on controller`);
+    }
 
-  router.post(
-    '/:id/publish',
-    authenticateToken,
-    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
-    publishController.publishBook.bind(publishController),
-  );
+    const authMetadata = getAuthMetadata(ctrl, methodName);
+    const middlewares: RequestHandler[] = [];
 
-  router.patch(
-    '/:id/publication',
-    authenticateToken,
-    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
-    publishController.updatePublication.bind(publishController),
-  );
+    if (authMetadata?.requiresAuth) {
+      middlewares.push(authenticateToken);
+      if (authMetadata.roles && authMetadata.roles.length > 0) {
+        middlewares.push(requireRole(authMetadata.roles));
+      }
+    }
 
-  router.post(
-    '/:id/classify',
-    authenticateToken,
-    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
-    classifyController.classifyBook.bind(classifyController),
-  );
+    const boundHandler = handler.bind(ctrl) as RequestHandler;
 
-  router.put(
-    '/:id/classify',
-    authenticateToken,
-    requireRole([authConfig.roles.admin, authConfig.roles.writer]),
-    classifyController.updateClassification.bind(classifyController),
-  );
-
-  router.delete('/:id', authenticateToken, requireAdmin, controller.deleteBook.bind(controller));
+    // Register route using switch statement to avoid unsafe dynamic access
+    switch (method) {
+      case 'get':
+        router.get(path, ...middlewares, boundHandler);
+        break;
+      case 'post':
+        router.post(path, ...middlewares, boundHandler);
+        break;
+      case 'put':
+        router.put(path, ...middlewares, boundHandler);
+        break;
+      case 'patch':
+        router.patch(path, ...middlewares, boundHandler);
+        break;
+      case 'delete':
+        router.delete(path, ...middlewares, boundHandler);
+        break;
+      default:
+        throw new TypeError(`Unsupported HTTP method: ${method}`);
+    }
+  }
 
   return router;
 }

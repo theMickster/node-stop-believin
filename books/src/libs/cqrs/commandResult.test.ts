@@ -1,4 +1,5 @@
-import { commandOk, commandFail, isCommandOk, isCommandFail, CommandResult } from './commandResult';
+import { commandOk, commandFail, isCommandOk, isCommandFail, CommandResult, ErrorDetail } from './commandResult';
+import { ErrorCodes, HttpStatus } from './errorCodes';
 
 describe('commandResult', () => {
   describe('commandOk', () => {
@@ -7,55 +8,60 @@ describe('commandResult', () => {
       const result = commandOk(data);
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(data);
-      expect(result.error).toBeUndefined();
+      if (result.success) {
+        expect(result.data).toEqual(data);
+      }
     });
 
-    it('should return success true without data when no data is provided', () => {
-      const result = commandOk();
+    it('should return success true with undefined data', () => {
+      const result = commandOk(undefined as void);
 
       expect(result.success).toBe(true);
-      expect(result.data).toBeUndefined();
-      expect(result.error).toBeUndefined();
-    });
-
-    it('should return success true when undefined is explicitly passed', () => {
-      const result = commandOk(undefined);
-
-      expect(result.success).toBe(true);
-      expect(result.data).toBeUndefined();
-      expect(result.error).toBeUndefined();
+      if (result.success) {
+        expect(result.data).toBeUndefined();
+      }
     });
   });
 
   describe('commandFail', () => {
-    it('should return failure with error message', () => {
-      const errorMessage = 'Something went wrong';
-      const result = commandFail(errorMessage);
+    it('should return failure with error details and default status code', () => {
+      const result = commandFail(ErrorCodes.VALIDATION_FAILED, 'Something went wrong');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe(errorMessage);
-      expect(result.data).toBeUndefined();
-      expect(result.code).toBeUndefined();
+      if (!result.success) {
+        expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+        expect(result.error.message).toBe('Something went wrong');
+        expect(result.error.statusCode).toBe(500); // default
+        expect(result.error.field).toBeUndefined();
+      }
     });
 
-    it('should return failure with error message and code', () => {
-      const errorMessage = 'Validation failed';
-      const errorCode = 'VALIDATION_ERROR';
-      const result = commandFail(errorMessage, errorCode);
+    it('should return failure with error details and custom status code', () => {
+      const result = commandFail(ErrorCodes.BOOK_NOT_FOUND, 'Book not found', HttpStatus.NOT_FOUND);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe(errorMessage);
-      expect(result.code).toBe(errorCode);
-      expect(result.data).toBeUndefined();
+      if (!result.success) {
+        expect(result.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
+        expect(result.error.message).toBe('Book not found');
+        expect(result.error.statusCode).toBe(HttpStatus.NOT_FOUND);
+      }
     });
 
-    it('should not include code property when code is undefined', () => {
-      const result = commandFail('Error message', undefined);
+    it('should include field when provided', () => {
+      const result = commandFail(
+        ErrorCodes.INVALID_ISBN,
+        'ISBN format is invalid',
+        HttpStatus.BAD_REQUEST,
+        'isbn'
+      );
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Error message');
-      expect(result).not.toHaveProperty('code');
+      if (!result.success) {
+        expect(result.error.code).toBe(ErrorCodes.INVALID_ISBN);
+        expect(result.error.message).toBe('ISBN format is invalid');
+        expect(result.error.statusCode).toBe(HttpStatus.BAD_REQUEST);
+        expect(result.error.field).toBe('isbn');
+      }
     });
   });
 
@@ -72,14 +78,13 @@ describe('commandResult', () => {
       }
     });
 
-    it('should return true for successful command result without data', () => {
-      const result: CommandResult<string> = { success: true };
-
-      expect(isCommandOk(result)).toBe(true);
-    });
-
     it('should return false for failed command result', () => {
-      const result: CommandResult<string> = { success: false, error: 'Failed' };
+      const errorDetail: ErrorDetail = {
+        code: ErrorCodes.DATABASE_ERROR,
+        message: 'Failed',
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+      const result: CommandResult<string> = { success: false, error: errorDetail };
 
       expect(isCommandOk(result)).toBe(false);
     });
@@ -87,25 +92,36 @@ describe('commandResult', () => {
 
   describe('isCommandFail', () => {
     it('should return true for failed command result', () => {
-      const result: CommandResult<string> = { success: false, error: 'Error occurred' };
+      const errorDetail: ErrorDetail = {
+        code: ErrorCodes.BOOK_NOT_FOUND,
+        message: 'Error occurred',
+        statusCode: HttpStatus.NOT_FOUND,
+      };
+      const result: CommandResult<string> = { success: false, error: errorDetail };
 
       expect(isCommandFail(result)).toBe(true);
 
       // Type guard should narrow the type
       if (isCommandFail(result)) {
         expect(result.success).toBe(false);
-        expect(result.error).toBe('Error occurred');
+        expect(result.error.message).toBe('Error occurred');
+        expect(result.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
       }
     });
 
-    it('should return true for failed command result with code', () => {
-      const result: CommandResult<string> = {
-        success: false,
-        error: 'Validation error',
-        code: 'VAL_001'
+    it('should return true for failed command result with field', () => {
+      const errorDetail: ErrorDetail = {
+        code: ErrorCodes.VALIDATION_FAILED,
+        message: 'Validation error',
+        statusCode: HttpStatus.BAD_REQUEST,
+        field: 'title',
       };
+      const result: CommandResult<string> = { success: false, error: errorDetail };
 
       expect(isCommandFail(result)).toBe(true);
+      if (isCommandFail(result)) {
+        expect(result.error.field).toBe('title');
+      }
     });
 
     it('should return false for successful command result', () => {
@@ -125,7 +141,7 @@ describe('commandResult', () => {
     });
 
     it('should handle commandFail and isCommandFail together', () => {
-      const result = commandFail('Error', 'ERR_CODE');
+      const result = commandFail(ErrorCodes.DATABASE_ERROR, 'Error', HttpStatus.INTERNAL_SERVER_ERROR);
 
       expect(isCommandFail(result)).toBe(true);
       expect(isCommandOk(result)).toBe(false);
@@ -142,8 +158,8 @@ describe('commandResult', () => {
 
       if (isCommandOk(result)) {
         // TypeScript should understand result.data is ComplexData
-        expect(result.data?.id).toBe('abc');
-        expect(result.data?.nested.value).toBe(100);
+        expect(result.data.id).toBe('abc');
+        expect(result.data.nested.value).toBe(100);
       }
     });
   });

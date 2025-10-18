@@ -1,4 +1,4 @@
-import { BookRepository } from '@data/repos/bookRepository';
+import { BookRepository } from '@data/repos/book.repository';
 
 export abstract class AbstractBookValidator<T> {
   constructor(protected readonly bookRepository: BookRepository) {}

@@ -1,9 +1,11 @@
-import { BookRepository } from 'data/repos/bookRepository';
+import { BookRepository } from '@data/repos/book.repository';
 import { CreateBookCommandHandler } from './createBook.command.handler';
 import { CreateBookCommand } from './createBook.command';
 import { Book } from '../../../data/entities/book.entity';
 import { repoOk, repoFail } from '../../../data/libs/repoResult';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { isCommandFail, isCommandOk } from '@libs/cqrs/commandResult';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
 
 describe('CreateBookCommandHandler', () => {
   let mockRepo: jest.Mocked<BookRepository>;
@@ -20,7 +22,7 @@ describe('CreateBookCommandHandler', () => {
     jest.clearAllMocks();
   });
 
- it('should successfully create a new book', async () => {
+  it('should successfully create a new book', async () => {
     const dto = {
       name: 'A Great Book',
       authors: [
@@ -29,7 +31,7 @@ describe('CreateBookCommandHandler', () => {
       ],
     };
     const cmd = new CreateBookCommand(dto);
-    
+
     const fakeBook: Book = {
       id: '1',
       bookId: '1',
@@ -48,46 +50,64 @@ describe('CreateBookCommandHandler', () => {
     const result = await sut.handle(cmd);
 
     expect(mockRepo.create).toHaveBeenCalled();
-    expect(result).toEqual(fakeBook);
+    expect(isCommandOk(result)).toBe(true);
+
+    if (isCommandOk(result)) {
+      expect(result.data).toEqual(fakeBook);
+    }
   });
 
-  it('should throw correct error when validation fails', async () => {
+  it('should return CommandResult with error when validation fails', async () => {
     const dto = {
       name: '',
-      authors: [
-        { authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'Jane', lastName: 'Doe', order: 1 },
-      ],
+      authors: [{ authorId: '29311e65-4ed1-4fb6-bbc0-c72d677a466d', firstName: 'Jane', lastName: 'Doe', order: 1 }],
     };
-    const cmd = new CreateBookCommand(dto);  
+    const cmd = new CreateBookCommand(dto);
 
-    await expect(sut.handle(cmd)).rejects.toThrow('Validation failed: Book name is required');
+    const result = await sut.handle(cmd);
+
     expect(mockRepo.create).not.toHaveBeenCalled();
+    expect(isCommandFail(result)).toBe(true);
+
+    if (isCommandFail(result)) {
+      expect(result.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+      expect(result.error.message).toContain('Book name is required');
+    }
   });
 
-  it('should throw correct error when repository returns a failure', async () => {
+  it('should return CommandResult with error when repository returns a failure', async () => {
     const dto = {
       name: 'A Great Book Vol 3',
-      authors: [
-        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 },
-      ],
+      authors: [{ authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 }],
     };
     const cmd = new CreateBookCommand(dto);
     mockRepo.create.mockResolvedValue(repoFail('Cosmos DB is down', 500));
 
-    await expect(sut.handle(cmd)).rejects.toThrow('Cosmos DB is down');
+    const result = await sut.handle(cmd);
+
     expect(mockRepo.create).toHaveBeenCalled();
+    expect(isCommandFail(result)).toBe(true);
+
+    if (isCommandFail(result)) {
+      expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
+      expect(result.error.message).toBe('Cosmos DB is down');
+    }
   });
 
-  it('should throw generic message when repo fails without error text', async () => {
+  it('should return CommandResult with generic error when repo fails without error text', async () => {
     const dto = {
       name: 'A Great Book Vol 4',
-      authors: [
-        { authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 },
-      ],
+      authors: [{ authorId: '1fed4b21-2876-4b38-a925-6101fda071a1', firstName: 'Peter', lastName: 'Doe', order: 1 }],
     };
     const cmd = new CreateBookCommand(dto);
     mockRepo.create.mockResolvedValue({ success: false, statusCode: 500 });
 
-    await expect(sut.handle(cmd)).rejects.toThrow('Unknown error creating book');
+    const result = await sut.handle(cmd);
+
+    expect(isCommandFail(result)).toBe(true);
+
+    if (isCommandFail(result)) {
+      expect(result.error.message).toBe('Unknown error creating book');
+    }
   });
 });

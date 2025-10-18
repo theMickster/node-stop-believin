@@ -1,18 +1,8 @@
 import { BaseEntity, PartitionedEntity, SoftDeletable, Versionable } from './base/entity-traits';
 import { SocialMediaLinks } from './base/social-media';
 import { ENTITY_TYPES } from './base/entity-types';
-
-export type AuthorStatus = 'Active' | 'Retired' | 'Deceased' | 'Inactive';
-
-export interface AuthorStatistics {
-  totalBooks: number;
-  totalSeries: number;
-  averageRating?: number;
-  totalReviews?: number;
-  totalAwards?: number;
-  firstPublished?: Date;
-  lastPublished?: Date;
-}
+import { AuthorStatistics } from './authorStatistics.entity';
+import { AuthorStatus } from './metadata/authorStatus.type';
 
 /**
  * Author root entity - represents the core author profile

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import authConfig from '../config/authConfig';
+import authConfig from '../../../config/authConfig';
 
 export class AuthController {
   public getProtectedRoute(req: Request, res: Response): void {

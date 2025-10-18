@@ -1,0 +1,20 @@
+import { Container as CosmosContainer } from '@azure/cosmos';
+import { Author } from '@data/entities/author.entity';
+import { ENTITY_TYPES } from '@data/entities/base/entity-types';
+import { CosmosRepository } from './base/cosmosRepository';
+import TYPES from '@libs/ioc.types';
+import { inject, injectable } from 'inversify';
+
+/**
+ * Repository for Author entities
+ * Inherits common CRUD operations (getAll, getById, create, update, delete) from CosmosRepository
+ */
+@injectable()
+export class AuthorRepository extends CosmosRepository<Author> {
+  constructor(@inject(TYPES.AuthorContainer) container: CosmosContainer) {
+    super(container, ENTITY_TYPES.AUTHOR, 'author');
+  }
+
+  // Author-specific queries can be added here as needed
+  // Example: async findByName(name: string): Promise<RepoResult<Author[]>>
+}

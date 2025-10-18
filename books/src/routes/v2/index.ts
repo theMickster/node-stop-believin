@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { authenticateToken } from '../../middleware/authMiddleware';
-import { requireAdmin, getCurrentUser } from '../../middleware/authorizationMiddleware';
-import { AuthController } from '../../controllers/auth.controller';
+import { authenticateToken } from '@middleware/authMiddleware';
+import { requireAdmin, getCurrentUser } from '@middleware/authorizationMiddleware';
+import { AuthController } from '@features/auth/controllers/auth.controller';
 
 export function versionTwoRoutes(): Router {
   const router = Router();

@@ -1,6 +1,8 @@
 import { Book } from '@data/entities/book.entity';
-import { BookRepository } from '@data/repos/bookRepository';
+import { BookRepository } from '@data/repos/book.repository';
 import { ICommandHandler } from '@libs/cqrs/commandHandler';
+import { CommandResult, commandOk, commandFail } from '@libs/cqrs/commandResult';
+import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import TYPES from '@libs/ioc.types';
 import { injectable, inject } from 'inversify';
 import { ClassifyBookCommand } from './classifyBook.command';
@@ -10,15 +12,19 @@ import { ClassifyBookValidator } from '../validators/classifyBook.validator';
 export class ClassifyBookCommandHandler implements ICommandHandler<ClassifyBookCommand, Book> {
   constructor(@inject(TYPES.BookRepository) private readonly bookRepository: BookRepository) {}
 
-  async handle(command: ClassifyBookCommand): Promise<Book> {
+  async handle(command: ClassifyBookCommand): Promise<CommandResult<Book>> {
     const validationResult = ClassifyBookValidator.validate(command.classifyBookDto, { abortEarly: false });
     if (validationResult.error) {
-      throw new Error(`Validation failed: ${validationResult.error.message}`);
+      return commandFail(
+        ErrorCodes.VALIDATION_FAILED,
+        `Validation failed: ${validationResult.error.message}`,
+        HttpStatus.BAD_REQUEST
+      );
     }
 
     const bookResult = await this.bookRepository.getById(command.bookId);
     if (!bookResult.success || !bookResult.data) {
-      throw new Error('Book not found');
+      return commandFail(ErrorCodes.BOOK_NOT_FOUND, 'Book not found', HttpStatus.NOT_FOUND);
     }
 
     const book = bookResult.data;
@@ -40,9 +46,13 @@ export class ClassifyBookCommandHandler implements ICommandHandler<ClassifyBookC
 
     const updateResult = await this.bookRepository.update(classifiedBook);
     if (!updateResult.success || !updateResult.data) {
-      throw new Error(updateResult.error ?? 'Failed to classify book');
+      return commandFail(
+        ErrorCodes.DATABASE_ERROR,
+        updateResult.error ?? 'Failed to classify book',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
 
-    return updateResult.data;
+    return commandOk(updateResult.data);
   }
 }

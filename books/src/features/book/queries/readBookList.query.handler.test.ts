@@ -1,9 +1,11 @@
-import { BookRepository } from '@data/repos/bookRepository';
+import { BookRepository } from '@data/repos/book.repository';
 import { ReadBookListQueryHandler } from './readBookList.query.handler';
 import { mapBookToReadBookDto } from '@data/mapping/bookMappers';
 import { fakeBooks } from '@fixtures/books';
+import { isQueryFail, isQueryOk } from '@libs/cqrs/queryResult';
+import { ErrorCodes } from '@libs/cqrs/errorCodes';
 
-jest.mock('@data/repos/bookRepository');
+jest.mock('@data/repos/book.repository');
 
 describe('ReadBookListQueryHandler', () => {
   let mockBookRepository: jest.Mocked<BookRepository>;
@@ -16,7 +18,7 @@ describe('ReadBookListQueryHandler', () => {
     sut = new ReadBookListQueryHandler(mockBookRepository);
   });
 
-  it('should return books when repository result is successful', async () => {
+  it('should return QueryResult with books when repository result is successful', async () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: true,
       data: fakeBooks,
@@ -25,12 +27,16 @@ describe('ReadBookListQueryHandler', () => {
 
     const result = await sut.handle({});
 
-    const expectedDtos = fakeBooks.map(mapBookToReadBookDto);
-    expect(result).toEqual(expectedDtos);
     expect(mockBookRepository.getAll).toHaveBeenCalledTimes(1);
+    expect(isQueryOk(result)).toBe(true);
+
+    if (isQueryOk(result)) {
+      const expectedDtos = fakeBooks.map(mapBookToReadBookDto);
+      expect(result.data).toEqual(expectedDtos);
+    }
   });
 
-  it('should return empty array if result is success but no data', async () => {
+  it('should return QueryResult with empty array if result is success but no data', async () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: true,
       data: [],
@@ -39,27 +45,45 @@ describe('ReadBookListQueryHandler', () => {
 
     const result = await sut.handle({});
 
-    expect(result).toEqual([]);
     expect(mockBookRepository.getAll).toHaveBeenCalledTimes(1);
+    expect(isQueryOk(result)).toBe(true);
+
+    if (isQueryOk(result)) {
+      expect(result.data).toEqual([]);
+    }
   });
 
-  it('should throw an error when repository result is unsuccessful', async () => {
+  it('should return QueryResult with error when repository result is unsuccessful', async () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: false,
       error: 'Database failure',
       statusCode: 500,
     });
 
-    await expect(sut.handle({})).rejects.toThrow('Database failure');
+    const result = await sut.handle({});
+
     expect(mockBookRepository.getAll).toHaveBeenCalledTimes(1);
+    expect(isQueryFail(result)).toBe(true);
+
+    if (isQueryFail(result)) {
+      expect(result.error.code).toBe(ErrorCodes.DATABASE_ERROR);
+      expect(result.error.message).toBe('Database failure');
+      expect(result.error.statusCode).toBe(500);
+    }
   });
 
-  it('should throw a generic error when repository result has no error message', async () => {
+  it('should return QueryResult with generic error when repository result has no error message', async () => {
     mockBookRepository.getAll.mockResolvedValue({
       success: false,
       statusCode: 500,
     });
 
-    await expect(sut.handle({})).rejects.toThrow('Failed to retrieve books');
+    const result = await sut.handle({});
+
+    expect(isQueryFail(result)).toBe(true);
+
+    if (isQueryFail(result)) {
+      expect(result.error.message).toBe('Failed to retrieve books');
+    }
   });
 });

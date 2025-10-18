@@ -1,6 +1,6 @@
-# Welcome to Cosmic Books
+# Welcome to Cosmic Reads
 
-Cosmic books is your home for tech books!
+Cosmic reads is your home for tech books!
 
 ## Technologies Used
 
@@ -18,23 +18,66 @@ Cosmic books is your home for tech books!
 📌 Create a `.env` file in the project root directory (see Environment Setup below) <br/>
 📌 Start the server with `npm run dev` and navigate to `http://localhost:3000/api-docs` for API documentation
 
-## Using the API with Swagger
+## Cosmos DB Instantiation
 
-The Cosmic Books API is secured with Azure Entra ID Bearer token authentication. To test the API using the Swagger UI:
+<details>
+<summary><strong>Cosmos Db Setup - Click to expand</strong></summary>
 
-1. **Start the server**: Run `npm run dev`
-2. **Navigate to Swagger UI**: Open `http://localhost:3000/api-docs` in your browser
-3. **Obtain a Bearer token**: Get a valid JWT token from Azure Entra ID (see [Authentication](#authentication) section below)
-4. **Authorize in Swagger**:
-   - Click the **Authorize** button (lock icon) at the top right of the Swagger page
-   - Enter your token in the format: `Bearer <your-jwt-token>` or just `<your-jwt-token>`
-   - Click **Authorize** and then **Close**
-5. **Test endpoints**: All API requests will now include your Bearer token in the Authorization header
+### Database Configuration
+
+**Throughput Settings:**
+
+- Use **Free Tier discount** (if available)
+- **Provisioned Throughput**: 1000 RU/s
+- **Autoscale**: Min 100 RU/s to Max 1000 RU/s
+
+### Container Configuration
+
+#### Container 1: CosmicReadsAuthor
+
+```
+Name: CosmicReadsAuthor
+Time to Live: Off
+Partition Key: /authorId, /entityType
+Features:
+  ✓ Large partition key enabled
+  ✓ Hierarchically partitioned container
+```
+
+#### Container 2: CosmicReadsBooks
+
+```
+Name: CosmicReadsBooks
+Time to Live: Off
+Partition Key: /bookId, /entityType
+Features:
+  ✓ Large partition key enabled
+  ✓ Hierarchically partitioned container
+```
+
+#### Container 3: Metadata
+
+```
+Name: Metadata
+Time to Live: Off
+Partition Key: /ApplicationName, /TypeId
+Features:
+  ✓ Large partition key enabled
+  ✓ Hierarchically partitioned container
+```
+
+### Key Features
+
+- **Hierarchical Partition Keys**: All containers use hierarchical partitioning for better scalability and query performance
+- **Large Partition Keys**: Enabled on all containers to support high-volume data scenarios
+- **Cost Optimization**: Configured to use free tier discount where available, with autoscale for efficient resource utilization
+
+</details>
+
+## Environment Variables Configuration
 
 <details>
 <summary><strong>Environment Setup - Click to expand</strong></summary>
-
-### Environment Variables Configuration
 
 Create a `.env` file in the root of the project with the following variables:
 
@@ -109,3 +152,16 @@ AZURE_VALIDATE_ISSUER=true
   - Redirect URI: `https://oauth.pstmn.io/v1/callback` (for Postman testing)
 
 </details>
+
+## Using the API with Swagger
+
+The Cosmic Reads API is secured with Azure Entra ID Bearer token authentication. To test the API using the Swagger UI:
+
+1. **Start the server**: Run `npm run dev`
+2. **Navigate to Swagger UI**: Open `http://localhost:3000/api-docs` in your browser
+3. **Obtain a Bearer token**: Get a valid JWT token from Azure Entra ID (see [Authentication](#authentication) section below)
+4. **Authorize in Swagger**:
+   - Click the **Authorize** button (lock icon) at the top right of the Swagger page
+   - Enter your token in the format: `Bearer <your-jwt-token>` or just `<your-jwt-token>`
+   - Click **Authorize** and then **Close**
+5. **Test endpoints**: All API requests will now include your Bearer token in the Authorization header
