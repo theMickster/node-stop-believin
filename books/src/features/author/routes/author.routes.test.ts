@@ -15,7 +15,7 @@ describe('authorRoutes', () => {
 
   it('should register correct routes', () => {
     const routes = getRoutesFromRouter();
-    expect(routes.length).toBe(2);
+    expect(routes.length).toBe(3);
 
     const getRoute = routes.find(
       (x) => x.route.path === '/' && x.route.stack?.some((layer) => hasMethod(layer, 'get')),

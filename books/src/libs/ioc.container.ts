@@ -9,6 +9,7 @@ import { BookPublishController } from '@features/book/controllers/publish/bookPu
 import { BookClassifyController } from '@features/book/controllers/classify/bookClassify.controller';
 import { BookRepository } from '@data/repos/book.repository';
 import { AuthorRepository } from '@data/repos/author.repository';
+import { CreateAuthorCommandHandler } from '@features/author/commands/createAuthor.command.handler';
 import { CreateBookCommandHandler } from '@features/book/commands/createBook.command.handler';
 import { DeleteBookCommandHandler } from '@features/book/commands/deleteBook.command.handler';
 import { PublishBookCommandHandler } from '@features/book/commands/publishBook.command.handler';
@@ -79,6 +80,7 @@ container.bind<ReadBookListQueryHandler>(TYPES.ReadBookListHandler).to(ReadBookL
 container.bind<ReadBookQueryHandler>(TYPES.ReadBookHandler).to(ReadBookQueryHandler);
 
 // Bind Command Handlers
+container.bind<CreateAuthorCommandHandler>(TYPES.CreateAuthorCommandHandler).to(CreateAuthorCommandHandler);
 container.bind<CreateBookCommandHandler>(TYPES.CreateBookCommandHandler).to(CreateBookCommandHandler);
 container.bind<DeleteBookCommandHandler>(TYPES.DeleteBookCommandHandler).to(DeleteBookCommandHandler);
 container.bind<UpdateBookCommandHandler>(TYPES.UpdateBookCommandHandler).to(UpdateBookCommandHandler);
