@@ -12,6 +12,12 @@ import { ILogger } from '@libs/logging/logger.interface';
 import { Request } from 'express';
 import { mock, mockReset } from 'jest-mock-extended';
 import httpMocks from 'node-mocks-http';
+import {
+  expectSuccess,
+  expectNotFound,
+  expectInternalServerError,
+  expectBadRequest,
+} from '_test_/helpers/controllerAssertions';
 
 describe('BookClassifyController', () => {
   const mockClassifyBookCommandHandler = mock<ICommandHandler<ClassifyBookCommand, Book>>();
@@ -83,12 +89,13 @@ describe('BookClassifyController', () => {
       expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(
         new ClassifyBookCommand(bookId, classifyBookDto),
       );
-      expect(res.statusCode).toBe(200);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.libraryClassification).toEqual({
-        deweyDecimal: '813.6',
-        libraryOfCongressNumber: 'PZ7.R79835',
-        oclcNumber: '123456789',
+      expectSuccess(res, (data) => {
+        const bookData = data as Book;
+        expect(bookData.libraryClassification).toEqual({
+          deweyDecimal: '813.6',
+          libraryOfCongressNumber: 'PZ7.R79835',
+          oclcNumber: '123456789',
+        });
       });
     });
 
@@ -109,9 +116,10 @@ describe('BookClassifyController', () => {
       await sut.classifyBook(req, res);
 
       expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(new ClassifyBookCommand(bookId, dto));
-      expect(res.statusCode).toBe(200);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.libraryClassification.deweyDecimal).toBe('813.6');
+      expectSuccess(res, (data) => {
+        const bookData = data as Book;
+        expect(bookData.libraryClassification?.deweyDecimal).toBe('813.6');
+      });
     });
 
     it('should return 404 when book is not found', async () => {
@@ -126,9 +134,7 @@ describe('BookClassifyController', () => {
       expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(
         new ClassifyBookCommand(bookId, classifyBookDto),
       );
-      expect(res.statusCode).toBe(404);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
+      expectNotFound(res, 'Book not found');
     });
 
     it('should return 500 on general error', async () => {
@@ -143,9 +149,7 @@ describe('BookClassifyController', () => {
       expect(mockClassifyBookCommandHandler.handle).toHaveBeenCalledWith(
         new ClassifyBookCommand(bookId, classifyBookDto),
       );
-      expect(res.statusCode).toBe(500);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.error.code).toBe(ErrorCodes.DATABASE_ERROR);
+      expectInternalServerError(res, 'Database connection failed');
     });
 
     it('should return 400 on validation error', async () => {
@@ -161,9 +165,7 @@ describe('BookClassifyController', () => {
 
       await sut.classifyBook(req, res);
 
-      expect(res.statusCode).toBe(400);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+      expectBadRequest(res, 'At least one classification field');
     });
   });
 
@@ -204,12 +206,13 @@ describe('BookClassifyController', () => {
       expect(mockUpdateClassificationCommandHandler.handle).toHaveBeenCalledWith(
         new UpdateClassificationCommand(bookId, updateClassificationDto),
       );
-      expect(res.statusCode).toBe(200);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.libraryClassification).toEqual({
-        deweyDecimal: '823.914',
-        libraryOfCongressNumber: 'PR6068.O93',
-        oclcNumber: '987654321',
+      expectSuccess(res, (data) => {
+        const bookData = data as Book;
+        expect(bookData.libraryClassification).toEqual({
+          deweyDecimal: '823.914',
+          libraryOfCongressNumber: 'PR6068.O93',
+          oclcNumber: '987654321',
+        });
       });
     });
 
@@ -234,9 +237,10 @@ describe('BookClassifyController', () => {
       expect(mockUpdateClassificationCommandHandler.handle).toHaveBeenCalledWith(
         new UpdateClassificationCommand(bookId, dto),
       );
-      expect(res.statusCode).toBe(200);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.libraryClassification.deweyDecimal).toBe('823.914');
+      expectSuccess(res, (data) => {
+        const bookData = data as Book;
+        expect(bookData.libraryClassification?.deweyDecimal).toBe('823.914');
+      });
     });
 
     it('should clear classification fields with null values', async () => {
@@ -258,9 +262,10 @@ describe('BookClassifyController', () => {
       expect(mockUpdateClassificationCommandHandler.handle).toHaveBeenCalledWith(
         new UpdateClassificationCommand(bookId, dto),
       );
-      expect(res.statusCode).toBe(200);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.libraryClassification).toBeUndefined();
+      expectSuccess(res, (data) => {
+        const bookData = data as Book;
+        expect(bookData.libraryClassification).toBeUndefined();
+      });
     });
 
     it('should return 404 when book is not found', async () => {
@@ -275,9 +280,7 @@ describe('BookClassifyController', () => {
       expect(mockUpdateClassificationCommandHandler.handle).toHaveBeenCalledWith(
         new UpdateClassificationCommand(bookId, updateClassificationDto),
       );
-      expect(res.statusCode).toBe(404);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.error.code).toBe(ErrorCodes.BOOK_NOT_FOUND);
+      expectNotFound(res, 'Book not found');
     });
 
     it('should return 500 on general error', async () => {
@@ -292,9 +295,7 @@ describe('BookClassifyController', () => {
       expect(mockUpdateClassificationCommandHandler.handle).toHaveBeenCalledWith(
         new UpdateClassificationCommand(bookId, updateClassificationDto),
       );
-      expect(res.statusCode).toBe(500);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.error.code).toBe(ErrorCodes.DATABASE_ERROR);
+      expectInternalServerError(res, 'Database connection failed');
     });
 
     it('should return 400 on validation error', async () => {
@@ -310,9 +311,7 @@ describe('BookClassifyController', () => {
 
       await sut.updateClassification(req, res);
 
-      expect(res.statusCode).toBe(400);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData.error.code).toBe(ErrorCodes.VALIDATION_FAILED);
+      expectBadRequest(res, 'At least one classification field must be provided');
     });
   });
 });

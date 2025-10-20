@@ -224,6 +224,7 @@ describe('UpdatePublicationCommandHandler', () => {
     });
 
     it('should return error when validation fails', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {} as any);
 
       const result = await sut.handle(command);
@@ -259,6 +260,7 @@ describe('UpdatePublicationCommandHandler', () => {
         reason: 'Copyright update needed',
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockBookRepository.getById.mockResolvedValue(repoOk(null as any));
 
       const result = await sut.handle(command);
@@ -274,6 +276,7 @@ describe('UpdatePublicationCommandHandler', () => {
     it('should return error when book is not published', async () => {
       const unpublishedBook: Book = {
         ...testBook,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         publishedDate: null as any,
       };
 
@@ -359,6 +362,7 @@ describe('UpdatePublicationCommandHandler', () => {
       });
 
       mockBookRepository.getById.mockResolvedValue(repoOk(testBook));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockBookRepository.update.mockResolvedValue(repoOk(null as any));
 
       const result = await sut.handle(command);
@@ -374,6 +378,7 @@ describe('UpdatePublicationCommandHandler', () => {
     it('should return error when reason is missing', async () => {
       const command = new UpdatePublicationCommand('123e4567-e89b-12d3-a456-426614174000', {
         copyright: '© 2025',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       const result = await sut.handle(command);

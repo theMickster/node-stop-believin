@@ -14,9 +14,17 @@ import { IQueryHandler } from '@libs/cqrs/queryHandler';
 import { queryOk, queryFail } from '@libs/cqrs/queryResult';
 import { ErrorCodes, HttpStatus } from '@libs/cqrs/errorCodes';
 import { ILogger } from '@libs/logging/logger.interface';
-import { Request as ExpressRequest } from 'express';
 import { mock, mockReset } from 'jest-mock-extended';
 import httpMocks from 'node-mocks-http';
+import { mockRequestWithParams, mockRequestWithBody, mockEmptyRequest } from '_test_/builders/mockRequestBuilder';
+import {
+  expectSuccess,
+  expectCreated,
+  expectNoContent,
+  expectInternalServerError,
+  expectNotFound,
+  expectLoggerError,
+} from '_test_/helpers/controllerAssertions';
 import { ENTITY_TYPES } from '@data/entities/base/entity-types';
 
 describe('BookController', () => {
@@ -28,15 +36,6 @@ describe('BookController', () => {
   const mockLogger = mock<ILogger>();
 
   let sut: BookController;
-
-  const createMockRequest = (params: any = {}, body: any = {}, query: any = {}) => {
-    const req = httpMocks.createRequest({
-      params: params,
-      body: body,
-      query: query,
-    }) as ExpressRequest;
-    return req;
-  };
 
   beforeEach(() => {
     mockReset(mockReadBookListHandler);
@@ -59,35 +58,33 @@ describe('BookController', () => {
   describe('getBooks', () => {
     it('should return a list of books on success', async () => {
       mockReadBookListHandler.handle.mockResolvedValue(queryOk(fakeBooks));
-      const req = createMockRequest();
+      const req = mockEmptyRequest();
       const res = httpMocks.createResponse();
 
       await sut.getBooks(req, res);
 
       expect(mockReadBookListHandler.handle).toHaveBeenCalledWith(new ReadBookListQuery());
-      expect(res.statusCode).toBe(200);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toBeInstanceOf(Array);
-      expect(responseData.length).toBe(fakeBooks.length);
+      expectSuccess(res, (data) => {
+        expect(data).toBeInstanceOf(Array);
+        expect((data as unknown[]).length).toBe(fakeBooks.length);
+      });
     });
 
     it('should return the correct error upon hard exception', async () => {
       mockReadBookListHandler.handle.mockResolvedValue(
         queryFail(ErrorCodes.DATABASE_ERROR, 'Whoops! There was a Cosmos Error!', HttpStatus.INTERNAL_SERVER_ERROR),
       );
-      const req = createMockRequest();
+      const req = mockEmptyRequest();
       const res = httpMocks.createResponse();
 
       await sut.getBooks(req, res);
+
       expect(mockReadBookListHandler.handle).toHaveBeenCalledWith(new ReadBookListQuery());
-      expect(res.statusCode).toBe(500);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual({
-        error: { code: ErrorCodes.DATABASE_ERROR, message: 'Whoops! There was a Cosmos Error!' },
-      });
-      expect(mockLogger.error).toHaveBeenCalledWith('Failed to fetch book list', {
-        code: ErrorCodes.DATABASE_ERROR,
-        message: 'Whoops! There was a Cosmos Error!',
+      expectInternalServerError(res);
+      expectLoggerError(mockLogger, 'Failed to fetch book list', (context) => {
+        const ctx = context as { code: string; message: string };
+        expect(ctx.code).toBe(ErrorCodes.DATABASE_ERROR);
+        expect(ctx.message).toBe('Whoops! There was a Cosmos Error!');
       });
     });
   });
@@ -98,18 +95,16 @@ describe('BookController', () => {
       const book = fakeBooks.find((b) => b.id === bookId)!;
       mockReadBookHandler.handle.mockResolvedValue(queryOk(book));
 
-      const req = createMockRequest({ id: bookId });
+      const req = mockRequestWithParams({ id: bookId });
       const res = httpMocks.createResponse();
 
       await sut.getBookById(req, res);
 
       expect(mockReadBookHandler.handle).toHaveBeenCalledWith(new ReadBookQuery(bookId));
-      expect(res.statusCode).toBe(200);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual({
-        ...book,
-        createdAt: book.createdAt.toISOString(),
-        updatedAt: book.updatedAt.toISOString(),
+      expectSuccess(res, (data) => {
+        const bookData = data as Book & { createdAt: string; updatedAt: string };
+        expect(bookData.createdAt).toBe(book.createdAt.toISOString());
+        expect(bookData.updatedAt).toBe(book.updatedAt.toISOString());
       });
     });
 
@@ -119,15 +114,14 @@ describe('BookController', () => {
         queryFail(ErrorCodes.BOOK_NOT_FOUND, 'Book not found', HttpStatus.NOT_FOUND),
       );
 
-      const req = createMockRequest({ id: bookId });
+      const req = mockRequestWithParams({ id: bookId });
       const res = httpMocks.createResponse();
 
       await sut.getBookById(req, res);
+
       expect(mockReadBookHandler.handle).toHaveBeenCalledWith(new ReadBookQuery(bookId));
-      expect(res.statusCode).toBe(404);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual({ error: { code: ErrorCodes.BOOK_NOT_FOUND, message: 'Book not found' } });
-      expect(mockLogger.error).toHaveBeenCalledTimes(1);
+      expectNotFound(res, 'Book not found');
+      expectLoggerError(mockLogger);
     });
 
     it('should return the correct error upon hard exception', async () => {
@@ -136,20 +130,18 @@ describe('BookController', () => {
         queryFail(ErrorCodes.DATABASE_ERROR, 'Whoops! There was a Cosmos Error!', HttpStatus.INTERNAL_SERVER_ERROR),
       );
 
-      const req = createMockRequest({ id: bookId });
+      const req = mockRequestWithParams({ id: bookId });
       const res = httpMocks.createResponse();
 
       await sut.getBookById(req, res);
+
       expect(mockReadBookHandler.handle).toHaveBeenCalledWith(new ReadBookQuery(bookId));
-      expect(res.statusCode).toBe(500);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual({
-        error: { code: ErrorCodes.DATABASE_ERROR, message: 'Whoops! There was a Cosmos Error!' },
-      });
-      expect(mockLogger.error).toHaveBeenCalledWith('Failed to retrieve book', {
-        code: ErrorCodes.DATABASE_ERROR,
-        message: 'Whoops! There was a Cosmos Error!',
-        bookId,
+      expectInternalServerError(res);
+      expectLoggerError(mockLogger, 'Failed to retrieve book', (context) => {
+        const ctx = context as { code: string; message: string; bookId: string };
+        expect(ctx.code).toBe(ErrorCodes.DATABASE_ERROR);
+        expect(ctx.message).toBe('Whoops! There was a Cosmos Error!');
+        expect(ctx.bookId).toBe(bookId);
       });
     });
   });
@@ -180,18 +172,16 @@ describe('BookController', () => {
       };
 
       mockCreateBookCommandHandler.handle.mockResolvedValue(commandOk(createdBook));
-      const req = createMockRequest({}, createBookDto);
+      const req = mockRequestWithBody({}, createBookDto);
       const res = httpMocks.createResponse();
 
       await sut.createBook(req, res);
 
       expect(mockCreateBookCommandHandler.handle).toHaveBeenCalledWith(new CreateBookCommand(createBookDto));
-      expect(res.statusCode).toBe(201);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual({
-        ...createdBook,
-        createdAt: createdBook.createdAt.toISOString(),
-        updatedAt: createdBook.updatedAt.toISOString(),
+      expectCreated(res, (data) => {
+        const bookData = data as Book & { createdAt: string; updatedAt: string };
+        expect(bookData.createdAt).toBe(createdBook.createdAt.toISOString());
+        expect(bookData.updatedAt).toBe(createdBook.updatedAt.toISOString());
       });
     });
 
@@ -206,20 +196,17 @@ describe('BookController', () => {
       mockCreateBookCommandHandler.handle.mockResolvedValue(
         commandFail(ErrorCodes.DATABASE_ERROR, 'Whoops! There was a Cosmos Error!', HttpStatus.INTERNAL_SERVER_ERROR),
       );
-      const req = createMockRequest({}, createBookDto);
+      const req = mockRequestWithBody({}, createBookDto);
       const res = httpMocks.createResponse();
 
       await sut.createBook(req, res);
 
       expect(mockCreateBookCommandHandler.handle).toHaveBeenCalledWith(new CreateBookCommand(createBookDto));
-      expect(res.statusCode).toBe(500);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual({
-        error: { code: ErrorCodes.DATABASE_ERROR, message: 'Whoops! There was a Cosmos Error!' },
-      });
-      expect(mockLogger.error).toHaveBeenCalledWith('Failed to create book', {
-        code: ErrorCodes.DATABASE_ERROR,
-        message: 'Whoops! There was a Cosmos Error!',
+      expectInternalServerError(res);
+      expectLoggerError(mockLogger, 'Failed to create book', (context) => {
+        const ctx = context as { code: string; message: string };
+        expect(ctx.code).toBe(ErrorCodes.DATABASE_ERROR);
+        expect(ctx.message).toBe('Whoops! There was a Cosmos Error!');
       });
     });
   });
@@ -229,14 +216,13 @@ describe('BookController', () => {
       const id = '41ca7c11-87d8-4d18-b210-74099094ec31';
       mockDeleteBookCommandHandler.handle.mockResolvedValue(commandOk(undefined as void));
 
-      const req = createMockRequest({ id });
+      const req = mockRequestWithParams({ id });
       const res = httpMocks.createResponse();
 
       await sut.deleteBook(req, res);
 
       expect(mockDeleteBookCommandHandler.handle).toHaveBeenCalledWith(new DeleteBookCommand(id));
-      expect(res.statusCode).toBe(204);
-      expect(res._getData()).toBe('');
+      expectNoContent(res);
     });
 
     it('should return the correct error upon hard exception', async () => {
@@ -244,19 +230,18 @@ describe('BookController', () => {
       mockDeleteBookCommandHandler.handle.mockResolvedValue(
         commandFail(ErrorCodes.DATABASE_ERROR, 'Some Delete error', HttpStatus.INTERNAL_SERVER_ERROR),
       );
-      const req = createMockRequest({ id });
+      const req = mockRequestWithParams({ id });
       const res = httpMocks.createResponse();
 
       await sut.deleteBook(req, res);
 
       expect(mockDeleteBookCommandHandler.handle).toHaveBeenCalledWith(new DeleteBookCommand(id));
-      expect(res.statusCode).toBe(500);
-      const responseData = JSON.parse(res._getData());
-      expect(responseData).toEqual({ error: { code: ErrorCodes.DATABASE_ERROR, message: 'Some Delete error' } });
-      expect(mockLogger.error).toHaveBeenCalledWith('Failed to delete book', {
-        code: ErrorCodes.DATABASE_ERROR,
-        message: 'Some Delete error',
-        bookId: id,
+      expectInternalServerError(res);
+      expectLoggerError(mockLogger, 'Failed to delete book', (context) => {
+        const ctx = context as { code: string; message: string; bookId: string };
+        expect(ctx.code).toBe(ErrorCodes.DATABASE_ERROR);
+        expect(ctx.message).toBe('Some Delete error');
+        expect(ctx.bookId).toBe(id);
       });
     });
   });
@@ -290,15 +275,14 @@ describe('BookController', () => {
 
       mockUpdateBookCommandHandler.handle.mockResolvedValue(commandOk(updatedBook));
 
-      const req = createMockRequest({ id });
+      const req = mockRequestWithParams({ id });
       req.body = updateBookDto;
       const res = httpMocks.createResponse();
 
       await sut.updateBook(req, res);
 
       expect(mockUpdateBookCommandHandler.handle).toHaveBeenCalledWith(new UpdateBookCommand(updateBookDto));
-      expect(res.statusCode).toBe(200);
-      expect(res._getData()).toEqual(JSON.stringify(updatedBook));
+      expectSuccess(res);
     });
 
     it('should return the correct error upon hard exception', async () => {
@@ -315,19 +299,17 @@ describe('BookController', () => {
         commandFail(ErrorCodes.DATABASE_ERROR, 'Whoops! There was a Cosmos Error!', HttpStatus.INTERNAL_SERVER_ERROR),
       );
 
-      const req = createMockRequest({ id });
+      const req = mockRequestWithParams({ id });
       req.body = updateBookDto;
       const res = httpMocks.createResponse();
 
       await sut.updateBook(req, res);
 
-      expect(res.statusCode).toBe(500);
-      expect(res._getData()).toEqual(
-        JSON.stringify({ error: { code: ErrorCodes.DATABASE_ERROR, message: 'Whoops! There was a Cosmos Error!' } }),
-      );
-      expect(mockLogger.error).toHaveBeenCalledWith('Failed to update book', {
-        code: ErrorCodes.DATABASE_ERROR,
-        message: 'Whoops! There was a Cosmos Error!',
+      expectInternalServerError(res);
+      expectLoggerError(mockLogger, 'Failed to update book', (context) => {
+        const ctx = context as { code: string; message: string };
+        expect(ctx.code).toBe(ErrorCodes.DATABASE_ERROR);
+        expect(ctx.message).toBe('Whoops! There was a Cosmos Error!');
       });
     });
   });
